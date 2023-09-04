@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 add_subdirectory(libs/assimp)
 add_subdirectory(libs/DirectXTK12)
 add_subdirectory(libs/nvrhi)
+add_subdirectory(libs/EASTL)
+
+get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
+
+set(EASTL_LIBRARY ${EASTL_ROOT_DIR}/cmake-build-debug/EASTL.lib) # TODO: fix for all configs
 
 add_executable(engine src/core/Game.cpp
         src/core/Game.h
@@ -20,7 +25,8 @@ add_executable(engine src/core/Game.cpp
         src/main.cpp
 )
 
-target_link_libraries(engine assimp
+target_link_libraries(engine ${EASTL_LIBRARY}
+        assimp
         DirectXTK12
         nvrhi
 )
