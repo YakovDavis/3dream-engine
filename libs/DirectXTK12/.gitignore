@@ -26,3 +26,5 @@ Bin
 /wiki
 /out
 /CMakeUserPresets.json
+
+!Build/
