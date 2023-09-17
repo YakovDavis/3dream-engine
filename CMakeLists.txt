@@ -7,6 +7,7 @@ add_subdirectory(libs/assimp)
 add_subdirectory(libs/DirectXTK12)
 add_subdirectory(libs/nvrhi)
 add_subdirectory(libs/EASTL)
+add_subdirectory(libs/entt)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
 
@@ -29,4 +30,5 @@ target_link_libraries(engine ${EASTL_LIBRARY}
         assimp
         DirectXTK12
         nvrhi
+        entt
 )
