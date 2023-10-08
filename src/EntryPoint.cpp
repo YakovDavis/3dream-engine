@@ -1,5 +1,5 @@
 #include <iostream>
-#include <EASTL/vector.h>
+#include "App.h"
 
 void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
 {
@@ -11,9 +11,13 @@ void * __cdecl operator new[](unsigned __int64 size, unsigned __int64 flags, uns
 	return new uint8_t[size];
 }
 
+extern D3E::App* D3E::CreateApp();
+
 int main()
 {
-	eastl::vector<int> v;
-	v.push_back(1);
-	std::cout << "Hello, 3dream Engine! " << v[0] << std::endl;
+	auto app = D3E::CreateApp();
+
+	app->Run();
+
+	delete app;
 }
