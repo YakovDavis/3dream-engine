@@ -18,11 +18,15 @@ include_directories (${EASTL_ROOT_DIR}/test/packages/EATest/include)
 include_directories (${EASTL_ROOT_DIR}/test/packages/EAThread/include)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
-add_executable(D3Engine src/core/Game.cpp
-        src/core/Game.h
+add_library(D3Engine STATIC
         src/core/Common.h
-        src/main.cpp
+        src/EntryPoint.cpp
+        include/App.h
+        src/core/App.cpp
 )
+
+target_include_directories(D3Engine PRIVATE include)
+target_include_directories(D3Engine PRIVATE src)
 
 target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
