@@ -23,6 +23,8 @@ add_library(D3Engine STATIC
         src/EntryPoint.cpp
         include/App.h
         src/core/App.cpp
+        src/core/Game.cpp
+        include/Game.h
 )
 
 target_include_directories(D3Engine PRIVATE include)
