@@ -25,6 +25,10 @@ add_library(D3Engine STATIC
         src/core/App.cpp
         src/core/Game.cpp
         include/Game.h
+        src/render/GameRender.cpp
+        src/render/GameRender.h
+        src/render/GameRenderD3D12.cpp
+        src/render/GameRenderD3D12.h
 )
 
 target_include_directories(D3Engine PRIVATE include)
