@@ -1,16 +1,17 @@
 #pragma once
 
 #include "App.h"
-#include "EASTL/chrono.h"
 
 namespace D3E
 {
+	class GameRender;
+
 	class Game : public App
 	{
 	public:
 		void Run() final;
 
-		Game() = default;
+		explicit Game();
 		~Game() override = default;
 
 	protected:
@@ -24,6 +25,8 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
-		eastl::chrono::time_point<eastl::chrono::steady_clock> prevCycleTimePoint_;
+		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
+
+		GameRender* gameRender_;
 	};
 }

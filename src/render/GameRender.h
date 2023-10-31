@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nvrhi/nvrhi.h"
+#include <windows.h>
 
 namespace D3E
 {
@@ -8,17 +9,30 @@ namespace D3E
 	class GameRender
 	{
 	public:
-		void Init();
+		virtual void Init();
+		virtual void OnResize();
+
+		void CalculateFrameStats();
 
 		void DestroyResources();
 
-		GameRender() = default;
+		[[nodiscard]] HINSTANCE AppInst() const;
+		[[nodiscard]] HWND MainWnd() const;
+		[[nodiscard]] float AspectRatio() const;
+
+		explicit GameRender(HINSTANCE hInstance);
 		virtual ~GameRender() = default;
 
 	protected:
-		bool InitD3D12();
-
 		nvrhi::DeviceHandle device_;
+
+		std::wstring mMainWndCaption = L"d3d App";
+
+		HINSTANCE mhAppInst = nullptr;
+		HWND mhMainWnd = nullptr;
+
+		int mClientWidth = 800;
+		int mClientHeight = 600;
 
 		friend class Game;
 	};
