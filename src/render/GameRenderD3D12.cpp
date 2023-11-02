@@ -1,6 +1,7 @@
 #include "GameRenderD3D12.h"
 
-#include <windows.h>
+#include <nvrhi/d3d12.h>
+#include <nvrhi/validation.h>
 
 void D3E::GameRenderD3D12::CreateCommandObjects()
 {

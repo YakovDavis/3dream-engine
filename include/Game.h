@@ -2,6 +2,8 @@
 
 #include "App.h"
 
+class GameRender;
+
 namespace D3E
 {
 	class GameRender;
@@ -15,13 +17,13 @@ namespace D3E
 		~Game() override = default;
 
 	protected:
-		void Init();
+		virtual void Init();
 
-		void Update(float deltaTime);
+		virtual void Update(float deltaTime);
 
-		void Draw();
+		virtual void Draw();
 
-		void DestroyResources();
+		virtual void DestroyResources();
 
 		bool isQuitRequested_ = false;
 

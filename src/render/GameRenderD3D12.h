@@ -2,12 +2,11 @@
 
 #include <string>
 #include "GameRender.h"
-#include <dxgi.h>
+#include <dxgi1_5.h>
 #include "D3dUtil.h"
-#include "nvrhi/d3d12.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "D3D12.lib")
+#pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 

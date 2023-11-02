@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "App.h"
 
 void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
@@ -13,29 +14,38 @@ void * __cdecl operator new[](unsigned __int64 size, unsigned __int64 flags, uns
 
 extern D3E::App* D3E::CreateApp();
 
-#if D3E_PLATFORM_WINDOWS
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
-	// Enable run-time memory check for debug builds.
-#if defined(DEBUG) | defined(_DEBUG)
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-#endif
+	try
+	{
+		D3E::App mApp;
+		std::ofstream MyFile("D:\\Library\\Documents\\before.txt");
+		MyFile << "before";
+		MyFile.close();
+		D3E::App* app = D3E::CreateApp();
+		std::ofstream MyFile1("D:\\Library\\Documents\\after.txt");
+		MyFile1 << "after";
+		MyFile1.close();
 
-	auto app = D3E::CreateApp();
+		app->SetAppInstance(hInstance);
 
-	app->SetAppInstance(hInstance);
+		app->Run();
 
-	app->Run();
-
-	delete app;
+		delete app;
+	}
+	catch (std::exception& e)
+	{
+		std::ofstream MyFile("D:\\Library\\Documents\\error.txt");
+		MyFile << e.what();
+		MyFile.close();
+	}
 }
-#elif // D3E_PLATFORM_WINDOWS
-int main()
+
+/*int main()
 {
 	auto app = D3E::CreateApp();
 
 	app->Run();
 
 	delete app;
-}
-#endif // D3E_PLATFORM_WINDOWS
+}*/

@@ -1,7 +1,12 @@
-#include <iostream>
-#include "CubeGame.h"
+#include "EntryPoint.h"
+#include "Game.h"
+
+class CubeGame : public D3E::Game
+{
+
+};
 
 D3E::App* D3E::CreateApp()
 {
-	return dynamic_cast<D3E::App*>(new CubeGame());
+	return new CubeGame();
 }
