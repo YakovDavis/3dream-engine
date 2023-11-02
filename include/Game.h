@@ -1,29 +1,34 @@
 #pragma once
 
 #include "App.h"
-#include "EASTL/chrono.h"
+
+class GameRender;
 
 namespace D3E
 {
+	class GameRender;
+
 	class Game : public App
 	{
 	public:
 		void Run() final;
 
-		Game() = default;
+		explicit Game();
 		~Game() override = default;
 
 	protected:
-		void Init();
+		virtual void Init();
 
-		void Update(float deltaTime);
+		virtual void Update(float deltaTime);
 
-		void Draw();
+		virtual void Draw();
 
-		void DestroyResources();
+		virtual void DestroyResources();
 
 		bool isQuitRequested_ = false;
 
-		eastl::chrono::time_point<eastl::chrono::steady_clock> prevCycleTimePoint_;
+		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
+
+		GameRender* gameRender_;
 	};
 }
