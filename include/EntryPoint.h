@@ -1,6 +1,7 @@
-#include <iostream>
-#include <fstream>
 #include "App.h"
+
+#include <fstream>
+#include <iostream>
 
 void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
 {
@@ -16,29 +17,35 @@ extern D3E::App* D3E::CreateApp();
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
-	try
+	if (!AttachConsole(ATTACH_PARENT_PROCESS))
 	{
-		D3E::App mApp;
-		std::ofstream MyFile("D:\\Library\\Documents\\before.txt");
-		MyFile << "before";
-		MyFile.close();
-		D3E::App* app = D3E::CreateApp();
-		std::ofstream MyFile1("D:\\Library\\Documents\\after.txt");
-		MyFile1 << "after";
-		MyFile1.close();
-
-		app->SetAppInstance(hInstance);
-
-		app->Run();
-
-		delete app;
+		auto res = AllocConsole();
+		// TODO: assert(res != 0);
 	}
-	catch (std::exception& e)
-	{
-		std::ofstream MyFile("D:\\Library\\Documents\\error.txt");
-		MyFile << e.what();
-		MyFile.close();
-	}
+
+	FILE* pNewStdout = nullptr;
+	FILE* pNewStderr = nullptr;
+	FILE* pNewStdin = nullptr;
+
+	freopen_s(&pNewStdout, "CONOUT$", "w", stdout);
+	freopen_s(&pNewStderr, "CONOUT$", "w", stderr);
+	freopen_s(&pNewStdin, "CONIN$", "r", stdin);
+
+	std::cout.clear();
+	std::cerr.clear();
+	std::cin.clear();
+
+	std::wcout.clear();
+	std::wcerr.clear();
+	std::wcin.clear();
+
+	D3E::App* app = D3E::CreateApp();
+
+	app->SetAppInstance(hInstance);
+
+	app->Run();
+	
+	delete app;
 }
 
 /*int main()
