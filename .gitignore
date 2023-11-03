@@ -64,7 +64,6 @@
 *.out
 *.app
 
-.idea
 .vs
 cmake-build-*
 
