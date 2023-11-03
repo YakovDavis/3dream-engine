@@ -2,3 +2,4 @@ ctags
 /build/
 build.bat
 !include/eathread/x86/
+!source/x86/
