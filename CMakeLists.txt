@@ -29,7 +29,7 @@ include_directories (${EASTL_ROOT_DIR}/test/packages/EAMain/include)
 include_directories (${EASTL_ROOT_DIR}/test/packages/EAStdC/include)
 include_directories (${EASTL_ROOT_DIR}/test/packages/EATest/include)
 include_directories (${EASTL_ROOT_DIR}/test/packages/EAThread/include)
-set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
+set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
         src/core/Common.h
