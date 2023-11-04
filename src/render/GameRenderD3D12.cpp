@@ -1,5 +1,7 @@
 #include "GameRenderD3D12.h"
 
+#include <iostream>
+
 #include <nvrhi/d3d12.h>
 #include <nvrhi/validation.h>
 
@@ -8,18 +10,18 @@ void D3E::GameRenderD3D12::CreateCommandObjects()
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue));
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
 
-	md3dDevice->CreateCommandAllocator(
+	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf()));
+		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
 
-	md3dDevice->CreateCommandList(
+	ThrowIfFailed(md3dDevice->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		mDirectCmdListAlloc.Get(),
 		nullptr,
-		IID_PPV_ARGS(mCommandList.GetAddressOf()));
+		IID_PPV_ARGS(mCommandList.GetAddressOf())));
 
 	mCommandList->Close();
 }
@@ -28,9 +30,11 @@ void D3E::GameRenderD3D12::CreateSwapChain()
 {
 	mSwapChain.Reset();
 
+	assert(displayWin32_->hWnd != nullptr);
+
 	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = mClientWidth;
-	sd.BufferDesc.Height = mClientHeight;
+	sd.BufferDesc.Width = displayWin32_->ClientWidth;
+	sd.BufferDesc.Height = displayWin32_->ClientHeight;
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferDesc.Format = mBackBufferFormat;
@@ -40,25 +44,38 @@ void D3E::GameRenderD3D12::CreateSwapChain()
 	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = SwapChainBufferCount;
-	sd.OutputWindow = mhMainWnd;
+	sd.OutputWindow = displayWin32_->hWnd;
 	sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	// Note: Swap chain uses queue to perform flush.
-	mdxgiFactory->CreateSwapChain(
+	HRESULT hres = mdxgiFactory->CreateSwapChain(
 		mCommandQueue.Get(),
 		&sd,
 		mSwapChain.GetAddressOf());
+
+	if (FAILED(hres))
+	{
+		std::cout << "Swapchain creation failed!\n";
+	}
 }
 
 void D3E::GameRenderD3D12::Init()
 {
+	std::cout << "Graphics init started.\n";
+
 	GameRender::Init();
+
+	std::cout << "Window init finished.\n";
 
 	InitD3D();
 
+	std::cout << "D3D init finished.\n";
+
 	OnResize();
+
+	std::cout << "Graphics init finished.\n";
 }
 
 void D3E::GameRenderD3D12::FlushCommandQueue()
@@ -173,7 +190,7 @@ void D3E::GameRenderD3D12::OnResize()
 	// Resize the swap chain.
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
-		mClientWidth, mClientHeight,
+		displayWin32_->ClientWidth, displayWin32_->ClientHeight,
 		mBackBufferFormat,
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
@@ -191,8 +208,8 @@ void D3E::GameRenderD3D12::OnResize()
 	D3D12_RESOURCE_DESC depthStencilDesc;
 	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = mClientWidth;
-	depthStencilDesc.Height = mClientHeight;
+	depthStencilDesc.Width = displayWin32_->ClientWidth;
+	depthStencilDesc.Height = displayWin32_->ClientHeight;
 	depthStencilDesc.DepthOrArraySize = 1;
 	depthStencilDesc.MipLevels = 1;
 
@@ -247,12 +264,12 @@ void D3E::GameRenderD3D12::OnResize()
 	// Update the viewport transform to cover the client area.
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(mClientWidth);
-	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.Width = static_cast<float>(displayWin32_->ClientWidth);
+	mScreenViewport.Height = static_cast<float>(displayWin32_->ClientHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
-	mScissorRect = {0, 0, mClientWidth, mClientHeight};
+	mScissorRect = {0, 0, displayWin32_->ClientWidth, displayWin32_->ClientHeight};
 }
 
 ID3D12Resource* D3E::GameRenderD3D12::CurrentBackBuffer() const
@@ -349,7 +366,7 @@ void D3E::GameRenderD3D12::LogOutputDisplayModes(IDXGIOutput* output,
 	}
 }
 
-D3E::GameRenderD3D12::GameRenderD3D12(HINSTANCE hInstance)
-	: GameRender(hInstance)
+D3E::GameRenderD3D12::GameRenderD3D12(App* parent, HINSTANCE hInstance)
+	: GameRender(parent, hInstance)
 {
 }

@@ -34,15 +34,14 @@ void D3E::Game::Run()
 
 void D3E::Game::Init()
 {
-	assert(mhAppInst != 0);
-	gameRender_ = new GameRenderD3D12(mhAppInst);
+	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
-	//gameRender_->Init();
+	gameRender_ = new GameRenderD3D12(this, mhAppInst);
+	gameRender_->Init();
 }
 
 void D3E::Game::Update(const float deltaTime)
 {
-	Debug::LogWarning("frame");
 }
 
 void D3E::Game::Draw()

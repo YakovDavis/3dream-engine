@@ -1,59 +1,14 @@
+#include "Common.h"
 #include "GameRender.h"
+#include "iostream"
+#include "App.h"
 
 void D3E::GameRender::Init()
 {
-	WNDCLASS wc;
-	wc.style         = CS_HREDRAW | CS_VREDRAW;
-	//wc.lpfnWndProc   = MainWndProc;
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = mhAppInst;
-	wc.hIcon         = LoadIcon(nullptr, IDI_APPLICATION);
-	wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
-	wc.lpszMenuName  = nullptr;
-	wc.lpszClassName = reinterpret_cast<LPCSTR>(L"MainWnd");
-
-	if(!RegisterClass(&wc))
-	{
-		MessageBox(0, reinterpret_cast<LPCSTR>(L"RegisterClass Failed."), 0, 0);
-	}
-
-	// Compute window rectangle dimensions based on requested client area dimensions.
-	RECT R = { 0, 0, mClientWidth, mClientHeight };
-	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
-	int width  = R.right - R.left;
-	int height = R.bottom - R.top;
-
-	mhMainWnd = CreateWindow(reinterpret_cast<LPCSTR>(L"MainWnd"),
-	                         reinterpret_cast<LPCSTR>(mMainWndCaption.c_str()),
-	                         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr, mhAppInst, nullptr);
-	if(!mhMainWnd)
-	{
-		MessageBox(nullptr, reinterpret_cast<LPCSTR>(L"CreateWindow Failed."), nullptr, 0);
-	}
-
-	ShowWindow(mhMainWnd, SW_SHOW);
-	UpdateWindow(mhMainWnd);
 }
 
 void D3E::GameRender::DestroyResources()
 {
-}
-
-HINSTANCE D3E::GameRender::AppInst() const
-{
-	return mhAppInst;
-}
-
-HWND D3E::GameRender::MainWnd() const
-{
-	return mhMainWnd;
-}
-
-float D3E::GameRender::AspectRatio() const
-{
-	return static_cast<float>(mClientWidth) / static_cast<float>(mClientHeight);
 }
 
 void D3E::GameRender::OnResize()
@@ -94,6 +49,10 @@ void D3E::GameRender::CalculateFrameStats()
 	*/
 }
 
-D3E::GameRender::GameRender(HINSTANCE hInstance) : mhAppInst(hInstance)
+D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent)
 {
+	assert(parent != nullptr);
+	assert(hInstance != nullptr);
+	std::cout << "Creating display window...\n";
+	displayWin32_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>("john cena"), hInstance, 640, 480, parent);
 }
