@@ -2,6 +2,7 @@
 #include "EASTL/chrono.h"
 #include "render/GameRenderD3D12.h"
 #include <iostream>
+#include "Debug.h"
 
 void D3E::Game::Run()
 {
@@ -41,7 +42,7 @@ void D3E::Game::Init()
 
 void D3E::Game::Update(const float deltaTime)
 {
-	std::cout << "frame\n";
+	Debug::LogWarning("frame");
 }
 
 void D3E::Game::Draw()
