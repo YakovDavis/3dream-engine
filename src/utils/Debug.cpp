@@ -1,6 +1,6 @@
 #include "Debug.h"
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 std::fstream D3E::Debug::fileStream;
 HANDLE D3E::Debug::console = GetStdHandle(STD_OUTPUT_HANDLE);;
@@ -125,3 +125,28 @@ std::string D3E::Debug::GetTime()
 	return ss.str();
 }
 
+void D3E::Debug::HandleLastWindowsError(const std::string& errorPlace)
+{
+	// Retrieve the system error message for the last-error code
+
+	LPVOID lpMsgBuf;
+	DWORD dw = GetLastError();
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR) &lpMsgBuf,
+		0, nullptr );
+
+	std::string ErrorStr = errorPlace + " failed with error " + std::to_string(dw) + ": " + static_cast<char*>(lpMsgBuf);
+
+	LogError(ErrorStr);
+
+	//Assert(true, ErrorStr);
+
+	LocalFree(lpMsgBuf);
+}

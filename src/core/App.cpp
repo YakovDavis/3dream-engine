@@ -22,7 +22,7 @@ LRESULT D3E::App::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam
 
 	if (pThis)
 	{
-
+		return DefWindowProc(hwnd, umessage, wparam, lparam);
 	}
 	else
 	{

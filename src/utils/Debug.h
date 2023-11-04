@@ -2,7 +2,7 @@
 
 #include <string>
 #include <fstream>
-#include "windows.h"
+#include <Windows.h>
 
 namespace D3E
 {
@@ -22,6 +22,8 @@ namespace D3E
 		static void LogMessage(const std::string& text);
 		static void LogWarning(const std::string& text);
 		static void LogError(const std::string& text);
+
+		static void HandleLastWindowsError(const std::string&  errorPlace);
 
 		static void Assert(bool condition, const std::string& text);
 

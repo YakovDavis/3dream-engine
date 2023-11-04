@@ -1,13 +1,16 @@
 #include <iostream>
 #include "DisplayWin32.h"
 #include "App.h"
+#include "Debug.h"
 
-DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, D3E::App* a)
+D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, D3E::App* a)
 {
-	std::cout << "Constructing window...\n";
+	Debug::LogMessage("[DisplayWin32] Starting window creation.");
 
 	hInstance = hInst;
 	app = a;
+
+	wc = {};
 
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = D3E::App::WndProc;
@@ -25,8 +28,7 @@ DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenW
 	// Register the window class.
 	if (!RegisterClassEx(&wc))
 	{
-		std::cout << "Window class registration failed\n";
-		//DWORD dw = GetLastError();
+		Debug::HandleLastWindowsError("DisplayWin32");
 	}
 
 	ClientWidth = screenWidth;
@@ -40,23 +42,18 @@ DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenW
 	auto posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;
 	auto posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) / 2;
 
-	std::cout << windowRect.right - windowRect.left << " " << windowRect.bottom - windowRect.top << "\n";
-
 	hWnd = CreateWindow(reinterpret_cast<LPCSTR>(applicationName), reinterpret_cast<LPCSTR>(applicationName),
 	                    dwStyle, posX, posY,
 	                    windowRect.right - windowRect.left,
 	                    windowRect.bottom - windowRect.top,
 	                    nullptr, nullptr, hInstance, app);
 
-	if (!hWnd)
+	if (hWnd == NULL)
 	{
-		std::cout << "Window creation failed\n";
+		Debug::HandleLastWindowsError("DisplayWin32");
 	}
 
-	if (!ShowWindow(hWnd, SW_SHOW))
-	{
-		std::cout << "ShowWindow failed\n";
-	}
+	ShowWindow(hWnd, SW_SHOW);
 
 	SetForegroundWindow(hWnd);
 	SetFocus(hWnd);
@@ -72,6 +69,6 @@ DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenW
 
 	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE)
 	{
-		// Registration failed. Call GetLastError for the cause of the error
+		Debug::HandleLastWindowsError("DisplayWin32");
 	}
 }
