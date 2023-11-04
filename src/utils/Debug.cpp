@@ -1,8 +1,9 @@
 #include "Debug.h"
 #include <iostream>
-#include <fstream>
-#include "string"
 #include <chrono>
+
+std::fstream D3E::Debug::fileStream;
+HANDLE D3E::Debug::console = GetStdHandle(STD_OUTPUT_HANDLE);;
 
 void D3E::Debug::LogMessage(const std::string& text)
 {
@@ -34,13 +35,32 @@ void D3E::Debug::Assert(bool condition, const std::string& text)
 }
 void D3E::Debug::ClearLog()
 {
-	std::ofstream ofs(filePath_, std::ios_base::out | std::ios_base::trunc);
-	ofs.close();
+	if (!fileStream.is_open())
+	{
+		fileStream.open(filePath_, std::ios_base::out | std::ios_base::trunc);
+		if (!fileStream.is_open())
+		{
+			PrintColoredText(Color::Red, "Can't open log file");
+			return;
+		}
+	}
+
+	fileStream.close();
+}
+void D3E::Debug::CloseLog()
+{
+	if (fileStream.is_open())
+	{
+		fileStream.close();
+	}
 }
 
 void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const std::string& text)
 {
-	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if(!console)
+	{
+		console = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
 
 	switch (color)
 	{
@@ -81,16 +101,17 @@ void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const std::string& te
 }
 void D3E::Debug::LogText(const std::string& text)
 {
-	std::fstream s{filePath_, std::ios_base::out | std::ios_base::app};
-	if (s.is_open())
+	if (!fileStream.is_open())
 	{
-		s << text << std::endl;
+		fileStream.open(filePath_, std::ios_base::out | std::ios_base::app);
+		if (!fileStream.is_open())
+		{
+			PrintColoredText(Color::Red, "Can't open log file");
+			return;
+		}
 	}
-	else
-	{
-		PrintColoredText(Color::Red, "Can't open log file");
-	}
-	s.close();
+
+	fileStream << text << std::endl;
 }
 std::string D3E::Debug::GetTime()
 {

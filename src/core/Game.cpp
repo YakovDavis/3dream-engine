@@ -1,7 +1,6 @@
 #include "Game.h"
 #include "EASTL/chrono.h"
 #include "render/GameRenderD3D12.h"
-#include <iostream>
 #include "Debug.h"
 
 void D3E::Game::Run()
@@ -37,6 +36,7 @@ void D3E::Game::Init()
 {
 	assert(mhAppInst != 0);
 	gameRender_ = new GameRenderD3D12(mhAppInst);
+	Debug::ClearLog();
 	//gameRender_->Init();
 }
 
@@ -51,6 +51,7 @@ void D3E::Game::Draw()
 
 void D3E::Game::DestroyResources()
 {
+	Debug::CloseLog();
 }
 
 D3E::Game::Game()
