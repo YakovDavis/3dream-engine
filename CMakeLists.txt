@@ -32,7 +32,7 @@ include_directories (${EASTL_ROOT_DIR}/test/packages/EAThread/include)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
-        src/core/Common.h
+        include/Common.h
         include/EntryPoint.h
         include/App.h
         src/core/Game.cpp
@@ -45,6 +45,18 @@ add_library(D3Engine SHARED
         src/render/D3dUtil.cpp
         src/utils/Debug.cpp
         src/utils/Debug.h
+        src/render/DisplayWin32.cpp
+        src/render/DisplayWin32.h
+        src/core/App.cpp
+        src/input/InputDevice.cpp
+        src/input/InputDevice.h
+        src/input/Keys.h
+        src/core/Delegates.cpp
+        src/core/Delegates.h
+        src/render/Display.h
+        src/render/ShaderFactory.cpp
+        src/render/ShaderFactory.h
+        src/render/NvrhiMessageCallback.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

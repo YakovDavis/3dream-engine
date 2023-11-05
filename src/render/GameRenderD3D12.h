@@ -4,6 +4,7 @@
 #include "GameRender.h"
 #include <dxgi1_5.h>
 #include "D3dUtil.h"
+#include "eastl/vector.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
@@ -15,7 +16,7 @@ namespace D3E
 	class GameRenderD3D12 final : public GameRender
 	{
 	public:
-		explicit GameRenderD3D12(HINSTANCE hInstance);
+		explicit GameRenderD3D12(App* parent, HINSTANCE hInstance);
 		~GameRenderD3D12() override = default;
 
 		void Init() override;
@@ -24,8 +25,9 @@ namespace D3E
 	protected:
 		void InitD3D();
 
-		void CreateCommandObjects();
-		void CreateSwapChain();
+		void CreateCommandQueues();
+		void CreateNativeSwapChain();
+		void CreateNvrhiSwapChain();
 
 		void FlushCommandQueue();
 
@@ -38,6 +40,8 @@ namespace D3E
 		void LogAdapterOutputs(IDXGIAdapter* adapter);
 		void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
+		void UpdateDisplayWin32();
+
 	protected:
 		nvrhi::RefCountPtr<IDXGIFactory4> mdxgiFactory;
 		nvrhi::RefCountPtr<IDXGISwapChain> mSwapChain;
@@ -47,13 +51,11 @@ namespace D3E
 		UINT64 mCurrentFence = 0;
 
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mCommandQueue;
-		nvrhi::RefCountPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-		nvrhi::RefCountPtr<ID3D12GraphicsCommandList> mCommandList;
 
-		static const int SwapChainBufferCount = 2;
+		int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
-		nvrhi::RefCountPtr<ID3D12Resource>
-			mSwapChainBuffer[SwapChainBufferCount];
+		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mSwapChainBuffer;
+		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
 		nvrhi::RefCountPtr<ID3D12Resource> mDepthStencilBuffer;
 
 		nvrhi::RefCountPtr<ID3D12DescriptorHeap> mRtvHeap;
@@ -71,5 +73,8 @@ namespace D3E
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	private:
+		DisplayWin32* displayWin32_;
 	};
 }
