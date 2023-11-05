@@ -1,1 +1,5 @@
-22:04:42 [DisplayWin32] Starting window creation.
+16:09:16 [DisplayWin32] Starting window creation
+16:09:16 [DisplayWin32] Finished window creation
+16:09:16 [DisplayWin32] Registered raw input device
+16:09:16 [GameRenderD3D12] Init started
+16:09:16 [GameRenderD3D12] Init finished

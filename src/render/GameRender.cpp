@@ -1,7 +1,10 @@
-#include "Common.h"
 #include "GameRender.h"
-#include "iostream"
+
 #include "App.h"
+#include "Common.h"
+#include "Debug.h"
+#include "DisplayWin32.h"
+#include "iostream"
 
 void D3E::GameRender::Init()
 {
@@ -53,6 +56,10 @@ D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent
 {
 	assert(parent != nullptr);
 	assert(hInstance != nullptr);
-	std::cout << "Creating display window...\n";
-	displayWin32_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>("john cena"), hInstance, 640, 480, parent);
+	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>("john cena"), hInstance, 640, 480, parent);
+}
+
+D3E::Display* D3E::GameRender::GetDisplay()
+{
+	return display_.get();
 }

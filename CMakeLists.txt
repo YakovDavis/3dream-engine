@@ -48,6 +48,12 @@ add_library(D3Engine SHARED
         src/render/DisplayWin32.cpp
         src/render/DisplayWin32.h
         src/core/App.cpp
+        src/input/InputDevice.cpp
+        src/input/InputDevice.h
+        src/input/Keys.h
+        src/core/Delegates.cpp
+        src/core/Delegates.h
+        src/render/Display.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

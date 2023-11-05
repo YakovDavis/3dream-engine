@@ -7,6 +7,8 @@ class GameRender;
 namespace D3E
 {
 	class GameRender;
+	class Display;
+	class DisplayWin32;
 
 	class Game : public App
 	{
@@ -15,6 +17,12 @@ namespace D3E
 
 		explicit Game();
 		~Game() override = default;
+
+		GameRender* GetRender();
+
+		Display* GetDisplay();
+
+		DisplayWin32* GetDisplayWin32();
 
 	protected:
 		virtual void Init();
@@ -30,5 +38,8 @@ namespace D3E
 		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
 
 		GameRender* gameRender_;
+
+	private:
+		void HandleMessages();
 	};
 }

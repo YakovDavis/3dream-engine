@@ -3,14 +3,11 @@
 #include "App.h"
 #include "Debug.h"
 
-D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, D3E::App* a)
+D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, D3E::App* a) : Display(screenWidth, screenHeight, a), wc()
 {
-	Debug::LogMessage("[DisplayWin32] Starting window creation.");
+	Debug::LogMessage("[DisplayWin32] Starting window creation");
 
 	hInstance = hInst;
-	app = a;
-
-	wc = {};
 
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = D3E::App::WndProc;
@@ -31,9 +28,6 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 		Debug::HandleLastWindowsError("DisplayWin32");
 	}
 
-	ClientWidth = screenWidth;
-	ClientHeight = screenHeight;
-
 	RECT windowRect = { 0, 0, static_cast<LONG>(ClientWidth), static_cast<LONG>(ClientHeight) };
 	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
@@ -48,7 +42,7 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 	                    windowRect.bottom - windowRect.top,
 	                    nullptr, nullptr, hInstance, app);
 
-	if (hWnd == NULL)
+	if (hWnd == nullptr)
 	{
 		Debug::HandleLastWindowsError("DisplayWin32");
 	}
@@ -59,6 +53,8 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 	SetFocus(hWnd);
 
 	ShowCursor(true);
+
+	Debug::LogMessage("[DisplayWin32] Finished window creation");
 
 	RAWINPUTDEVICE Rid[1];
 
@@ -71,4 +67,6 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 	{
 		Debug::HandleLastWindowsError("DisplayWin32");
 	}
+
+	Debug::LogMessage("[DisplayWin32] Registered raw input device");
 }

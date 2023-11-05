@@ -38,6 +38,8 @@ namespace D3E
 		void LogAdapterOutputs(IDXGIAdapter* adapter);
 		void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
+		void UpdateDisplayWin32();
+
 	protected:
 		nvrhi::RefCountPtr<IDXGIFactory4> mdxgiFactory;
 		nvrhi::RefCountPtr<IDXGISwapChain> mSwapChain;
@@ -71,5 +73,8 @@ namespace D3E
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	private:
+		DisplayWin32* displayWin32_;
 	};
 }

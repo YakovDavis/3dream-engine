@@ -1,19 +1,13 @@
 #pragma once
 
 #include <Windows.h>
+#include "Display.h"
 
 namespace D3E
 {
-	class App;
-
-	class DisplayWin32
+	class DisplayWin32 : public Display
 	{
-	private:
-		D3E::App* app;
-
 	public:
-		int ClientHeight;
-		int ClientWidth;
 		HINSTANCE hInstance;
 		HWND hWnd;
 		WNDCLASSEX wc;

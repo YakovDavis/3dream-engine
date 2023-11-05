@@ -1,7 +1,9 @@
 #include "GameRenderD3D12.h"
 
-#include <iostream>
+#include "Debug.h"
+#include "DisplayWin32.h"
 
+#include <iostream>
 #include <nvrhi/d3d12.h>
 #include <nvrhi/validation.h>
 
@@ -57,25 +59,23 @@ void D3E::GameRenderD3D12::CreateSwapChain()
 
 	if (FAILED(hres))
 	{
-		std::cout << "Swapchain creation failed!\n";
+		Debug::LogError("[GameRenderD3D12] Swapchain creation failed");
 	}
 }
 
 void D3E::GameRenderD3D12::Init()
 {
-	std::cout << "Graphics init started.\n";
-
 	GameRender::Init();
 
-	std::cout << "Window init finished.\n";
+	UpdateDisplayWin32();
+
+	Debug::LogMessage("[GameRenderD3D12] Init started");
 
 	InitD3D();
 
-	std::cout << "D3D init finished.\n";
+	Debug::LogMessage("[GameRenderD3D12] Init finished");
 
 	OnResize();
-
-	std::cout << "Graphics init finished.\n";
 }
 
 void D3E::GameRenderD3D12::FlushCommandQueue()
@@ -369,4 +369,9 @@ void D3E::GameRenderD3D12::LogOutputDisplayModes(IDXGIOutput* output,
 D3E::GameRenderD3D12::GameRenderD3D12(App* parent, HINSTANCE hInstance)
 	: GameRender(parent, hInstance)
 {
+}
+
+void D3E::GameRenderD3D12::UpdateDisplayWin32()
+{
+	displayWin32_ = dynamic_cast<DisplayWin32*>(display_.get());
 }
