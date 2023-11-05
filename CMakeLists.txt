@@ -54,6 +54,9 @@ add_library(D3Engine SHARED
         src/core/Delegates.cpp
         src/core/Delegates.h
         src/render/Display.h
+        src/render/ShaderFactory.cpp
+        src/render/ShaderFactory.h
+        src/render/NvrhiMessageCallback.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "EASTL/string.h"
 #include <fstream>
 #include <Windows.h>
 
@@ -15,24 +15,24 @@ namespace D3E
 			Yellow,
 			Red,
 		};
-		inline static const std::string filePath_ = R"(..\..\..\..\..\log.txt)";
+		inline static const eastl::string filePath_ = R"(..\..\..\..\..\log.txt)";
 		static std::fstream fileStream;
 		static HANDLE console;
 	public:
-		static void LogMessage(const std::string& text);
-		static void LogWarning(const std::string& text);
-		static void LogError(const std::string& text);
+		static void LogMessage(const eastl::string& text);
+		static void LogWarning(const eastl::string& text);
+		static void LogError(const eastl::string& text);
 
-		static void HandleLastWindowsError(const std::string&  errorPlace);
+		static void HandleLastWindowsError(const eastl::string&  errorPlace);
 
-		static void Assert(bool condition, const std::string& text);
+		static void Assert(bool condition, const eastl::string& text);
 
 		static void ClearLog();
 		static void CloseLog();
 	private:
-		static void PrintColoredText(Color color, const std::string& text);
-		static void LogText(const std::string& text);
-		static std::string GetTime();
+		static void PrintColoredText(Color color, const eastl::string& text);
+		static void LogText(const eastl::string& text);
+		static eastl::string GetTime();
 	};
 
 }

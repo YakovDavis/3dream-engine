@@ -1,5 +1,10 @@
-16:09:16 [DisplayWin32] Starting window creation
-16:09:16 [DisplayWin32] Finished window creation
-16:09:16 [DisplayWin32] Registered raw input device
-16:09:16 [GameRenderD3D12] Init started
-16:09:16 [GameRenderD3D12] Init finished
+01:40:22 [DisplayWin32] Starting window creation
+01:40:22 [DisplayWin32] Finished window creation
+01:40:22 [DisplayWin32] Registered raw input device
+01:40:22 [GameRenderD3D12] Init started
+01:40:22 [GameRenderD3D12] Creating native swapchain
+01:40:22 [GameRenderD3D12] Native swapchain creation finished
+01:40:22 [GameRenderD3D12] NVRHI swapchain creation started
+01:40:22 [GameRenderD3D12] NVRHI swapchain creation finished
+01:40:22 [GameRenderD3D12] Init finished
+01:40:22 bruh

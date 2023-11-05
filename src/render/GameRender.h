@@ -4,6 +4,8 @@
 #include "Display.h"
 #include "nvrhi/nvrhi.h"
 
+#include "NvrhiMessageCallback.h"
+
 #include <Windows.h>
 
 namespace D3E
@@ -20,6 +22,7 @@ namespace D3E
 		virtual void OnResize();
 
 		Display* GetDisplay();
+		nvrhi::DeviceHandle GetDevice();
 
 		void CalculateFrameStats();
 
@@ -34,6 +37,10 @@ namespace D3E
 		nvrhi::DeviceHandle device_;
 
 		eastl::shared_ptr<Display> display_;
+
+		nvrhi::TextureHandle swapChainTexture_;
+
+		NvrhiMessageCallback* messageCallback_;
 
 		friend class Game;
 	};

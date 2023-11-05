@@ -57,9 +57,15 @@ D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent
 	assert(parent != nullptr);
 	assert(hInstance != nullptr);
 	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>("john cena"), hInstance, 640, 480, parent);
+	messageCallback_ = new NvrhiMessageCallback();
 }
 
 D3E::Display* D3E::GameRender::GetDisplay()
 {
 	return display_.get();
+}
+
+nvrhi::DeviceHandle D3E::GameRender::GetDevice()
+{
+	return device_;
 }

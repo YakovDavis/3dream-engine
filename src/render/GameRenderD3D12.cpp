@@ -1,5 +1,6 @@
 #include "GameRenderD3D12.h"
 
+#include "Game.h"
 #include "Debug.h"
 #include "DisplayWin32.h"
 
@@ -7,32 +8,24 @@
 #include <nvrhi/d3d12.h>
 #include <nvrhi/validation.h>
 
-void D3E::GameRenderD3D12::CreateCommandObjects()
+#include "ShaderFactory.h"
+
+void D3E::GameRenderD3D12::CreateCommandQueues()
 {
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	queueDesc.NodeMask = 1;
 	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
-
-	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
-
-	ThrowIfFailed(md3dDevice->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		mDirectCmdListAlloc.Get(),
-		nullptr,
-		IID_PPV_ARGS(mCommandList.GetAddressOf())));
-
-	mCommandList->Close();
 }
 
-void D3E::GameRenderD3D12::CreateSwapChain()
+void D3E::GameRenderD3D12::CreateNativeSwapChain()
 {
 	mSwapChain.Reset();
 
 	assert(displayWin32_->hWnd != nullptr);
+
+	Debug::LogMessage("[GameRenderD3D12] Creating native swapchain");
 
 	DXGI_SWAP_CHAIN_DESC sd;
 	sd.BufferDesc.Width = displayWin32_->ClientWidth;
@@ -51,7 +44,6 @@ void D3E::GameRenderD3D12::CreateSwapChain()
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	// Note: Swap chain uses queue to perform flush.
 	HRESULT hres = mdxgiFactory->CreateSwapChain(
 		mCommandQueue.Get(),
 		&sd,
@@ -59,8 +51,11 @@ void D3E::GameRenderD3D12::CreateSwapChain()
 
 	if (FAILED(hres))
 	{
-		Debug::LogError("[GameRenderD3D12] Swapchain creation failed");
+		Debug::LogError("[GameRenderD3D12] Native swapchain creation failed");
+		Debug::Assert(true, "Native swapchain creation failed");
 	}
+
+	Debug::LogMessage("[GameRenderD3D12] Native swapchain creation finished");
 }
 
 void D3E::GameRenderD3D12::Init()
@@ -75,7 +70,11 @@ void D3E::GameRenderD3D12::Init()
 
 	Debug::LogMessage("[GameRenderD3D12] Init finished");
 
-	OnResize();
+	//OnResize();
+
+	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
+
+	//ShaderFactory::AddVertexShader("Base3dVS", "Base3d.hlsl", "VSMain");
 }
 
 void D3E::GameRenderD3D12::FlushCommandQueue()
@@ -141,8 +140,14 @@ void D3E::GameRenderD3D12::InitD3D()
 
 	if(FAILED(hardwareResult))
 	{
-		// TODO: throw some exception
+		Debug::LogError("[GameRenderD3D12] Can't find any D3D12 capable device");
 	}
+
+	nvrhi::d3d12::DeviceDesc deviceDesc;
+	deviceDesc.errorCB = messageCallback_;
+	deviceDesc.pDevice = md3dDevice;
+	deviceDesc.pGraphicsCommandQueue = mCommandQueue;
+	device_ = nvrhi::d3d12::createDevice(deviceDesc);
 
 	md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
 	                        IID_PPV_ARGS(&mFence));
@@ -155,30 +160,22 @@ void D3E::GameRenderD3D12::InitD3D()
 	LogAdapters();
 #endif
 
-	CreateCommandObjects();
-	CreateSwapChain();
+	CreateCommandQueues();
+	CreateNativeSwapChain();
+	CreateNvrhiSwapChain();
 	CreateRtvAndDsvDescriptorHeaps();
-
-	nvrhi::d3d12::DeviceDesc deviceDesc;
-	//deviceDesc.errorCB = g_MyMessageCallback;
-	deviceDesc.pDevice = md3dDevice;
-	deviceDesc.pGraphicsCommandQueue = mCommandQueue;
-
-	device_ = nvrhi::d3d12::createDevice(deviceDesc);
 }
 
 void D3E::GameRenderD3D12::OnResize()
 {
 	D3E::GameRender::OnResize();
 
-	assert(md3dDevice);
+	Debug::Assert(md3dDevice, "[GameRenderD3D12] OnResize failed - invalid device");
+	Debug::Assert(mSwapChain, "[GameRenderD3D12] OnResize failed - invalid swap chain");
 	assert(mSwapChain);
-	assert(mDirectCmdListAlloc);
 
 	// Flush before changing any resources.
 	FlushCommandQueue();
-
-	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 	// Release the previous resources we will be recreating.
 	for (auto & i : mSwapChainBuffer)
@@ -249,14 +246,6 @@ void D3E::GameRenderD3D12::OnResize()
 	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &dsvDesc, DepthStencilView());
 
 	auto defaultTransition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-
-	// Transition the resource from its initial state to be used as a depth buffer.
-	mCommandList->ResourceBarrier(1, &defaultTransition);
-
-	// Execute the resize commands.
-	ThrowIfFailed(mCommandList->Close());
-	ID3D12CommandList* cmdsLists[] = {mCommandList.Get()};
-	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// Wait until resize is complete.
 	FlushCommandQueue();
@@ -374,4 +363,40 @@ D3E::GameRenderD3D12::GameRenderD3D12(App* parent, HINSTANCE hInstance)
 void D3E::GameRenderD3D12::UpdateDisplayWin32()
 {
 	displayWin32_ = dynamic_cast<DisplayWin32*>(display_.get());
+}
+
+void D3E::GameRenderD3D12::CreateNvrhiSwapChain()
+{
+	mSwapChainBuffer.resize(SwapChainBufferCount);
+	nvrhiSwapChainBuffer.resize(SwapChainBufferCount);
+
+	Debug::LogMessage("[GameRenderD3D12] NVRHI swapchain creation started");
+
+	for (int i = 0; i < SwapChainBufferCount; i++)
+	{
+		HRESULT hres = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
+
+		if (FAILED(hres))
+		{
+			Debug::LogError("[DisplayWin32] Failed to retrieve swapchain buffer");
+		}
+
+		nvrhi::TextureDesc textureDesc;
+		textureDesc.format = nvrhi::Format::RGBA8_UNORM;
+		textureDesc.width = displayWin32_->ClientWidth;
+		textureDesc.height = displayWin32_->ClientHeight;
+		textureDesc.isRenderTarget = true;
+		textureDesc.debugName = "SwapChainBuffer";
+		textureDesc.sampleCount = 1;
+		textureDesc.sampleQuality = 0;
+		textureDesc.isUAV = false;
+		textureDesc.initialState = nvrhi::ResourceStates::Present;
+		textureDesc.keepInitialState = true;
+
+		nvrhiSwapChainBuffer[i] = device_->createHandleForNativeTexture(
+			nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(mSwapChainBuffer[i]),
+			textureDesc);
+	}
+
+	Debug::LogMessage("[GameRenderD3D12] NVRHI swapchain creation finished");
 }
