@@ -1,10 +1,19 @@
 #pragma once
 
+#include "EASTL/shared_ptr.h"
+#include "Display.h"
 #include "nvrhi/nvrhi.h"
-#include <windows.h>
+
+#include "NvrhiMessageCallback.h"
+
+#include <Windows.h>
 
 namespace D3E
 {
+	class App;
+
+	class DisplayWin32;
+
 	// Internal class for managing render devices, swap chains etc.
 	class GameRender
 	{
@@ -12,27 +21,26 @@ namespace D3E
 		virtual void Init();
 		virtual void OnResize();
 
+		Display* GetDisplay();
+		nvrhi::DeviceHandle GetDevice();
+
 		void CalculateFrameStats();
 
 		void DestroyResources();
 
-		[[nodiscard]] HINSTANCE AppInst() const;
-		[[nodiscard]] HWND MainWnd() const;
-		[[nodiscard]] float AspectRatio() const;
-
-		explicit GameRender(HINSTANCE hInstance);
+		explicit GameRender(App* parent, HINSTANCE hInstance);
 		virtual ~GameRender() = default;
 
 	protected:
+		App* parentApp;
+
 		nvrhi::DeviceHandle device_;
 
-		std::wstring mMainWndCaption = L"d3d App";
+		eastl::shared_ptr<Display> display_;
 
-		HINSTANCE mhAppInst = nullptr;
-		HWND mhMainWnd = nullptr;
+		nvrhi::TextureHandle swapChainTexture_;
 
-		int mClientWidth = 800;
-		int mClientHeight = 600;
+		NvrhiMessageCallback* messageCallback_;
 
 		friend class Game;
 	};

@@ -2,6 +2,7 @@
 #include "EASTL/chrono.h"
 #include "render/GameRenderD3D12.h"
 #include "Debug.h"
+#include "render/DisplayWin32.h"
 
 void D3E::Game::Run()
 {
@@ -15,6 +16,8 @@ void D3E::Game::Run()
 
 	while (!isQuitRequested_)
 	{
+		HandleMessages();
+
 		float deltaTime = 0;
 
 		{
@@ -34,15 +37,14 @@ void D3E::Game::Run()
 
 void D3E::Game::Init()
 {
-	assert(mhAppInst != 0);
-	gameRender_ = new GameRenderD3D12(mhAppInst);
+	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
-	//gameRender_->Init();
+	gameRender_ = new GameRenderD3D12(this, mhAppInst);
+	gameRender_->Init();
 }
 
 void D3E::Game::Update(const float deltaTime)
 {
-	Debug::LogWarning("frame");
 }
 
 void D3E::Game::Draw()
@@ -57,4 +59,32 @@ void D3E::Game::DestroyResources()
 D3E::Game::Game()
 {
 	prevCycleTimePoint_ = new eastl::chrono::time_point<eastl::chrono::steady_clock>(eastl::chrono::steady_clock::now());
+}
+
+void D3E::Game::HandleMessages()
+{
+	MSG msg = {};
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_QUIT)
+		isQuitRequested_ = true;
+}
+
+D3E::GameRender* D3E::Game::GetRender()
+{
+	return gameRender_;
+}
+
+D3E::Display* D3E::Game::GetDisplay()
+{
+	return gameRender_->GetDisplay();
+}
+
+D3E::DisplayWin32* D3E::Game::GetDisplayWin32()
+{
+	return dynamic_cast<DisplayWin32*>(GetDisplay());
 }
