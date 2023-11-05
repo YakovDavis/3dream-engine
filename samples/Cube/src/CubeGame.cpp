@@ -9,6 +9,7 @@ class CubeGame : public D3E::Game
 void CubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
+	//std::cout << "frame\n";
 }
 
 D3E::App* D3E::CreateApp()
