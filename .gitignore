@@ -64,7 +64,6 @@
 *.out
 *.app
 
-.idea
 .vs
 cmake-build-*
 
@@ -592,3 +591,8 @@ references/*
 
 **Assets/**
 **Assets/
+
+*log.txt
+
+# Folders that should not be ignored despite bad name
+!libs/EASTL/include/EASTL/internal/atomic/arch/x86/
