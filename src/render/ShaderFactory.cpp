@@ -1,16 +1,17 @@
 #include "ShaderFactory.h"
 
 #include <fstream>
-#include "Game.h"
+#include "D3E/Game.h"
 #include "render/GameRender.h"
 #include <filesystem>
-#include "Debug.h"
+#include "D3E/Debug.h"
 
 bool D3E::ShaderFactory::isInitialized_ = false;
 D3E::Game* D3E::ShaderFactory::activeGame_;
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
+eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::cShaders_ {};
 
 void D3E::ShaderFactory::Initialize(Game* game)
 {
@@ -70,7 +71,7 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddPixelShader(const eastl::string& name
 	file.read(buffer.data(), size);
 	file.close();
 	pShaders_.insert({name, activeGame_->GetRender()->GetDevice()->createShader(
-								nvrhi::ShaderDesc(nvrhi::ShaderType::Vertex),
+								nvrhi::ShaderDesc(nvrhi::ShaderType::Pixel),
 								&(buffer[0]), buffer.size() * sizeof(char))});
 	return pShaders_[name];
 }
@@ -91,7 +92,7 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddGeometryShader(const eastl::string& n
 	file.read(buffer.data(), size);
 	file.close();
 	gShaders_.insert({name, activeGame_->GetRender()->GetDevice()->createShader(
-								nvrhi::ShaderDesc(nvrhi::ShaderType::Vertex),
+								nvrhi::ShaderDesc(nvrhi::ShaderType::Geometry),
 								&(buffer[0]), buffer.size() * sizeof(char))});
 	return gShaders_[name];
 }
@@ -126,4 +127,30 @@ eastl::string D3E::ShaderFactory::GetBinaryShaderFileName(const eastl::string& f
 	adjustedName = eastl::string(std::filesystem::current_path().string().c_str()) + "\\Shaders\\" + adjustedName + ".dxil";
 
 	return adjustedName;
+}
+
+nvrhi::ShaderHandle D3E::ShaderFactory::AddComputeShader(const eastl::string& name,
+                                                         const eastl::string& fileName,
+                                                         const eastl::string& entryPoint)
+{
+	auto adjustedName = GetBinaryShaderFileName(fileName, entryPoint);
+	std::ifstream file(adjustedName.c_str(), std::ios::binary | std::ios::ate);
+	if (file.bad())
+	{
+		Debug::LogError(eastl::string("Can't open binary shader file ") + adjustedName + eastl::string(". Try recompiling the shaders."));
+	}
+	std::streamsize size = file.tellg();
+	file.seekg(0, std::ios::beg);
+	std::vector<char> buffer(size);
+	file.read(buffer.data(), size);
+	file.close();
+	cShaders_.insert({name, activeGame_->GetRender()->GetDevice()->createShader(
+								nvrhi::ShaderDesc(nvrhi::ShaderType::Compute),
+								&(buffer[0]), buffer.size() * sizeof(char))});
+	return cShaders_[name];
+}
+
+nvrhi::ShaderHandle D3E::ShaderFactory::GetComputeShader(const eastl::string& name)
+{
+	return cShaders_[name];
 }

@@ -3,6 +3,7 @@
 #include "EASTL/shared_ptr.h"
 #include "Display.h"
 #include "nvrhi/nvrhi.h"
+#include "EASTL/vector.h"
 
 #include "NvrhiMessageCallback.h"
 
@@ -22,7 +23,8 @@ namespace D3E
 		virtual void OnResize();
 
 		Display* GetDisplay();
-		nvrhi::DeviceHandle GetDevice();
+		nvrhi::DeviceHandle& GetDevice();
+		nvrhi::CommandListHandle& GetCommandList();
 
 		void CalculateFrameStats();
 
@@ -36,11 +38,15 @@ namespace D3E
 
 		nvrhi::DeviceHandle device_;
 
+		nvrhi::CommandListHandle commandList_;
+
 		eastl::shared_ptr<Display> display_;
 
-		nvrhi::TextureHandle swapChainTexture_;
+		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
 
 		NvrhiMessageCallback* messageCallback_;
+
+		nvrhi::InputLayoutHandle inputLayout_;
 
 		friend class Game;
 	};

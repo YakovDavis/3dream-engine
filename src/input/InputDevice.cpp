@@ -1,6 +1,6 @@
 #include "InputDevice.h"
 #include <iostream>
-#include "Game.h"
+#include "D3E/Game.h"
 #include "render/DisplayWin32.h"
 
 using namespace DirectX::SimpleMath;
