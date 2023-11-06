@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nvrhi/nvrhi.h"
-#include "Debug.h"
+#include "D3E/Debug.h"
 
 namespace D3E
 {
@@ -15,19 +15,19 @@ namespace D3E
 				switch (severity)
 				{
 					case MessageSeverity::Info:
-						Debug::LogMessage(eastl::string("[NVRHI]") +
+						Debug::LogMessage(eastl::string("[NVRHI] ") +
 						                       messageText);
 						break;
 					case MessageSeverity::Warning:
-						Debug::LogWarning(eastl::string("[NVRHI]") +
+						Debug::LogWarning(eastl::string("[NVRHI] ") +
 						                       messageText);
 						break;
 					case MessageSeverity::Error:
-						Debug::LogError(eastl::string("[NVRHI]") +
+						Debug::LogError(eastl::string("[NVRHI] ") +
 						                     messageText);
 						break;
 					case MessageSeverity::Fatal:
-						Debug::LogError(eastl::string("[NVRHI]") +
+						Debug::LogError(eastl::string("[NVRHI] ") +
 						                     messageText);
 						break;
 					default:;
