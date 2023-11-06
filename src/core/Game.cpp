@@ -1,7 +1,7 @@
-#include "Game.h"
+#include "D3E/Game.h"
 #include "EASTL/chrono.h"
 #include "render/GameRenderD3D12.h"
-#include "Debug.h"
+#include "D3E/Debug.h"
 #include "render/DisplayWin32.h"
 
 void D3E::Game::Run()

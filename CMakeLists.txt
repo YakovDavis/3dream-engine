@@ -14,29 +14,22 @@ option(NVRHI_WITH_RTXMU OFF)
 option(NVRHI_WITH_SHADER_COMPILER ON)
 add_subdirectory(libs/nvrhi)
 
-add_subdirectory(libs/entt)
-
 include_directories(libs/nvrhi/include)
+
+include_directories(libs/DirectXTex/Include)
 
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
-include_directories (${EASTL_ROOT_DIR}/include)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EAAssert/include)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EABase/include/Common)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EAMain/include)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EAStdC/include)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EATest/include)
-include_directories (${EASTL_ROOT_DIR}/test/packages/EAThread/include)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
-        include/Common.h
-        include/EntryPoint.h
-        include/App.h
+        include/D3E/Common.h
+        include/D3E/EntryPoint.h
+        include/D3E/App.h
         src/core/Game.cpp
-        include/Game.h
+        include/D3E/Game.h
         src/render/GameRender.cpp
         src/render/GameRender.h
         src/render/GameRenderD3D12.cpp
@@ -44,7 +37,7 @@ add_library(D3Engine SHARED
         src/render/D3dUtil.h
         src/render/D3dUtil.cpp
         src/utils/Debug.cpp
-        src/utils/Debug.h
+        include/D3E/Debug.h
         src/render/DisplayWin32.cpp
         src/render/DisplayWin32.h
         src/core/App.cpp
@@ -57,11 +50,16 @@ add_library(D3Engine SHARED
         src/render/ShaderFactory.cpp
         src/render/ShaderFactory.h
         src/render/NvrhiMessageCallback.h
+        src/assetmng/TextureFactory.cpp
+        src/assetmng/TextureFactory.h
+        src/render/Vertex.h
+        src/render/magic_enum.hpp
+        src/render/BaseRenderComponent.cpp
+        src/render/BaseRenderComponent.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
-target_include_directories(D3Engine PRIVATE src/utils)
 
 if(WIN32)
     target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)
@@ -72,7 +70,6 @@ target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
         assimp
         nvrhi
-        EnTT::EnTT
 )
 
 set(NVRHI_DEFINES "")

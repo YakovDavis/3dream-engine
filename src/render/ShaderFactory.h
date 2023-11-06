@@ -17,6 +17,7 @@ namespace D3E
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> vShaders_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> pShaders_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> gShaders_;
+		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> cShaders_;
 
 		static eastl::string GetBinaryShaderFileName(const eastl::string& fileName, const eastl::string& entryPoint);
 
@@ -29,9 +30,11 @@ namespace D3E
 		static nvrhi::ShaderHandle AddVertexShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
 		static nvrhi::ShaderHandle AddPixelShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
 		static nvrhi::ShaderHandle AddGeometryShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static nvrhi::ShaderHandle AddComputeShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
 
 		static nvrhi::ShaderHandle GetVertexShader(const eastl::string& name);
 		static nvrhi::ShaderHandle GetPixelShader(const eastl::string& name);
 		static nvrhi::ShaderHandle GetGeometryShader(const eastl::string& name);
+		static nvrhi::ShaderHandle GetComputeShader(const eastl::string& name);
 	};
 }

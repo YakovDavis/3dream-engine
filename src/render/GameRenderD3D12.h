@@ -4,7 +4,6 @@
 #include "GameRender.h"
 #include <dxgi1_5.h>
 #include "D3dUtil.h"
-#include "eastl/vector.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
@@ -55,7 +54,6 @@ namespace D3E
 		int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
 		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mSwapChainBuffer;
-		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
 		nvrhi::RefCountPtr<ID3D12Resource> mDepthStencilBuffer;
 
 		nvrhi::RefCountPtr<ID3D12DescriptorHeap> mRtvHeap;

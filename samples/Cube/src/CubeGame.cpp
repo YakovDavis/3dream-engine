@@ -1,5 +1,5 @@
-#include "EntryPoint.h"
-#include "Game.h"
+#include "D3E/EntryPoint.h"
+#include "D3E/Game.h"
 
 class CubeGame : public D3E::Game
 {

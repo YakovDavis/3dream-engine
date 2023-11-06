@@ -1,7 +1,7 @@
 #include "GameRenderD3D12.h"
 
-#include "Game.h"
-#include "Debug.h"
+#include "D3E/Game.h"
+#include "D3E/Debug.h"
 #include "DisplayWin32.h"
 
 #include <iostream>
@@ -60,8 +60,6 @@ void D3E::GameRenderD3D12::CreateNativeSwapChain()
 
 void D3E::GameRenderD3D12::Init()
 {
-	GameRender::Init();
-
 	UpdateDisplayWin32();
 
 	Debug::LogMessage("[GameRenderD3D12] Init started");
@@ -74,7 +72,7 @@ void D3E::GameRenderD3D12::Init()
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 
-	//ShaderFactory::AddVertexShader("Base3dVS", "Base3d.hlsl", "VSMain");
+	GameRender::Init();
 }
 
 void D3E::GameRenderD3D12::FlushCommandQueue()
