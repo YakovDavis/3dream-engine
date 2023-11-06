@@ -1,7 +1,7 @@
 #include <iostream>
 #include "DisplayWin32.h"
-#include "App.h"
-#include "Debug.h"
+#include "D3E/App.h"
+#include "D3E/Debug.h"
 
 D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int screenWidth, int screenHeight, D3E::App* a) : Display(screenWidth, screenHeight, a), wc()
 {
