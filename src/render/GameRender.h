@@ -46,8 +46,6 @@ namespace D3E
 
 		NvrhiMessageCallback* messageCallback_;
 
-		nvrhi::InputLayoutHandle inputLayout_;
-
 		friend class Game;
 	};
 }

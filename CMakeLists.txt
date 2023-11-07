@@ -54,8 +54,7 @@ add_library(D3Engine SHARED
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
         src/render/magic_enum.hpp
-        src/render/BaseRenderComponent.cpp
-        src/render/BaseRenderComponent.h
+        src/render/Components/StaticMeshComponent.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

@@ -35,9 +35,7 @@ void D3E::GameRender::Init()
 			.setOffset(offsetof(Vertex, normal))
 			.setElementStride(sizeof(Vertex)),
 	};
-	inputLayout_ = device_->createInputLayout(attributes,
-	                                          uint32_t(std::size(attributes)),
-	                                          ShaderFactory::GetVertexShader("Base3d"));
+	ShaderFactory::AddInputLayout("Base3d", attributes, 3, ShaderFactory::GetVertexShader("Base3d"));
 
 	ShaderFactory::AddPixelShader("Bare", "Bare.hlsl", "PSMain");
 
@@ -56,7 +54,7 @@ void D3E::GameRender::Init()
 	nvrhi::BindingLayoutHandle bindingLayout = device_->createBindingLayout(layoutDesc);
 
 	auto pipelineDesc = nvrhi::GraphicsPipelineDesc()
-	                        .setInputLayout(inputLayout_)
+	                        .setInputLayout(ShaderFactory::GetInputLayout("Base3d"))
 	                        .setVertexShader(ShaderFactory::GetVertexShader("Bare"))
 	                        .setPixelShader(ShaderFactory::GetPixelShader("Bare"))
 	                        .addBindingLayout(bindingLayout);

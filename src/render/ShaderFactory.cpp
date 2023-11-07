@@ -8,6 +8,7 @@
 
 bool D3E::ShaderFactory::isInitialized_ = false;
 D3E::Game* D3E::ShaderFactory::activeGame_;
+eastl::unordered_map<eastl::string, nvrhi::InputLayoutHandle> D3E::ShaderFactory::iLayouts_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
@@ -153,4 +154,18 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddComputeShader(const eastl::string& na
 nvrhi::ShaderHandle D3E::ShaderFactory::GetComputeShader(const eastl::string& name)
 {
 	return cShaders_[name];
+}
+
+nvrhi::InputLayoutHandle D3E::ShaderFactory::AddInputLayout(const eastl::string& name,
+                                                            nvrhi::VertexAttributeDesc* desc,
+                                                            uint32_t count,
+                                                            const nvrhi::ShaderHandle& vs)
+{
+	iLayouts_.insert({name, activeGame_->GetRender()->GetDevice()->createInputLayout(desc, uint32_t(count), vs)});
+	return iLayouts_[name];
+}
+
+nvrhi::InputLayoutHandle D3E::ShaderFactory::GetInputLayout(const eastl::string& name)
+{
+	return iLayouts_[name];
 }
