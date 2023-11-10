@@ -24,7 +24,7 @@ namespace D3E
 		DisplayWin32* GetDisplayWin32();
 
 	protected:
-		//entt::registry registry_;
+		entt::registry registry_;
 
 		virtual void Init();
 
