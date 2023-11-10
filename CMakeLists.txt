@@ -68,6 +68,7 @@ add_library(D3Engine SHARED
         src/render/magic_enum.hpp
         src/render/BaseRenderComponent.cpp
         src/render/BaseRenderComponent.h
+        include/D3E/Components/TransformComponent.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
