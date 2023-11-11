@@ -1,5 +1,6 @@
 #pragma once
 
+#include <DXGI.h>
 #include <string>
 #include "GameRender.h"
 #include <dxgi1_5.h>
@@ -20,6 +21,11 @@ namespace D3E
 
 		void Init() override;
 		void OnResize() override;
+		void PrepareDraw() override;
+
+		void Present() override;
+
+		UINT GetCurrentFrameBuffer() override;
 
 	protected:
 		void InitD3D();
@@ -42,14 +48,19 @@ namespace D3E
 		void UpdateDisplayWin32();
 
 	protected:
-		nvrhi::RefCountPtr<IDXGIFactory4> mdxgiFactory;
-		nvrhi::RefCountPtr<IDXGISwapChain> mSwapChain;
+		nvrhi::RefCountPtr<IDXGIFactory2> mdxgiFactory;
+		nvrhi::RefCountPtr<IDXGISwapChain3> mSwapChain;
 		nvrhi::RefCountPtr<ID3D12Device> md3dDevice;
+		nvrhi::RefCountPtr<IDXGIAdapter> mDxgiAdapter;
 
 		nvrhi::RefCountPtr<ID3D12Fence> mFence;
 		UINT64 mCurrentFence = 0;
 
+		UINT64 mFrameCount = 1;
+
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mCommandQueue;
+
+		eastl::vector<HANDLE> mFrameFenceEvents;
 
 		int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
@@ -71,6 +82,8 @@ namespace D3E
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+		bool mTearingSupported = false;
 
 	private:
 		DisplayWin32* displayWin32_;

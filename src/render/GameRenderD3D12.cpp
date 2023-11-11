@@ -12,6 +12,7 @@
 
 void D3E::GameRenderD3D12::CreateCommandQueues()
 {
+	Debug::LogMessage("[GameRenderD3D12] Creating command queues");
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -27,30 +28,52 @@ void D3E::GameRenderD3D12::CreateNativeSwapChain()
 
 	Debug::LogMessage("[GameRenderD3D12] Creating native swapchain");
 
-	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = displayWin32_->ClientWidth;
-	sd.BufferDesc.Height = displayWin32_->ClientHeight;
-	sd.BufferDesc.RefreshRate.Numerator = 60;
-	sd.BufferDesc.RefreshRate.Denominator = 1;
-	sd.BufferDesc.Format = mBackBufferFormat;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	DXGI_SWAP_CHAIN_DESC1 sd = {};
+	sd.Width = displayWin32_->ClientWidth;
+	sd.Height = displayWin32_->ClientHeight;
 	sd.SampleDesc.Count = 1;
 	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = SwapChainBufferCount;
-	sd.OutputWindow = displayWin32_->hWnd;
-	sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	HRESULT hres = mdxgiFactory->CreateSwapChain(
-		mCommandQueue.Get(),
-		&sd,
-		mSwapChain.GetAddressOf());
+	nvrhi::RefCountPtr<IDXGIFactory5> pDxgiFactory5;
+	if (SUCCEEDED(mdxgiFactory->QueryInterface(IID_PPV_ARGS(&pDxgiFactory5))))
+	{
+		BOOL supported = 0;
+		if (SUCCEEDED(pDxgiFactory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &supported, sizeof(supported))))
+			mTearingSupported = (supported != 0);
+	}
+
+	if (mTearingSupported)
+	{
+		sd.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	}
+
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC mFullScreenDesc = {};
+	mFullScreenDesc.RefreshRate.Numerator = 60;
+	mFullScreenDesc.RefreshRate.Denominator = 1;
+	mFullScreenDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+	mFullScreenDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	mFullScreenDesc.Windowed = true;
+
+	nvrhi::RefCountPtr<IDXGISwapChain1> pSwapChain1;
+	HRESULT hres = mdxgiFactory->CreateSwapChainForHwnd(mCommandQueue, displayWin32_->hWnd, &sd, &mFullScreenDesc, nullptr, &pSwapChain1);
 
 	if (FAILED(hres))
 	{
+		Debug::HandleLastWindowsError("GameRenderD3D12");
+		Debug::LogError("[GameRenderD3D12] Native swapchain creation failed");
+		Debug::Assert(true, "Native swapchain creation failed");
+	}
+
+	hres = pSwapChain1->QueryInterface(IID_PPV_ARGS(&mSwapChain));
+
+	if (FAILED(hres))
+	{
+		Debug::HandleLastWindowsError("GameRenderD3D12");
 		Debug::LogError("[GameRenderD3D12] Native swapchain creation failed");
 		Debug::Assert(true, "Native swapchain creation failed");
 	}
@@ -129,10 +152,24 @@ void D3E::GameRenderD3D12::InitD3D()
 	}
 #endif
 
-	CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
+	HRESULT hres = CreateDXGIFactory2(0, IID_PPV_ARGS(&mdxgiFactory));
+	if (FAILED(hres))
+	{
+		Debug::LogError("[GameRenderD3D12] Can't create dxgi factory");
+	}
+
+	if (FAILED(mdxgiFactory->EnumAdapters(0, &mDxgiAdapter)))
+	{
+		Debug::LogError("Cannot find any DXGI adapters in the system.");
+	}
+
+	{
+		DXGI_ADAPTER_DESC aDesc;
+		mDxgiAdapter->GetDesc(&aDesc);
+	}
 
 	HRESULT hardwareResult = D3D12CreateDevice(
-		nullptr,
+		mDxgiAdapter,
 		D3D_FEATURE_LEVEL_12_0,
 		IID_PPV_ARGS(&md3dDevice));
 
@@ -141,27 +178,34 @@ void D3E::GameRenderD3D12::InitD3D()
 		Debug::LogError("[GameRenderD3D12] Can't find any D3D12 capable device");
 	}
 
+	CreateCommandQueues();
+
 	nvrhi::d3d12::DeviceDesc deviceDesc;
 	deviceDesc.errorCB = messageCallback_;
 	deviceDesc.pDevice = md3dDevice;
 	deviceDesc.pGraphicsCommandQueue = mCommandQueue;
 	device_ = nvrhi::d3d12::createDevice(deviceDesc);
 
+	if (true) {
+		nvrhi::DeviceHandle nvrhiValidationLayer = nvrhi::validation::createValidationLayer(device_);
+		device_ = nvrhiValidationLayer; // make the rest of the application go through the validation layer
+	}
+
 	md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
 	                        IID_PPV_ARGS(&mFence));
 
-	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-	mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	for(UINT bufferIndex = 0; bufferIndex < SwapChainBufferCount; bufferIndex++)
+	{
+		mFrameFenceEvents.push_back( CreateEvent(nullptr, false, true, nullptr) );
+	}
 
-#ifdef _DEBUG
-	LogAdapters();
-#endif
+	//mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	//mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	//mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	CreateCommandQueues();
 	CreateNativeSwapChain();
 	CreateNvrhiSwapChain();
-	CreateRtvAndDsvDescriptorHeaps();
+	//CreateRtvAndDsvDescriptorHeaps();
 }
 
 void D3E::GameRenderD3D12::OnResize()
@@ -366,7 +410,7 @@ void D3E::GameRenderD3D12::UpdateDisplayWin32()
 void D3E::GameRenderD3D12::CreateNvrhiSwapChain()
 {
 	mSwapChainBuffer.resize(SwapChainBufferCount);
-	nvrhiSwapChainBuffer.resize(SwapChainBufferCount);
+	nvrhiSwapChain.resize(SwapChainBufferCount);
 
 	Debug::LogMessage("[GameRenderD3D12] NVRHI swapchain creation started");
 
@@ -391,10 +435,40 @@ void D3E::GameRenderD3D12::CreateNvrhiSwapChain()
 		textureDesc.initialState = nvrhi::ResourceStates::Present;
 		textureDesc.keepInitialState = true;
 
-		nvrhiSwapChainBuffer[i] = device_->createHandleForNativeTexture(
+		nvrhiSwapChain[i] = device_->createHandleForNativeTexture(
 			nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(mSwapChainBuffer[i]),
 			textureDesc);
 	}
 
 	Debug::LogMessage("[GameRenderD3D12] NVRHI swapchain creation finished");
+}
+
+void D3E::GameRenderD3D12::Present()
+{
+	//if (!m_windowVisible)
+	//	return;
+
+	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+	UINT presentFlags = 0;
+	//if (!m_DeviceParams.vsyncEnabled && m_FullScreenDesc.Windowed && m_TearingSupported)
+	//	presentFlags |= DXGI_PRESENT_ALLOW_TEARING;
+
+	mSwapChain->Present(1, presentFlags);
+
+	mFence->SetEventOnCompletion(mFrameCount, mFrameFenceEvents[bufferIndex]);
+	mCommandQueue->Signal(mFence, mFrameCount);
+	mFrameCount++;
+}
+
+void D3E::GameRenderD3D12::PrepareDraw()
+{
+	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+	WaitForSingleObject(mFrameFenceEvents[bufferIndex], INFINITE);
+}
+
+UINT D3E::GameRenderD3D12::GetCurrentFrameBuffer()
+{
+	return mSwapChain->GetCurrentBackBufferIndex();
 }
