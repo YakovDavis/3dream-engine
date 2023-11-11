@@ -9,10 +9,13 @@
 bool D3E::ShaderFactory::isInitialized_ = false;
 D3E::Game* D3E::ShaderFactory::activeGame_;
 eastl::unordered_map<eastl::string, nvrhi::InputLayoutHandle> D3E::ShaderFactory::iLayouts_ {};
+eastl::unordered_map<eastl::string, nvrhi::BindingLayoutHandle> D3E::ShaderFactory::bLayouts_ {};
+eastl::unordered_map<eastl::string, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSets_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
 eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::cShaders_ {};
+eastl::unordered_map<eastl::string, nvrhi::GraphicsPipelineHandle > D3E::ShaderFactory::gPipelines_ {};
 
 void D3E::ShaderFactory::Initialize(Game* game)
 {
@@ -35,7 +38,7 @@ void D3E::ShaderFactory::DestroyResources()
 	isInitialized_ = false;
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::AddVertexShader(const eastl::string& name,
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddVertexShader(const eastl::string& name,
                                     					const eastl::string& fileName,
                                                         const eastl::string& entryPoint)
 {
@@ -56,7 +59,7 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddVertexShader(const eastl::string& nam
 	return vShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::AddPixelShader(const eastl::string& name,
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddPixelShader(const eastl::string& name,
                                                        const eastl::string& fileName,
                                                        const eastl::string& entryPoint)
 {
@@ -77,7 +80,7 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddPixelShader(const eastl::string& name
 	return pShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::AddGeometryShader(const eastl::string& name,
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddGeometryShader(const eastl::string& name,
                                                           const eastl::string& fileName,
                                                           const eastl::string& entryPoint)
 {
@@ -98,18 +101,30 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddGeometryShader(const eastl::string& n
 	return gShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::GetVertexShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetVertexShader(const eastl::string& name)
 {
+	if (vShaders_.find(name) == vShaders_.end())
+	{
+		Debug::LogError("[ShaderFactory] Vertex shader not found");
+	}
 	return vShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::GetPixelShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetPixelShader(const eastl::string& name)
 {
+	if (pShaders_.find(name) == pShaders_.end())
+	{
+		Debug::LogError("[ShaderFactory] Pixel shader not found");
+	}
 	return pShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::GetGeometryShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetGeometryShader(const eastl::string& name)
 {
+	if (gShaders_.find(name) == gShaders_.end())
+	{
+		Debug::LogError("[ShaderFactory] Geometry shader not found");
+	}
 	return gShaders_[name];
 }
 
@@ -130,7 +145,7 @@ eastl::string D3E::ShaderFactory::GetBinaryShaderFileName(const eastl::string& f
 	return adjustedName;
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::AddComputeShader(const eastl::string& name,
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddComputeShader(const eastl::string& name,
                                                          const eastl::string& fileName,
                                                          const eastl::string& entryPoint)
 {
@@ -151,12 +166,16 @@ nvrhi::ShaderHandle D3E::ShaderFactory::AddComputeShader(const eastl::string& na
 	return cShaders_[name];
 }
 
-nvrhi::ShaderHandle D3E::ShaderFactory::GetComputeShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetComputeShader(const eastl::string& name)
 {
+	if (cShaders_.find(name) == cShaders_.end())
+	{
+		Debug::LogError("[ShaderFactory] Compute shader not found");
+	}
 	return cShaders_[name];
 }
 
-nvrhi::InputLayoutHandle D3E::ShaderFactory::AddInputLayout(const eastl::string& name,
+const nvrhi::InputLayoutHandle& D3E::ShaderFactory::AddInputLayout(const eastl::string& name,
                                                             nvrhi::VertexAttributeDesc* desc,
                                                             uint32_t count,
                                                             const nvrhi::ShaderHandle& vs)
@@ -165,7 +184,60 @@ nvrhi::InputLayoutHandle D3E::ShaderFactory::AddInputLayout(const eastl::string&
 	return iLayouts_[name];
 }
 
-nvrhi::InputLayoutHandle D3E::ShaderFactory::GetInputLayout(const eastl::string& name)
+const nvrhi::InputLayoutHandle& D3E::ShaderFactory::GetInputLayout(const eastl::string& name)
 {
+	if (iLayouts_.find(name) == iLayouts_.end())
+	{
+		Debug::LogError("[ShaderFactory] Input layout not found");
+	}
 	return iLayouts_[name];
+}
+
+const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::AddBindingLayout(const eastl::string& name,
+                                     const nvrhi::BindingLayoutDesc& desc)
+{
+	bLayouts_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingLayout(desc)});
+	return bLayouts_[name];
+}
+
+const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::GetBindingLayout(const eastl::string& name)
+{
+	if (bLayouts_.find(name) == bLayouts_.end())
+	{
+		Debug::LogError("[ShaderFactory] Binding layout not found");
+	}
+	return bLayouts_[name];
+}
+
+const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::AddGraphicsPipeline(const eastl::string& name,
+                                                                            const nvrhi::GraphicsPipelineDesc& desc,
+                                                                            const nvrhi::FramebufferHandle& fb)
+{
+	gPipelines_.insert({name, activeGame_->GetRender()->GetDevice()->createGraphicsPipeline(desc, fb)});
+	return gPipelines_[name];
+}
+
+const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::GetGraphicsPipeline(const eastl::string& name)
+{
+	if (gPipelines_.find(name) == gPipelines_.end())
+	{
+		Debug::LogError("[ShaderFactory] Graphics pipeline not found");
+	}
+	return gPipelines_[name];
+}
+
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSet(const eastl::string& name)
+{
+	if (bSets_.find(name) == bSets_.end())
+	{
+		Debug::LogError("[ShaderFactory] Binding layout not found");
+	}
+	return bSets_[name];
+}
+
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSet(const eastl::string& name,
+                                  const nvrhi::BindingSetDesc& desc, const eastl::string& bLayoutName)
+{
+	bSets_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
+	return bSets_[name];
 }

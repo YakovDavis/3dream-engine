@@ -3,13 +3,19 @@
 
 class CubeGame : public D3E::Game
 {
+	void Init() override;
 	void Update(float deltaTime) override;
 };
 
 void CubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
-	//std::cout << "frame\n";
+}
+
+void CubeGame::Init()
+{
+	Game::Init();
+
 }
 
 D3E::App* D3E::CreateApp()

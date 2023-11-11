@@ -16,10 +16,12 @@ namespace D3E
 		static Game* activeGame_;
 		static eastl::unordered_map<eastl::string, nvrhi::InputLayoutHandle> iLayouts_;
 		static eastl::unordered_map<eastl::string, nvrhi::BindingLayoutHandle> bLayouts_;
+		static eastl::unordered_map<eastl::string, nvrhi::BindingSetHandle> bSets_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> vShaders_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> pShaders_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> gShaders_;
 		static eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> cShaders_;
+		static eastl::unordered_map<eastl::string, nvrhi::GraphicsPipelineHandle> gPipelines_;
 
 		static eastl::string GetBinaryShaderFileName(const eastl::string& fileName, const eastl::string& entryPoint);
 
@@ -29,18 +31,22 @@ namespace D3E
 		static bool IsInitialized() { return isInitialized_; }
 		static void DestroyResources();
 
-		static nvrhi::InputLayoutHandle AddInputLayout(const eastl::string& name, nvrhi::VertexAttributeDesc* desc, uint32_t count, const nvrhi::ShaderHandle& vs);
-		static nvrhi::InputLayoutHandle AddBindingLayout(const eastl::string& name, nvrhi::BindingLayoutDesc desc);
-		static nvrhi::ShaderHandle AddVertexShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
-		static nvrhi::ShaderHandle AddPixelShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
-		static nvrhi::ShaderHandle AddGeometryShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
-		static nvrhi::ShaderHandle AddComputeShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static const nvrhi::InputLayoutHandle& AddInputLayout(const eastl::string& name, nvrhi::VertexAttributeDesc* desc, uint32_t count, const nvrhi::ShaderHandle& vs);
+		static const nvrhi::BindingLayoutHandle& AddBindingLayout(const eastl::string& name, const nvrhi::BindingLayoutDesc& desc);
+		static const nvrhi::BindingSetHandle& AddBindingSet(const eastl::string& name, const nvrhi::BindingSetDesc& desc, const eastl::string& bLayoutName);
+		static const nvrhi::ShaderHandle& AddVertexShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static const nvrhi::ShaderHandle& AddPixelShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static const nvrhi::ShaderHandle& AddGeometryShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static const nvrhi::ShaderHandle& AddComputeShader(const eastl::string& name, const eastl::string& fileName, const eastl::string& entryPoint);
+		static const nvrhi::GraphicsPipelineHandle& AddGraphicsPipeline(const eastl::string& name, const nvrhi::GraphicsPipelineDesc& desc, const nvrhi::FramebufferHandle& fb);
 
-		static nvrhi::InputLayoutHandle GetInputLayout(const eastl::string& name);
-		static nvrhi::InputLayoutHandle GetBindingLayout(const eastl::string& name);
-		static nvrhi::ShaderHandle GetVertexShader(const eastl::string& name);
-		static nvrhi::ShaderHandle GetPixelShader(const eastl::string& name);
-		static nvrhi::ShaderHandle GetGeometryShader(const eastl::string& name);
-		static nvrhi::ShaderHandle GetComputeShader(const eastl::string& name);
+		static const nvrhi::InputLayoutHandle& GetInputLayout(const eastl::string& name);
+		static const nvrhi::BindingLayoutHandle& GetBindingLayout(const eastl::string& name);
+		static const nvrhi::BindingSetHandle& GetBindingSet(const eastl::string& name);
+		static const nvrhi::ShaderHandle& GetVertexShader(const eastl::string& name);
+		static const nvrhi::ShaderHandle& GetPixelShader(const eastl::string& name);
+		static const nvrhi::ShaderHandle& GetGeometryShader(const eastl::string& name);
+		static const nvrhi::ShaderHandle& GetComputeShader(const eastl::string& name);
+		static const nvrhi::GraphicsPipelineHandle& GetGraphicsPipeline(const eastl::string& name);
 	};
 }

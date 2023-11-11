@@ -5,6 +5,7 @@
 #endif // NOMINMAX
 
 #include <Windows.h>
+#include "EASTL/string.h"
 
 namespace D3E
 {
@@ -21,8 +22,12 @@ namespace D3E
 
 		static LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam);
 
+		[[nodiscard]] eastl::string GetName() const { return appName; }
+
 	protected:
 		HINSTANCE mhAppInst;
+
+		eastl::string appName = "3dream App";
 	};
 
 	App* CreateApp();

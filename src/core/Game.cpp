@@ -49,6 +49,13 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
+	gameRender_->PrepareDraw();
+	gameRender_->Draw();
+	gameRender_->EndDraw();
+
+	gameRender_->Present();
+
+	gameRender_->GetDevice()->runGarbageCollection();
 }
 
 void D3E::Game::DestroyResources()
