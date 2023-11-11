@@ -1,5 +1,7 @@
 #pragma once
 
+#include "D3E/systems/PerRenderTickSystem.h"
+
 #include "EASTL/shared_ptr.h"
 #include "Display.h"
 #include "nvrhi/nvrhi.h"
@@ -28,10 +30,19 @@ namespace D3E
 
 		void CalculateFrameStats();
 
+		virtual void PrepareDraw() {}
+		virtual void Draw();
+		virtual void EndDraw() {}
+
+		virtual void Present() = 0;
+		virtual UINT GetCurrentFrameBuffer() = 0;
+
 		void DestroyResources();
 
 		explicit GameRender(App* parent, HINSTANCE hInstance);
 		virtual ~GameRender() = default;
+
+		eastl::vector<PerRenderTickSystem> RenderSystems;
 
 	protected:
 		App* parentApp;
@@ -42,7 +53,15 @@ namespace D3E
 
 		eastl::shared_ptr<Display> display_;
 
-		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
+		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChain;
+
+		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
+
+		nvrhi::BufferHandle constantBuffer;
+		nvrhi::BufferHandle vertexBuffer;
+		nvrhi::BufferHandle indexBuffer;
+		nvrhi::TextureHandle testTexture;
+		nvrhi::SamplerHandle testSampler;
 
 		NvrhiMessageCallback* messageCallback_;
 

@@ -66,8 +66,23 @@ add_library(D3Engine SHARED
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
         src/render/magic_enum.hpp
-        src/render/BaseRenderComponent.cpp
-        src/render/BaseRenderComponent.h
+        include/D3E/components/render/StaticMeshComponent.h
+        src/render/GeometryGenerator.cpp
+        src/render/GeometryGenerator.h
+        src/engine/systems/CreationSystems.cpp
+        include/D3E/systems/CreationSystems.h
+        src/render/PerObjectConstBuffer.h
+        src/render/systems/StaticMeshRenderSystem.cpp
+        src/render/systems/StaticMeshRenderSystem.h
+        include/D3E/systems/PerTickSystem.h
+        include/D3E/systems/PerRenderTickSystem.h
+        src/assetmng/MeshData.h
+        src/render/VertexIndexBufferInfo.h
+        src/assetmng/MeshFactory.cpp
+        src/assetmng/MeshFactory.h
+        src/render/CameraUtils.cpp
+        src/render/CameraUtils.h
+        include/D3E/components/render/CameraComponent.h
         include/D3E/Components/TransformComponent.h
 )
 
