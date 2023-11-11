@@ -58,9 +58,6 @@ namespace D3E
 		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
 
 		nvrhi::BufferHandle constantBuffer;
-		nvrhi::BufferHandle vertexBuffer;
-		nvrhi::BufferHandle indexBuffer;
-		nvrhi::TextureHandle testTexture;
 		nvrhi::SamplerHandle testSampler;
 
 		NvrhiMessageCallback* messageCallback_;

@@ -1,16 +1,17 @@
 #include "GameRender.h"
 
-#include "D3E/Game.h"
+#include "CameraUtils.h"
 #include "D3E/Common.h"
 #include "D3E/Debug.h"
-#include "DisplayWin32.h"
-#include "ShaderFactory.h"
-#include "assetmng/MeshFactory.h"
-#include "Vertex.h"
+#include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
-#include "render/GeometryGenerator.h"
+#include "DisplayWin32.h"
 #include "PerObjectConstBuffer.h"
-#include "CameraUtils.h"
+#include "ShaderFactory.h"
+#include "Vertex.h"
+#include "assetmng/MeshFactory.h"
+#include "assetmng/TextureFactory.h"
+#include "render/GeometryGenerator.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -94,7 +95,8 @@ void D3E::GameRender::Init()
 	depthStencilState.setStencilEnable(false);
 
 	nvrhi::RasterState rasterState = {};
-	rasterState.setCullNone();
+	rasterState.frontCounterClockwise = true;
+	rasterState.setCullBack();
 
 	nvrhi::BlendState blendState = {};
 	blendState.targets[0] = {};
@@ -132,18 +134,6 @@ void D3E::GameRender::Init()
 
 	MeshFactory::AddMeshFromData("Cube", sm);
 
-	// Assume the texture pixel data is loaded from and decoded elsewhere.
-	auto textureDesc = nvrhi::TextureDesc()
-	                       .setDimension(nvrhi::TextureDimension::Texture2D)
-	                       .setWidth(1024)
-	                       .setHeight(1024)
-	                       .setFormat(nvrhi::Format::SRGBA8_UNORM)
-	                       .setInitialState(nvrhi::ResourceStates::ShaderResource)
-	                       .setKeepInitialState(true)
-	                       .setDebugName("Geometry Texture");
-
-	testTexture = device_->createTexture(textureDesc);
-
 	Debug::LogMessage("tex");
 
 	auto samplerDesc = nvrhi::SamplerDesc();
@@ -158,12 +148,14 @@ void D3E::GameRender::Init()
 
 	MeshFactory::FillMeshBuffers("Cube", device_, commandList_);
 
+	TextureFactory::LoadTexture("wood", "wood.png", device_, commandList_);
+
 	nvrhi::BindingSetDesc bindingSetDescV = {};
 	bindingSetDescV.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, constantBuffer));
 	ShaderFactory::AddBindingSet("SimpleForwardV", bindingSetDescV, "SimpleForwardV");
 
 	nvrhi::BindingSetDesc bindingSetDescP = {};
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, testTexture));
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("wood")));
 	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, testSampler));
 	ShaderFactory::AddBindingSet("SimpleForwardP", bindingSetDescP, "SimpleForwardP");
 
