@@ -3,6 +3,7 @@
 #include "render/GameRenderD3D12.h"
 #include "D3E/Debug.h"
 #include "render/DisplayWin32.h"
+#include "D3E/Components/TransformComponent.h"
 
 void D3E::Game::Run()
 {
@@ -45,6 +46,11 @@ void D3E::Game::Init()
 
 void D3E::Game::Update(const float deltaTime)
 {
+	auto view = registry_.view<const TransformComponent>();
+	view.each([](const auto entity, const auto &transform) { /* ... */ });
+	for(auto [entity, transform]: view.each()) {
+		// ...
+	}
 }
 
 void D3E::Game::Draw()

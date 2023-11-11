@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.26)
 project(D3Engine)
 
+include(FetchContent)
+
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -22,6 +25,15 @@ include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
+
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+        SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
+
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
@@ -71,10 +83,12 @@ add_library(D3Engine SHARED
         src/render/CameraUtils.cpp
         src/render/CameraUtils.h
         include/D3E/components/render/CameraComponent.h
+        include/D3E/Components/TransformComponent.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
+target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
 
 if(WIN32)
     target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)
@@ -85,6 +99,7 @@ target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
         assimp
         nvrhi
+        Jolt
 )
 
 set(NVRHI_DEFINES "")
