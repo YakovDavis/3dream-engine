@@ -122,26 +122,6 @@ void D3E::GameRenderD3D12::FlushCommandQueue()
 	}
 }
 
-void D3E::GameRenderD3D12::CreateRtvAndDsvDescriptorHeaps()
-{
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	rtvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-		&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
-
-
-	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
-	dsvHeapDesc.NumDescriptors = 1;
-	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	dsvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-		&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
-}
-
 void D3E::GameRenderD3D12::InitD3D()
 {
 #if defined(DEBUG) || defined(_DEBUG)
@@ -224,7 +204,7 @@ void D3E::GameRenderD3D12::OnResize()
 	{
 		i.Reset();
 	}
-	mDepthStencilBuffer.Reset();
+	mDepthStencilBuffer[0].Reset();
 
 	// Resize the swap chain.
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
@@ -234,14 +214,6 @@ void D3E::GameRenderD3D12::OnResize()
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	mCurrBackBuffer = 0;
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
-	for (UINT i = 0; i < SwapChainBufferCount; i++)
-	{
-		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
-		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
-	}
 
 	// Create the depth/stencil buffer and view.
 	D3D12_RESOURCE_DESC depthStencilDesc;
@@ -277,7 +249,7 @@ void D3E::GameRenderD3D12::OnResize()
 		&depthStencilDesc,
 		D3D12_RESOURCE_STATE_COMMON,
 		&optClear,
-		IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
+		IID_PPV_ARGS(mDepthStencilBuffer[0].GetAddressOf())));
 
 	// Create descriptor to mip level 0 of entire resource using the format of the resource.
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
@@ -285,9 +257,9 @@ void D3E::GameRenderD3D12::OnResize()
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = mDepthStencilFormat;
 	dsvDesc.Texture2D.MipSlice = 0;
-	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &dsvDesc, DepthStencilView());
+	//md3dDevice->CreateDepthStencilView(mDepthStencilBuffer[0].Get(), &dsvDesc, DepthStencilView());
 
-	auto defaultTransition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	auto defaultTransition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer[0].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 	// Wait until resize is complete.
 	FlushCommandQueue();
@@ -306,19 +278,6 @@ void D3E::GameRenderD3D12::OnResize()
 ID3D12Resource* D3E::GameRenderD3D12::CurrentBackBuffer() const
 {
 	return mSwapChainBuffer[mCurrBackBuffer].Get();
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE D3E::GameRenderD3D12::CurrentBackBufferView() const
-{
-	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-		mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
-		mCurrBackBuffer,
-		mRtvDescriptorSize);
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE D3E::GameRenderD3D12::DepthStencilView() const
-{
-	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
 void D3E::GameRenderD3D12::LogAdapters()
