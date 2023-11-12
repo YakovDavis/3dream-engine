@@ -4,6 +4,8 @@
 #include "D3E/Debug.h"
 #include "render/DisplayWin32.h"
 #include "D3E/Components/TransformComponent.h"
+#include "editor/EditorUtils.h"
+#include "D3E/systems/CreationSystems.h"
 
 void D3E::Game::Run()
 {
@@ -42,6 +44,8 @@ void D3E::Game::Init()
 	Debug::ClearLog();
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init();
+
+	CreationSystems::CreateCubeSM(registry_);
 }
 
 void D3E::Game::Update(const float deltaTime)
@@ -55,9 +59,9 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw();
-	gameRender_->Draw();
-	gameRender_->EndDraw();
+	gameRender_->PrepareDraw(registry_);
+	gameRender_->Draw(registry_);
+	gameRender_->EndDraw(registry_);
 
 	gameRender_->Present();
 
@@ -71,6 +75,7 @@ void D3E::Game::DestroyResources()
 
 D3E::Game::Game()
 {
+	EditorUtils::Initialize(this);
 	prevCycleTimePoint_ = new eastl::chrono::time_point<eastl::chrono::steady_clock>(eastl::chrono::steady_clock::now());
 }
 
@@ -100,4 +105,14 @@ D3E::Display* D3E::Game::GetDisplay()
 D3E::DisplayWin32* D3E::Game::GetDisplayWin32()
 {
 	return dynamic_cast<DisplayWin32*>(GetDisplay());
+}
+
+entt::registry& D3E::Game::GetRegistry()
+{
+	return registry_;
+}
+
+const entt::registry& D3E::Game::GetRegistry() const
+{
+	return registry_;
 }

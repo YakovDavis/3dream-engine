@@ -6,6 +6,6 @@ namespace D3E
 {
 	class StaticMeshRenderSystem : public PerRenderTickSystem
 	{
-		void Render(entt::registry& reg) override;
+		void Render(entt::registry& reg, nvrhi::IFramebuffer*, nvrhi::CommandListHandle& commandList) override;
 	};
 }
