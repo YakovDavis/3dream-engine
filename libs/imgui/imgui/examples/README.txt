@@ -1,24 +1,9 @@
-Those are standalone ready-to-build applications to demonstrate ImGui.
-Unfortunately in 2015 it is still a massive pain to create and maintain portable build files.
-I choose to provide Visual Studio 10 .sln files and Makefile for Linux/OSX. 
-Please let me know if they don't work with your setup!
-You can probably just import the .cpp files into your own system and figure out the linkage from there.
+See BACKENDS and EXAMPLES files in the docs/ folder, or on the web at: https://github.com/ocornut/imgui/tree/master/docs
 
+Backends = Helper code to facilitate integration with platforms/graphics api (used by Examples + should be used by your app).
+Examples = Standalone applications showcasing integration with platforms/graphics api.
 
-opengl_example/
-    OpenGL example, using GLFW + fixed pipeline.
-    This is simple and should work for all OpenGL enabled applications.
-    Prefer following this example since it is the shortest one!
+Some Examples have extra README files in their respective directory, please check them too!
 
-opengl3_example/
-    OpenGL exemple, using GLFW/GL3W + programmable pipeline.
-    This uses more modern calls and custom shaders.
-    I don't think there is an advantage using this over the simpler example, but it is provided for reference.
-
-directx9_example/
-    DirectX9 example, Windows only.
-	
-directx11_example/
-    DirectX11 example, Windows only.
-    This is quite long and tedious, because: DirectX11.
-	
+Once Dear ImGui is running (in either examples or your own application/game/engine),
+run and refer to ImGui::ShowDemoWindow() in imgui_demo.cpp for the end-user API.
