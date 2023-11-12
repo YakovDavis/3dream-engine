@@ -12,6 +12,13 @@ FMOD::Sound* SoundEngine::GetSound(const std::string& name) {
   return foundIt->second;
 }
 
+SoundEngine& SoundEngine::GetInstance()
+{
+  static SoundEngine instance;
+
+  return instance;
+}
+
 SoundEngine::SoundEngine()
     : driverCount{0}, system{nullptr}, initialized{false} {}
 
