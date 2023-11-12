@@ -1,6 +1,6 @@
 #include "D3E/App.h"
 
-#include <Jolt/Jolt.h>
+/*#include <Jolt/Jolt.h>
 
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -11,7 +11,7 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Body/BodyActivationListener.h>
+#include <Jolt/Physics/Body/BodyActivationListener.h>*/
 
 LRESULT D3E::App::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {

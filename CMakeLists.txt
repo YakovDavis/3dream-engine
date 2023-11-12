@@ -9,7 +9,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_subdirectory(libs/assimp)
+
+# Workaround for DxTk compilation
+#find_program(DIRECTX_DXC_TOOL DXC.EXE
+#          REQUIRED HINTS ${DIRECTX_DXC_PATH})
 add_subdirectory(libs/DirectXTK12)
+
+add_subdirectory(libs/imgui)
 
 option(NVRHI_BUILD_SHARED OFF)
 option(NVRHI_WITH_NVAPI OFF)
@@ -19,7 +25,7 @@ add_subdirectory(libs/nvrhi)
 
 include_directories(libs/nvrhi/include)
 
-include_directories(libs/DirectXTex/Include)
+include_directories(libs/stb)
 
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
@@ -66,8 +72,36 @@ add_library(D3Engine SHARED
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
         src/render/magic_enum.hpp
-        src/render/BaseRenderComponent.cpp
-        src/render/BaseRenderComponent.h
+        include/D3E/components/render/StaticMeshComponent.h
+        src/render/GeometryGenerator.cpp
+        src/render/GeometryGenerator.h
+        src/engine/systems/CreationSystems.cpp
+        include/D3E/systems/CreationSystems.h
+        src/render/PerObjectConstBuffer.h
+        src/render/systems/StaticMeshRenderSystem.cpp
+        src/render/systems/StaticMeshRenderSystem.h
+        include/D3E/systems/PerTickSystem.h
+        include/D3E/systems/PerRenderTickSystem.h
+        src/assetmng/MeshData.h
+        src/render/VertexIndexBufferInfo.h
+        src/assetmng/MeshFactory.cpp
+        src/assetmng/MeshFactory.h
+        src/render/CameraUtils.cpp
+        src/render/CameraUtils.h
+        include/D3E/components/render/CameraComponent.h
+        include/D3E/Components/TransformComponent.h
+        include/D3E/Components/FPSControllerComponent.h
+        include/D3E/Components/FPSControllerComponent.h
+        src/editor/EditorUtils.cpp
+        src/editor/EditorUtils.h
+        src/assetmng/AssetManager.cpp
+        include/D3E/AssetManager.h
+        src/engine/components/ObjectInfoComponent.h
+        include/D3E/systems/RenderSystem.h
+        src/render/systems/StaticMeshInitSystem.cpp
+        src/render/systems/StaticMeshInitSystem.h
+        src/engine/systems/FPSControllerSystem.cpp
+        src/engine/systems/FPSControllerSystem.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
@@ -83,7 +117,8 @@ target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
         assimp
         nvrhi
-        Jolt
+        imgui
+        #Jolt
 )
 
 set(NVRHI_DEFINES "")

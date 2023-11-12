@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+#*.obj
 
 # Precompiled Headers
 *.gch
@@ -78,12 +78,12 @@ cmake-build-*
 **/[Dd]ebugPublic/
 **/[Rr]elease/
 **/[Rr]eleases/
-**/x64/
-**/x86/
+#**/x64/
+#**/x86/
 **/build/
 **/bld/
 **/[Bb]in/
-**/[Oo]bj/
+#**/[Oo]bj/
 
 # Roslyn cache directories
 *.ide/
@@ -269,8 +269,8 @@ UpgradeLog*.htm
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
+#x64/
+#x86/
 bld/
 [Bb]in/
 [Oo]bj/

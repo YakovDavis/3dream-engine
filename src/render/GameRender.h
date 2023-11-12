@@ -1,11 +1,12 @@
 #pragma once
 
-#include "EASTL/shared_ptr.h"
+#include "D3E/systems/PerRenderTickSystem.h"
+#include "D3E/systems/RenderSystem.h"
 #include "Display.h"
-#include "nvrhi/nvrhi.h"
+#include "EASTL/shared_ptr.h"
 #include "EASTL/vector.h"
-
 #include "NvrhiMessageCallback.h"
+#include "nvrhi/nvrhi.h"
 
 #include <Windows.h>
 
@@ -28,6 +29,13 @@ namespace D3E
 
 		void CalculateFrameStats();
 
+		virtual void PrepareDraw(entt::registry& registry);
+		virtual void Draw(entt::registry& registry);
+		virtual void EndDraw(entt::registry& registry) {}
+
+		virtual void Present() = 0;
+		virtual UINT GetCurrentFrameBuffer() = 0;
+
 		void DestroyResources();
 
 		explicit GameRender(App* parent, HINSTANCE hInstance);
@@ -42,7 +50,15 @@ namespace D3E
 
 		eastl::shared_ptr<Display> display_;
 
-		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
+		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChain;
+
+		nvrhi::TextureHandle nvrhiDepthBuffer;
+
+		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
+
+		eastl::vector<PerRenderTickSystem*> perTickRenderSystems;
+
+		eastl::vector<RenderSystem*> initRenderSystems;
 
 		NvrhiMessageCallback* messageCallback_;
 
