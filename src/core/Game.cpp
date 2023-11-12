@@ -6,9 +6,12 @@
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "imgui.h"
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+
+#include <iostream>
 
 void D3E::Game::Run()
 {
