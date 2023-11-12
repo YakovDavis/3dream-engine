@@ -420,11 +420,13 @@ void D3E::GameRenderD3D12::Present()
 	mFrameCount++;
 }
 
-void D3E::GameRenderD3D12::PrepareDraw()
+void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry)
 {
 	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForSingleObject(mFrameFenceEvents[bufferIndex], INFINITE);
+
+	GameRender::PrepareDraw(registry);
 }
 
 UINT D3E::GameRenderD3D12::GetCurrentFrameBuffer()

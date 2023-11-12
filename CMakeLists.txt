@@ -88,6 +88,16 @@ add_library(D3Engine SHARED
         src/render/CameraUtils.h
         include/D3E/components/render/CameraComponent.h
         include/D3E/Components/TransformComponent.h
+        include/D3E/Components/FPSControllerComponent.h
+        include/D3E/Components/FPSControllerComponent.h
+        src/editor/EditorUtils.cpp
+        src/editor/EditorUtils.h
+        src/assetmng/AssetManager.cpp
+        include/D3E/AssetManager.h
+        src/engine/components/ObjectInfoComponent.h
+        include/D3E/systems/RenderSystem.h
+        src/render/systems/StaticMeshInitSystem.cpp
+        src/render/systems/StaticMeshInitSystem.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

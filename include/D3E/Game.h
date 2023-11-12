@@ -23,6 +23,10 @@ namespace D3E
 
 		DisplayWin32* GetDisplayWin32();
 
+		entt::registry& GetRegistry();
+
+		[[nodiscard]] const entt::registry& GetRegistry() const;
+
 	protected:
 		entt::registry registry_;
 
