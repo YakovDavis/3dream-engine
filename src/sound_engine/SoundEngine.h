@@ -11,7 +11,7 @@
 #include <thread>
 #include <vector>
 
-namespace SE
+namespace D3E
 {
 	using std::map;
 	using std::string;

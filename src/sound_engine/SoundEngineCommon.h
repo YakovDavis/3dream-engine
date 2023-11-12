@@ -5,7 +5,7 @@
 #include "fmod.hpp"
 #include "fmod_errors.h"
 
-namespace SE {
+namespace D3E {
 struct Vector3 {
   float x;
   float y;

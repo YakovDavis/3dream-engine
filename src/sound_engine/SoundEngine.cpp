@@ -2,7 +2,7 @@
 
 #include "SoundEngineCommon.h"
 
-using namespace SE;
+using namespace D3E;
 
 FMOD::Sound* SoundEngine::GetSound(const std::string& name) {
   auto foundIt = sounds.find(name);
