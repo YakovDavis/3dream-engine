@@ -36,7 +36,6 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 				  {
 					  return;
 				  }
-
 				  // Fill the constant buffer
 				  PerObjectConstBuffer constBufferData = {};
 

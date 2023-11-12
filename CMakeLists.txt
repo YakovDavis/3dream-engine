@@ -9,6 +9,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_subdirectory(libs/assimp)
+
+# Workaround for DxTk compilation
+find_program(DIRECTX_DXC_TOOL DXC.EXE
+          REQUIRED HINTS ${DIRECTX_DXC_PATH})
 add_subdirectory(libs/DirectXTK12)
 
 option(NVRHI_BUILD_SHARED OFF)

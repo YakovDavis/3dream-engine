@@ -35,6 +35,8 @@ namespace D3E
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
+		[[nodiscard]] const entt::registry& GetRegistry() const;
+
 	protected:
 		entt::registry registry_;
 
