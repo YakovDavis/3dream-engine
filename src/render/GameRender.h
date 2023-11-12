@@ -60,9 +60,6 @@ namespace D3E
 
 		eastl::vector<RenderSystem*> initRenderSystems;
 
-		//nvrhi::BufferHandle constantBuffer;
-		//nvrhi::SamplerHandle testSampler;
-
 		NvrhiMessageCallback* messageCallback_;
 
 		nvrhi::InputLayoutHandle inputLayout_;
