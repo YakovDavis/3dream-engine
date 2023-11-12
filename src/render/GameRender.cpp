@@ -1,16 +1,17 @@
 #include "GameRender.h"
 
-#include "D3E/Game.h"
+#include "CameraUtils.h"
 #include "D3E/Common.h"
 #include "D3E/Debug.h"
-#include "DisplayWin32.h"
-#include "ShaderFactory.h"
-#include "assetmng/MeshFactory.h"
-#include "Vertex.h"
+#include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
-#include "render/GeometryGenerator.h"
+#include "DisplayWin32.h"
 #include "PerObjectConstBuffer.h"
-#include "CameraUtils.h"
+#include "ShaderFactory.h"
+#include "Vertex.h"
+#include "assetmng/MeshFactory.h"
+#include "assetmng/TextureFactory.h"
+#include "render/GeometryGenerator.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -23,17 +24,29 @@ void D3E::GameRender::Init()
 		Debug::Assert(true, "GAPI not initialized");
 	}
 
+	commandList_ = device_->createCommandList();
+
+	auto depthDesc = nvrhi::TextureDesc()
+	                     .setDimension(nvrhi::TextureDimension::Texture2D)
+	                     .setWidth(display_->ClientWidth)
+	                     .setHeight(display_->ClientHeight)
+	                     .setFormat(nvrhi::Format::D24S8)
+	                     .setInitialState(nvrhi::ResourceStates::DepthWrite)
+	                     .setKeepInitialState(true)
+	                     .setIsRenderTarget(true)
+	                     .setDebugName("Depth Texture");
+
+	nvrhiDepthBuffer = device_->createTexture(depthDesc);
+
 	nvrhi::FramebufferDesc framebufferDesc0 = {};
 	framebufferDesc0.addColorAttachment(nvrhiSwapChain[0]);
+	framebufferDesc0.setDepthAttachment(nvrhiDepthBuffer);
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc0));
-
-	Debug::LogMessage("fb0");
 
 	nvrhi::FramebufferDesc framebufferDesc1 = {};
 	framebufferDesc1.addColorAttachment(nvrhiSwapChain[1]);
+	framebufferDesc1.setDepthAttachment(nvrhiDepthBuffer);
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
-
-	Debug::LogMessage("fb1");
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
@@ -41,8 +54,6 @@ void D3E::GameRender::Init()
 	// TEMPORARY SECTION, to be moved
 
 	ShaderFactory::AddVertexShader("SimpleForward", "SimpleForward.hlsl", "VSMain");
-
-	Debug::LogMessage("vertex");
 
 	nvrhi::VertexAttributeDesc attributes[] = {
 		nvrhi::VertexAttributeDesc()
@@ -68,18 +79,12 @@ void D3E::GameRender::Init()
 	};
 	ShaderFactory::AddInputLayout("SimpleForward", attributes, 4, ShaderFactory::GetVertexShader("SimpleForward"));
 
-	Debug::LogMessage("input layout");
-
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
-
-	Debug::LogMessage("pixel");
 
 	nvrhi::BindingLayoutDesc layoutDesc0 = {};
 	layoutDesc0.setVisibility(nvrhi::ShaderType::Vertex);
 	layoutDesc0.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
 	ShaderFactory::AddBindingLayout("SimpleForwardV", layoutDesc0);
-
-	Debug::LogMessage("binding layout v");
 
 	nvrhi::BindingLayoutDesc layoutDesc1 = {};
 	layoutDesc1.setVisibility(nvrhi::ShaderType::Pixel);
@@ -87,14 +92,15 @@ void D3E::GameRender::Init()
 	layoutDesc1.addItem(nvrhi::BindingLayoutItem::Sampler(0));
 	ShaderFactory::AddBindingLayout("SimpleForwardP", layoutDesc1);
 
-	Debug::LogMessage("binding layout p");
-
 	nvrhi::DepthStencilState depthStencilState = {};
-	depthStencilState.setDepthTestEnable(false);
-	depthStencilState.setStencilEnable(false);
+	depthStencilState.setDepthTestEnable(true);
+	depthStencilState.setDepthWriteEnable(true);
+	depthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Less);
+	depthStencilState.setStencilEnable(true);
 
 	nvrhi::RasterState rasterState = {};
-	rasterState.setCullNone();
+	rasterState.frontCounterClockwise = true;
+	rasterState.setCullBack();
 
 	nvrhi::BlendState blendState = {};
 	blendState.targets[0] = {};
@@ -114,8 +120,6 @@ void D3E::GameRender::Init()
 	pipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
 	ShaderFactory::AddGraphicsPipeline("SimpleForward", pipelineDesc, nvrhiFramebuffer[0]);
 
-	Debug::LogMessage("graphics pipeline");
-
 	auto constantBufferDesc = nvrhi::BufferDesc()
 	                              .setByteSize(sizeof(PerObjectConstBuffer))
 	                              .setIsConstantBuffer(true)
@@ -125,45 +129,25 @@ void D3E::GameRender::Init()
 
 	constantBuffer = device_->createBuffer(constantBufferDesc);
 
-	Debug::LogMessage("cb");
-
 	MeshData sm = {};
 	GeometryGenerator::CreateBox(sm, 1.0f, 1.0f, 1.0f, 0);
 
 	MeshFactory::AddMeshFromData("Cube", sm);
 
-	// Assume the texture pixel data is loaded from and decoded elsewhere.
-	auto textureDesc = nvrhi::TextureDesc()
-	                       .setDimension(nvrhi::TextureDimension::Texture2D)
-	                       .setWidth(1024)
-	                       .setHeight(1024)
-	                       .setFormat(nvrhi::Format::SRGBA8_UNORM)
-	                       .setInitialState(nvrhi::ResourceStates::ShaderResource)
-	                       .setKeepInitialState(true)
-	                       .setDebugName("Geometry Texture");
-
-	testTexture = device_->createTexture(textureDesc);
-
-	Debug::LogMessage("tex");
-
 	auto samplerDesc = nvrhi::SamplerDesc();
 
 	testSampler = device_->createSampler(samplerDesc);
 
-	Debug::LogMessage("sampler");
-
-	commandList_ = device_->createCommandList();
-
-	Debug::LogMessage("command list");
-
 	MeshFactory::FillMeshBuffers("Cube", device_, commandList_);
+
+	TextureFactory::LoadTexture("wood", "wood.png", device_, commandList_);
 
 	nvrhi::BindingSetDesc bindingSetDescV = {};
 	bindingSetDescV.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, constantBuffer));
 	ShaderFactory::AddBindingSet("SimpleForwardV", bindingSetDescV, "SimpleForwardV");
 
 	nvrhi::BindingSetDesc bindingSetDescP = {};
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, testTexture));
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("wood")));
 	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, testSampler));
 	ShaderFactory::AddBindingSet("SimpleForwardP", bindingSetDescP, "SimpleForwardP");
 
@@ -246,6 +230,7 @@ void D3E::GameRender::Draw()
 
 	// Clear the primary render target
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
+	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, false, 0U);
 
 	// Fill the constant buffer
 	PerObjectConstBuffer constBufferData = {};
