@@ -21,7 +21,7 @@ namespace D3E
 
 		void Init() override;
 		void OnResize() override;
-		void PrepareDraw() override;
+		void PrepareDraw(entt::registry& registry) override;
 
 		void Present() override;
 
