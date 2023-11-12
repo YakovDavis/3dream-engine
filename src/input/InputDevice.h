@@ -29,6 +29,8 @@ namespace D3E
 		DirectX::SimpleMath::Vector2 MouseOffset;
 		int MouseWheelDelta{};
 
+		DirectX::SimpleMath::Vector2 MouseOffsetInTick;
+
 		MulticastDelegate<const MouseMoveEventArgs&> MouseMove;
 
 	public:
@@ -38,6 +40,8 @@ namespace D3E
 		void AddPressedKey(Keys key);
 		void RemovePressedKey(Keys key);
 		bool IsKeyDown(Keys key);
+
+		void EndTick();
 
 	protected:
 		struct KeyboardInputEventArgs

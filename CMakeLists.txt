@@ -98,6 +98,8 @@ add_library(D3Engine SHARED
         include/D3E/systems/RenderSystem.h
         src/render/systems/StaticMeshInitSystem.cpp
         src/render/systems/StaticMeshInitSystem.h
+        src/engine/systems/FPSControllerSystem.cpp
+        src/engine/systems/FPSControllerSystem.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
