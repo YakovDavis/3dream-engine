@@ -1,6 +1,9 @@
 #pragma once
 
 #include "App.h"
+#include "D3E/systems/PerTickSystem.h"
+#include "EASTL/vector.h"
+
 #include <entt/entt.hpp>
 
 namespace D3E
@@ -8,6 +11,7 @@ namespace D3E
 	class GameRender;
 	class Display;
 	class DisplayWin32;
+	class InputDevice;
 
 	class Game : public App
 	{
@@ -25,10 +29,18 @@ namespace D3E
 
 		entt::registry& GetRegistry();
 
+		InputDevice* GetInputDevice();
+
+		[[nodiscard]] const entt::registry& GetRegistry() const;
+
+		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
 	protected:
 		entt::registry registry_;
+
+		eastl::vector<PerTickSystem*> perTickSystems;
 
 		virtual void Init();
 
@@ -43,6 +55,8 @@ namespace D3E
 		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
 
 		GameRender* gameRender_;
+
+		InputDevice* inputDevice_;
 
 	private:
 		void HandleMessages();
