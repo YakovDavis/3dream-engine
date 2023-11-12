@@ -13,12 +13,11 @@ eastl::unordered_map<eastl::string, D3E::Texture> D3E::TextureFactory::textures_
 
 void D3E::TextureFactory::LoadTexture(const eastl::string& name, const eastl::string& fileName, nvrhi::DeviceHandle& device, nvrhi::CommandListHandle commandList)
 {
-	Debug::LogMessage("[TextureFactory] Loading texture file");
 	Texture texture;
 
 	texture.Filename = eastl::string(std::filesystem::current_path().string().c_str()) + "\\Textures\\" + fileName;
 
-	Debug::LogMessage(texture.Filename);
+	Debug::LogMessage("[TextureFactory] Loading texture file " + texture.Filename);
 
 	int width, height, comps;
 
@@ -31,8 +30,6 @@ void D3E::TextureFactory::LoadTexture(const eastl::string& name, const eastl::st
 		return;
 	}
 
-	Debug::LogMessage("[TextureFactory] Texture file loaded");
-
 	auto& textureDesc = nvrhi::TextureDesc()
 	                        .setDimension(nvrhi::TextureDimension::Texture2D)
 	                        //.setKeepInitialState( true )
@@ -41,11 +38,7 @@ void D3E::TextureFactory::LoadTexture(const eastl::string& name, const eastl::st
 	                        .setHeight(height)
 	                        .setFormat(nvrhi::Format::RGBA8_UNORM);
 
-	Debug::LogMessage("[TextureFactory] Texture desc created");
-
 	texture.Handle = device->createTexture(textureDesc);
-
-	Debug::LogMessage("[TextureFactory] Texture handle created");
 
 	commandList->open();
 	commandList->beginTrackingTextureState( texture.Handle, nvrhi::AllSubresources, nvrhi::ResourceStates::Common);
@@ -56,7 +49,6 @@ void D3E::TextureFactory::LoadTexture(const eastl::string& name, const eastl::st
 	device->executeCommandList(commandList);
 
 	textures_.insert({name, texture});
-	Debug::LogMessage("[TextureFactory] Texture loaded");
 }
 
 void D3E::TextureFactory::Initialize(Game* game)

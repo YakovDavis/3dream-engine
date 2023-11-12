@@ -55,6 +55,8 @@ namespace D3E
 
 		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChain;
 
+		nvrhi::TextureHandle nvrhiDepthBuffer;
+
 		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
 
 		nvrhi::BufferHandle constantBuffer;
