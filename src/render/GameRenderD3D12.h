@@ -37,9 +37,6 @@ namespace D3E
 		void FlushCommandQueue();
 
 		[[nodiscard]] ID3D12Resource* CurrentBackBuffer() const;
-		[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
-		[[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
-		virtual void CreateRtvAndDsvDescriptorHeaps();
 
 		void LogAdapters();
 		void LogAdapterOutputs(IDXGIAdapter* adapter);
@@ -65,17 +62,10 @@ namespace D3E
 		int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
 		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mSwapChainBuffer;
-		nvrhi::RefCountPtr<ID3D12Resource> mDepthStencilBuffer;
-
-		nvrhi::RefCountPtr<ID3D12DescriptorHeap> mRtvHeap;
-		nvrhi::RefCountPtr<ID3D12DescriptorHeap> mDsvHeap;
+		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mDepthStencilBuffer;
 
 		D3D12_VIEWPORT mScreenViewport{};
 		D3D12_RECT mScissorRect{};
-
-		UINT mRtvDescriptorSize = 0;
-		UINT mDsvDescriptorSize = 0;
-		UINT mCbvSrvUavDescriptorSize = 0;
 
 		// Derived class should set these in derived constructor to customize starting values.
 		std::string mMainWndCaption = "d3d App";

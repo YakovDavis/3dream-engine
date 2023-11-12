@@ -19,7 +19,7 @@ add_subdirectory(libs/nvrhi)
 
 include_directories(libs/nvrhi/include)
 
-include_directories(libs/DirectXTex/Include)
+include_directories(libs/stb)
 
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
@@ -99,7 +99,7 @@ target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
         assimp
         nvrhi
-        Jolt
+        #Jolt
 )
 
 set(NVRHI_DEFINES "")
