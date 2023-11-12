@@ -9,7 +9,6 @@ file(GLOB_RECURSE Private ./imgui/*.cpp)
 list (FILTER Private EXCLUDE REGEX "backends.")
 list (FILTER Private EXCLUDE REGEX "examples.")
 list (FILTER Private EXCLUDE REGEX "freetype.")
-list (FILTER Private EXCLUDE REGEX "extra_fonts.")
 
 include_directories(./imgui)
 
