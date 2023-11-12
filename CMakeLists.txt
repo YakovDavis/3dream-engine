@@ -11,9 +11,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
-find_program(DIRECTX_DXC_TOOL DXC.EXE
-          REQUIRED HINTS ${DIRECTX_DXC_PATH})
+#find_program(DIRECTX_DXC_TOOL DXC.EXE
+#          REQUIRED HINTS ${DIRECTX_DXC_PATH})
 add_subdirectory(libs/DirectXTK12)
+
+add_subdirectory(libs/imgui)
 
 option(NVRHI_BUILD_SHARED OFF)
 option(NVRHI_WITH_NVAPI OFF)
@@ -115,6 +117,7 @@ target_link_libraries(D3Engine PUBLIC
         ${EASTL_LIBRARY}
         assimp
         nvrhi
+        imgui
         #Jolt
 )
 
