@@ -12,6 +12,8 @@
 #include "assetmng/MeshFactory.h"
 #include "assetmng/TextureFactory.h"
 #include "render/GeometryGenerator.h"
+#include "render/systems/StaticMeshInitSystem.h"
+#include "render/systems/StaticMeshRenderSystem.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -21,7 +23,7 @@ void D3E::GameRender::Init()
 	if (!device_.Get())
 	{
 		Debug::LogError("[GameRender] GAPI not initialized");
-		Debug::Assert(true, "GAPI not initialized");
+		Debug::Assert(false, "GAPI not initialized");
 	}
 
 	commandList_ = device_->createCommandList();
@@ -120,38 +122,23 @@ void D3E::GameRender::Init()
 	pipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
 	ShaderFactory::AddGraphicsPipeline("SimpleForward", pipelineDesc, nvrhiFramebuffer[0]);
 
-	auto constantBufferDesc = nvrhi::BufferDesc()
-	                              .setByteSize(sizeof(PerObjectConstBuffer))
-	                              .setIsConstantBuffer(true)
-	                              .setIsVolatile(false)
-	                              .setMaxVersions(16)
-								  .setKeepInitialState(true);
-
-	constantBuffer = device_->createBuffer(constantBufferDesc);
-
 	MeshData sm = {};
 	GeometryGenerator::CreateBox(sm, 1.0f, 1.0f, 1.0f, 0);
 
 	MeshFactory::AddMeshFromData("Cube", sm);
 
 	auto samplerDesc = nvrhi::SamplerDesc();
-
-	testSampler = device_->createSampler(samplerDesc);
+	TextureFactory::AddSampler("Base", device_, samplerDesc);
 
 	MeshFactory::FillMeshBuffers("Cube", device_, commandList_);
 
 	TextureFactory::LoadTexture("wood", "wood.png", device_, commandList_);
 
-	nvrhi::BindingSetDesc bindingSetDescV = {};
-	bindingSetDescV.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, constantBuffer));
-	ShaderFactory::AddBindingSet("SimpleForwardV", bindingSetDescV, "SimpleForwardV");
-
-	nvrhi::BindingSetDesc bindingSetDescP = {};
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("wood")));
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, testSampler));
-	ShaderFactory::AddBindingSet("SimpleForwardP", bindingSetDescP, "SimpleForwardP");
-
 	// END OF TEMPORARY SECTION
+
+	initRenderSystems.push_back(new StaticMeshInitSystem);
+
+	perTickRenderSystems.push_back(new StaticMeshRenderSystem);
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -221,7 +208,7 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 	return commandList_;
 }
 
-void D3E::GameRender::Draw()
+void D3E::GameRender::Draw(entt::registry& registry)
 {
 	// Obtain the current framebuffer from the graphics API
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
@@ -232,40 +219,20 @@ void D3E::GameRender::Draw()
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, false, 0U);
 
-	// Fill the constant buffer
-	PerObjectConstBuffer constBufferData = {};
-
-	const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(1) * DirectX::SimpleMath::Matrix::CreateTranslation(DirectX::SimpleMath::Vector3(0, 0, 0));
-
-	CameraComponent cameraComponent;
-
-	eastl::fixed_vector<float, 3, false> origin = {0, 0, 0};
-
-	constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraComponent);
-	constBufferData.gWorld = world;
-	constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraComponent);
-	constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(1)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraComponent);
-
-	commandList_->writeBuffer(constantBuffer, &constBufferData, sizeof(constBufferData));
-
-
-	// Set the graphics state: pipeline, framebuffer, viewport, bindings.
-	auto graphicsState = nvrhi::GraphicsState()
-	                         .setPipeline(ShaderFactory::GetGraphicsPipeline("SimpleForward"))
-	                         .setFramebuffer(currentFramebuffer)
-	                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(display_->ClientWidth, display_->ClientHeight)))
-	                         .addBindingSet(ShaderFactory::GetBindingSet("SimpleForwardV"))
-	                         .addBindingSet(ShaderFactory::GetBindingSet("SimpleForwardP"))
-	                         .addVertexBuffer(MeshFactory::GetVertexBufferBinding("Cube"));
-	graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding("Cube"));
-	commandList_->setGraphicsState(graphicsState);
-
-	// Draw our geometry
-	auto drawArguments = nvrhi::DrawArguments()
-	                         .setVertexCount(MeshFactory::GetMeshData("Cube").indices.size());
-	commandList_->drawIndexed(drawArguments);
+	for (auto& sys : perTickRenderSystems)
+	{
+		sys->Render(registry, currentFramebuffer, commandList_);
+	}
 
 	// Close and execute the command list
 	commandList_->close();
 	device_->executeCommandList(commandList_);
+}
+
+void D3E::GameRender::PrepareDraw(entt::registry& registry)
+{
+	for (auto& sys : initRenderSystems)
+	{
+		sys->Run(registry, device_, commandList_);
+	}
 }

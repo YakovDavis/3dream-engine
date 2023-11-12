@@ -1,8 +1,8 @@
 #pragma once
 
-#include "EASTL/vector.h"
 #include "EASTL/string.h"
-#include "render/Vertex.h"
+#include "EASTL/vector.h"
+#include "nvrhi/nvrhi.h"
 
 namespace D3E
 {
@@ -10,5 +10,9 @@ namespace D3E
 	{
 		eastl::string meshName;
 		eastl::string pipelineName;
+		nvrhi::BufferHandle constantBuffer;
+		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
+
+		bool initialized = false;
 	};
 }

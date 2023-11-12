@@ -10,6 +10,7 @@
 bool D3E::TextureFactory::isInitialized_ = false;
 D3E::Game* D3E::TextureFactory::activeGame_;
 eastl::unordered_map<eastl::string, D3E::Texture> D3E::TextureFactory::textures_ {};
+eastl::unordered_map<eastl::string, nvrhi::SamplerHandle> D3E::TextureFactory::samplers_ {};
 
 void D3E::TextureFactory::LoadTexture(const eastl::string& name, const eastl::string& fileName, nvrhi::DeviceHandle& device, nvrhi::CommandListHandle commandList)
 {
@@ -69,4 +70,20 @@ nvrhi::TextureHandle D3E::TextureFactory::GetTextureHandle(const eastl::string& 
 	//LoadTexture(name);
 
 	return textures_[name].Handle;
+}
+
+nvrhi::SamplerHandle& D3E::TextureFactory::GetSampler(const eastl::string& name)
+{
+	if (samplers_.find(name) == samplers_.end())
+	{
+		Debug::LogError("[TextureFactory] Sampler handle not found");
+	}
+	return samplers_[name];
+}
+
+nvrhi::SamplerHandle& D3E::TextureFactory::AddSampler(const eastl::string& name, nvrhi::IDevice* device,
+                                const nvrhi::SamplerDesc& desc)
+{
+	samplers_.insert({name, device->createSampler(desc)});
+	return samplers_[name];
 }
