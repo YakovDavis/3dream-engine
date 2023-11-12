@@ -1,5 +1,6 @@
 #include "StaticMeshRenderSystem.h"
 
+#include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/components/TransformComponent.h"
@@ -12,15 +13,29 @@
 void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                          nvrhi::CommandListHandle& commandList)
 {
+	eastl::fixed_vector<float, 3, false> origin = {0, 0, 0};
+
+	auto playerView = reg.view<const TransformComponent, const CameraComponent, const FPSControllerComponent>();
+
+	CameraComponent cameraCopy; // TODO: this is terrible, redisign camerautils to avoid
+
+	for(auto [entity, tc, cc, fpscc] : playerView.each())
+	{
+		origin[0] = tc.position_[0] + cc.offset[0];
+		origin[1] = tc.position_[1] + cc.offset[1];
+		origin[2] = tc.position_[2] + cc.offset[2];
+		cameraCopy = cc;
+		break;
+	}
+
 	auto view = reg.view<const TransformComponent, const StaticMeshComponent>();
 
-	view.each([commandList, fb](const auto& tc, const auto& smc)
+	view.each([commandList, fb, origin, cameraCopy](const auto& tc, const auto& smc)
 	          {
 				  if (!smc.initialized)
 				  {
 					  return;
 				  }
-
 				  // Fill the constant buffer
 				  PerObjectConstBuffer constBufferData = {};
 
@@ -30,14 +45,10 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 
 				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(scale) * DirectX::SimpleMath::Matrix::CreateTranslation(translation);
 
-				  CameraComponent cameraComponent;
-
-				  eastl::fixed_vector<float, 3, false> origin = {0, 0, 0}; // player pos, TODO: need to acquire
-
-				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraComponent);
+				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraCopy);
 				  constBufferData.gWorld = world;
-				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraComponent);
-				  constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(1)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraComponent);
+				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraCopy);
+				  constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(1)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraCopy);
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 

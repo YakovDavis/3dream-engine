@@ -8,5 +8,6 @@ namespace D3E
 	{
 	public:
 		static entt::entity CreateCubeSM(entt::registry& registry);
+		static entt::entity CreateDefaultPlayer(entt::registry& registry);
 	};
 }
