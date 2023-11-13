@@ -1,6 +1,7 @@
 #include "D3E/Game.h"
 
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
@@ -63,7 +64,12 @@ void D3E::Game::Init()
 
 	CreationSystems::CreateDefaultPlayer(registry_);
 
-	CreationSystems::CreateCubeSM(registry_);
+	auto cube = CreationSystems::CreateCubeSM(registry_);
+
+	auto& sc = registry_.get<SoundComponent>(cube);
+
+	soundEngine_->LoadSound(sc.fileName, sc.is3D, sc.isLooping, sc.isStreaming);
+	soundEngine_->PlaySound3D(sc.fileName, sc.location);
 
 	perTickSystems.push_back(new FPSControllerSystem);
 }

@@ -1,11 +1,11 @@
 #pragma once
 
+#include "EASTL/fixed_vector.h"
+#include "EASTL/map.h"
+#include "EASTL/string.h"
 #include "SoundEngineCommon.h"
 #include "fmod.h"
 #include "fmod_studio.hpp"
-
-#include "EASTL/string.h"
-#include "EASTL/map.h"
 
 namespace D3E
 {
@@ -47,12 +47,19 @@ namespace D3E
 		void LoadSound(const eastl::string& path, bool is3d = false,
 		               bool isLooping = false, bool stream = false);
 		void UnloadSound(const eastl::string& soundName);
-		void PlaySound3D(const eastl::string& soundName, const Vector3& loc,
-		               float dbVolume = 1.0f);
+		void PlaySound3D(const eastl::string& soundName,
+		                 const eastl::fixed_vector<float, 3, false> loc,
+		                 float dbVolume = 1.0f);
 		void PlaySound2D(const eastl::string& soundName, float dbVolume = 1.0f);
-		void SetChannelLocation(int channelId, const Vector3& location);
+		void SetChannelLocation(int channelId,
+		                        const eastl::fixed_vector<float, 3, false> loc);
 		void SetChannelVolume(int channelId, float dbVolume);
+
+		void SetListenerTransform(eastl::fixed_vector<float, 3, false> location,
+		                         eastl::fixed_vector<float, 3, false> velocity,
+		                         eastl::fixed_vector<float, 3, false> forward,
+		                         eastl::fixed_vector<float, 3, false> up);
 
 		bool IsPlaying(int channelId) const;
 	};
-} // namespace SE
+} // namespace D3E

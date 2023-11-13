@@ -10,7 +10,7 @@ namespace D3E
 		bool is3D = false;
 		bool isLooping = false;
 		bool isStreaming = false;
-		float volume = 1.0f;
+		float volume = 0.5f;
 		eastl::fixed_vector<float, 3, false> location = {0.f, 0.f, 0.f};
 		eastl::string fileName = "";
 	};

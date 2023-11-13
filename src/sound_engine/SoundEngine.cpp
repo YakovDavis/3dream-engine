@@ -1,6 +1,7 @@
 #include "SoundEngine.h"
 
 #include "D3E/Debug.h"
+#include "EASTL/fixed_vector.h"
 #include "EASTL/map.h"
 #include "EASTL/string.h"
 #include "SoundEngineCommon.h"
@@ -47,6 +48,8 @@ void SoundEngine::Init()
 	                 nullptr)); // TODO: determine actual max channel number
 
 	PrintDrivers();
+
+	CheckError(system->set3DSettings(1.0, 1.0f, 1.0f));
 
 	initialized = true;
 }
@@ -137,7 +140,8 @@ void SoundEngine::UnloadSound(const string& soundName)
 	sounds.erase(foundIt);
 }
 
-void SoundEngine::PlaySound3D(const string& soundName, const Vector3& loc,
+void SoundEngine::PlaySound3D(const string& soundName,
+                              const eastl::fixed_vector<float, 3, false> loc,
                               float dbVolume)
 {
 	auto* sound = GetSound(soundName);
@@ -160,21 +164,26 @@ void SoundEngine::PlaySound3D(const string& soundName, const Vector3& loc,
 	if (soundMode & FMOD_3D)
 	{
 		FMOD_VECTOR location = VectorToFmod(loc);
-		if (CheckError(channel->set3DAttributes(&location, nullptr)))
+		FMOD_VECTOR vel = {0.f, 0.f, 0.f};
+
+		if (CheckError(channel->set3DAttributes(&location, &vel)))
 			return;
 	}
 
 	if (CheckError(channel->setVolume(DbToVolume(dbVolume))))
 		return;
+
 	CheckError(channel->setPaused(false));
 }
 
 void SoundEngine::PlaySound2D(const string& soundName, float dbVolume)
 {
-	PlaySound3D(soundName, Vector3(0.f, 0.f, 0.f), dbVolume);
+	const eastl::fixed_vector<float, 3, false> v = {0.f, 0.f, 0.f};
+	PlaySound3D(soundName, v, dbVolume);
 }
 
-void SoundEngine::SetChannelLocation(int channelId, const Vector3& location)
+void SoundEngine::SetChannelLocation(
+	int channelId, const eastl::fixed_vector<float, 3, false> loc)
 {
 }
 
@@ -186,6 +195,20 @@ void SoundEngine::SetChannelVolume(int channelId, float dbVolume)
 		return;
 
 	CheckError(foundIt->second->setVolume(DbToVolume(dbVolume)));
+}
+
+void D3E::SoundEngine::SetListenerTransform(
+	eastl::fixed_vector<float, 3, false> location,
+	eastl::fixed_vector<float, 3, false> velocity,
+	eastl::fixed_vector<float, 3, false> forward,
+	eastl::fixed_vector<float, 3, false> upv)
+{
+	FMOD_VECTOR loc = VectorToFmod(location);
+	FMOD_VECTOR vel = VectorToFmod(velocity);
+	FMOD_VECTOR fwd = VectorToFmod(forward);
+	FMOD_VECTOR up = VectorToFmod(upv);
+
+	CheckError(system->set3DListenerAttributes(0, &loc, &vel, &fwd, &up));
 }
 
 bool SoundEngine::IsPlaying(int channelId) const

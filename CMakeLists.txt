@@ -93,7 +93,7 @@ add_library(D3Engine SHARED
         include/D3E/components/render/CameraComponent.h
         include/D3E/Components/TransformComponent.h
         include/D3E/Components/FPSControllerComponent.h
-        include/D3E/Components/FPSControllerComponent.h
+        include/D3E/Components/sound/SoundComponent.h
         src/editor/EditorUtils.cpp
         src/editor/EditorUtils.h
         src/assetmng/AssetManager.cpp
