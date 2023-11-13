@@ -4,6 +4,7 @@
 
 #include "fmod.hpp"
 #include "fmod_errors.h"
+#include "D3E/Debug.h"
 
 namespace D3E {
 struct Vector3 {
@@ -22,15 +23,11 @@ inline FMOD_VECTOR VectorToFmod(const Vector3& pos) {
 
 inline int CheckError(FMOD_RESULT result) {
   if (result != FMOD_OK) {
-    std::cout << FMOD_ErrorString(result) << std::endl;
-
+	  Debug::LogError(FMOD_ErrorString(result));
+    
     return 1;
   }
 
   return 0;
-}
-
-inline void Log(const std::string& level, const std::string& message) {
-  std::cout << "Lvel: " << level << " msg: " << message << std::endl;
 }
 }  // namespace SE

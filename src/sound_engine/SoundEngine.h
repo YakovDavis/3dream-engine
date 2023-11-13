@@ -4,23 +4,15 @@
 #include "fmod.h"
 #include "fmod_studio.hpp"
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <thread>
-#include <vector>
+#include "EASTL/string.h"
+#include "EASTL/map.h"
 
 namespace D3E
 {
-	using std::map;
-	using std::string;
-	using std::vector;
-
 	class SoundEngine
 	{
-		typedef map<string, FMOD::Sound*> SoundMap;
-		typedef map<int, FMOD::Channel*> ChannelMap;
+		typedef eastl::map<eastl::string, FMOD::Sound*> SoundMap;
+		typedef eastl::map<int, FMOD::Channel*> ChannelMap;
 
 	private:
 		bool initialized;
@@ -32,17 +24,18 @@ namespace D3E
 
 		SoundEngine();
 
-		FMOD::Sound* GetSound(const std::string& name);
+		FMOD::Sound* GetSound(const eastl::string& name);
 
 	public:
 		static SoundEngine& GetInstance();
 
 		SoundEngine(SoundEngine const&) = delete;
-		void operator=(SoundEngine const&) = delete;
+		SoundEngine& operator=(SoundEngine const&) = delete;
 
 		~SoundEngine();
 
 		void Init();
+		void PrintDrivers();
 		void Update();
 		void Release();
 
@@ -51,12 +44,12 @@ namespace D3E
 		int GetDriverCount() const;
 		int SetDriver(int id);
 
-		void LoadSound(const string& path, bool is3d = false,
+		void LoadSound(const eastl::string& path, bool is3d = false,
 		               bool isLooping = false, bool stream = false);
-		void UnloadSound(const string& soundName);
-		void PlaySound(const string& soundName, const Vector3& loc,
+		void UnloadSound(const eastl::string& soundName);
+		void PlaySound3D(const eastl::string& soundName, const Vector3& loc,
 		               float dbVolume = 1.0f);
-		void PlaySound2D(const string& soundName, float dbVolume = 1.0f);
+		void PlaySound2D(const eastl::string& soundName, float dbVolume = 1.0f);
 		void SetChannelLocation(int channelId, const Vector3& location);
 		void SetChannelVolume(int channelId, float dbVolume);
 
