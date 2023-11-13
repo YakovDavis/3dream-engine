@@ -59,7 +59,7 @@ void D3E::Game::Init()
 	inputDevice_ = new InputDevice(this);
 
 	soundEngine_ = &SoundEngine::GetInstance();
-	soundEngine_->Init(); 
+	soundEngine_->Init();
 
 	CreationSystems::CreateDefaultPlayer(registry_);
 
@@ -70,6 +70,8 @@ void D3E::Game::Init()
 
 void D3E::Game::Update(const float deltaTime)
 {
+	soundEngine_->Update();
+
 	for (auto& sys : perTickSystems)
 	{
 		sys->Run(registry_, this, deltaTime);
