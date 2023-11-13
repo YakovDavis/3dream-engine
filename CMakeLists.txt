@@ -30,6 +30,8 @@ include_directories(libs/stb)
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
+add_subdirectory(libs/FMOD)
+
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
 
 FetchContent_Declare(
@@ -91,7 +93,7 @@ add_library(D3Engine SHARED
         include/D3E/components/render/CameraComponent.h
         include/D3E/Components/TransformComponent.h
         include/D3E/Components/FPSControllerComponent.h
-        include/D3E/Components/FPSControllerComponent.h
+        include/D3E/Components/sound/SoundComponent.h
         src/editor/EditorUtils.cpp
         src/editor/EditorUtils.h
         src/assetmng/AssetManager.cpp
@@ -102,6 +104,10 @@ add_library(D3Engine SHARED
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
         src/engine/systems/FPSControllerSystem.h
+        src/sound_engine/SoundEngine.h
+        src/sound_engine/SoundEngineCommon.h
+        src/sound_engine/SoundEngine.cpp
+
 )
 
 target_include_directories(D3Engine PUBLIC include)
@@ -118,7 +124,9 @@ target_link_libraries(D3Engine PUBLIC
         assimp
         nvrhi
         imgui
-        #Jolt
+        FmodCore
+        FmodStudio
+        #Jolt        
 )
 
 set(NVRHI_DEFINES "")

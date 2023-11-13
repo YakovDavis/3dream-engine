@@ -2,6 +2,7 @@
 
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
+#include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/components/TransformComponent.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "engine/components/ObjectInfoComponent.h"
@@ -21,9 +22,17 @@ entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry)
 	transform.rotation_ = {0, 0, 0, 1};
 	transform.scale_ = {1, 1, 1};
 
+	SoundComponent sound;
+	sound.fileName = "sfx.mp3";
+	sound.is3D = true;
+	sound.isLooping = true;
+	sound.isStreaming = false;
+	sound.location = transform.position_;
+
 	registry.emplace<ObjectInfoComponent>(e, info);
 	registry.emplace<TransformComponent>(e, transform);
 	registry.emplace<StaticMeshComponent>(e, sm);
+	registry.emplace<SoundComponent>(e, sound);
 
 	return e;
 }
