@@ -102,6 +102,8 @@ add_library(D3Engine SHARED
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
         src/engine/systems/FPSControllerSystem.h
+        src/imgui_backend/imgui_impl_nvrhi.h
+        src/imgui_backend/imgui_impl_nvrhi.cpp
 )
 
 target_include_directories(D3Engine PUBLIC include)

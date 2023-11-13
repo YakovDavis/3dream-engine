@@ -5,6 +5,9 @@
 #include "GameRender.h"
 #include <dxgi1_5.h>
 #include "D3dUtil.h"
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
@@ -56,6 +59,9 @@ namespace D3E
 		UINT64 mFrameCount = 1;
 
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mCommandQueue;
+
+		nvrhi::RefCountPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
+		nvrhi::RefCountPtr<ID3D12CommandList> mCommandList;
 
 		eastl::vector<HANDLE> mFrameFenceEvents;
 
