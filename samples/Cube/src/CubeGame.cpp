@@ -15,7 +15,6 @@ void CubeGame::Update(float deltaTime)
 void CubeGame::Init()
 {
 	Game::Init();
-
 }
 
 D3E::App* D3E::CreateApp()

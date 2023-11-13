@@ -11,7 +11,8 @@ namespace D3E
 	class GameRender;
 	class Display;
 	class DisplayWin32;
-	class InputDevice;
+	class InputDevice;	
+	class SoundEngine;
 
 	class Game : public App
 	{
@@ -33,7 +34,8 @@ namespace D3E
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
-		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam,
+		                LPARAM lParam) override;
 
 	protected:
 		entt::registry registry_;
@@ -50,13 +52,16 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
-		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
+		void*
+			prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
 
 		GameRender* gameRender_;
 
 		InputDevice* inputDevice_;
 
+		SoundEngine* soundEngine_;
+
 	private:
 		void HandleMessages();
 	};
-}
+} // namespace D3E
