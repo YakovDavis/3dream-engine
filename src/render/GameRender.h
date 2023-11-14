@@ -10,6 +10,13 @@
 
 #include <Windows.h>
 
+#define USE_IMGUI
+
+#ifdef USE_IMGUI
+#include "imgui.h"
+#include "imgui_backend/imgui_nvrhi.h"
+#endif // USE_IMGUI
+
 namespace D3E
 {
 	class App;
@@ -23,15 +30,22 @@ namespace D3E
 		virtual void Init();
 		virtual void OnResize();
 
+#ifdef USE_IMGUI
+		void InitImGui();
+		void RenderImGui();
+#endif // USE_IMGUI
+
 		Display* GetDisplay();
 		nvrhi::DeviceHandle& GetDevice();
 		nvrhi::CommandListHandle& GetCommandList();
 
 		void CalculateFrameStats();
 
+		virtual void UpdateAnimations(float dT);
+
 		virtual void PrepareDraw(entt::registry& registry);
 		virtual void Draw(entt::registry& registry);
-		virtual void EndDraw(entt::registry& registry) {}
+		virtual void EndDraw(entt::registry& registry);
 
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;
@@ -63,6 +77,10 @@ namespace D3E
 		NvrhiMessageCallback* messageCallback_;
 
 		nvrhi::InputLayoutHandle inputLayout_;
+
+#ifdef USE_IMGUI
+		ImGui_NVRHI imGuiNvrhi_;
+#endif // USE_IMGUI
 
 		friend class Game;
 	};

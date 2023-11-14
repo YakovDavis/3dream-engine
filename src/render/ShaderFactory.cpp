@@ -138,7 +138,10 @@ eastl::string D3E::ShaderFactory::GetBinaryShaderFileName(const eastl::string& f
 		adjustedName.erase(pos, 5);
 	}
 
-	adjustedName += "_" + entryPoint;
+	if (entryPoint != "main")
+	{
+		adjustedName += "_" + entryPoint;
+	}
 
 	adjustedName = eastl::string(std::filesystem::current_path().string().c_str()) + "\\Shaders\\" + adjustedName + ".dxil";
 

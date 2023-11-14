@@ -104,10 +104,11 @@ add_library(D3Engine SHARED
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
         src/engine/systems/FPSControllerSystem.h
+        src/imgui_backend/imgui_nvrhi.cpp
+        src/imgui_backend/imgui_nvrhi.h
         src/sound_engine/SoundEngine.h
         src/sound_engine/SoundEngineCommon.h
         src/sound_engine/SoundEngine.cpp
-
 )
 
 target_include_directories(D3Engine PUBLIC include)
