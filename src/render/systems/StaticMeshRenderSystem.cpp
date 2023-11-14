@@ -9,6 +9,7 @@
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
+#include "engine/components/ObjectInfoComponent.h"
 
 void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                          nvrhi::CommandListHandle& commandList)
@@ -28,12 +29,13 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 		break;
 	}
 
-	auto view = reg.view<const TransformComponent, const StaticMeshComponent>();
+	auto view = reg.view<const ObjectInfoComponent, const TransformComponent, const StaticMeshComponent>();
 
-	view.each([commandList, fb, origin, cameraCopy](const auto& tc, const auto& smc)
+	view.each([commandList, fb, origin, cameraCopy](const auto& info, const auto& tc, const auto& smc)
 	          {
 				  if (!smc.initialized)
 				  {
+					  Debug::LogError("sm not initialized");
 					  return;
 				  }
 				  // Fill the constant buffer
@@ -57,9 +59,9 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 				  auto graphicsState = nvrhi::GraphicsState()
 		                                   .setPipeline(ShaderFactory::GetGraphicsPipeline(smc.pipelineName))
 		                                   .setFramebuffer(fb)
-		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1920, 1080))) // TODO: Un-hardcode!
-		                                   .addBindingSet(ShaderFactory::GetBindingSet("SimpleForwardV"))
-		                                   .addBindingSet(ShaderFactory::GetBindingSet("SimpleForwardP"))
+		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(640, 480)))
+		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "V"))
+		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "P"))
 		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshName));
 				  graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding(smc.meshName));
 				  commandList->setGraphicsState(graphicsState);

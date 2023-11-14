@@ -64,6 +64,8 @@ namespace D3E
 		float deltaTime_;
 		SoundEngine* soundEngine_;
 
+		double totalTime = 0.0;
+
 	private:
 		void HandleMessages();
 	};

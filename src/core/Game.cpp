@@ -60,9 +60,25 @@ void D3E::Game::Init()
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 
-	CreationSystems::CreateDefaultPlayer(registry_);
+	ObjectInfoComponent info;
+	TransformComponent transform;
 
-	auto cube = CreationSystems::CreateCubeSM(registry_);
+	transform.position_ = {0, 0, -10};
+	transform.rotation_ = {0, 0, 0, 1};
+	transform.scale_ = {1, 1, 1};
+	CreationSystems::CreateDefaultPlayer(registry_, transform);
+
+	info.name = "Cube";
+	transform.position_ = {0, 0, 0};
+	transform.rotation_ = {0, 0, 0, 1};
+	transform.scale_ = {1, 1, 1};
+	auto cube = CreationSystems::CreateCubeSM(registry_, info, transform);
+
+	info.name = "Cube1";
+	transform.position_ = {3, 1, 0};
+	transform.rotation_ = {0, 0, 0, 1};
+	transform.scale_ = {1, 1, 1};
+	//auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
 
 	auto& sc = registry_.get<SoundComponent>(cube);
 
@@ -74,6 +90,19 @@ void D3E::Game::Init()
 
 void D3E::Game::Update(const float deltaTime)
 {
+	totalTime += deltaTime;
+
+	if (totalTime / 500.0 - floor(totalTime / 500.0) < 0.1)
+	{
+		ObjectInfoComponent info;
+		TransformComponent transform;
+		info.name = ("Cube" + std::to_string(floor(totalTime / 2000.0))).c_str();
+		transform.position_ = {1.0f * ((int)(totalTime / 500.0f) % 10 - 5), 1.0f * ((int)(totalTime / 500.0f) / 100 % 10 - 5), 1.0f * ((int)(totalTime / 500.0f) / 10 % 10 - 5)};
+		transform.rotation_ = {0, 0, 0, 1};
+		transform.scale_ = {1, 1, 1};
+		auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
+	}
+
 	soundEngine_->Update();
 
 	for (auto& sys : perTickSystems)
