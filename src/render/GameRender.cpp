@@ -109,7 +109,7 @@ void D3E::GameRender::Init()
 	depthStencilState.setStencilEnable(true);
 
 	nvrhi::RasterState rasterState = {};
-	rasterState.frontCounterClockwise = true;
+	rasterState.frontCounterClockwise = false;
 	rasterState.setCullBack();
 
 	nvrhi::BlendState blendState = {};
