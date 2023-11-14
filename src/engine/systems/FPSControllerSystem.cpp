@@ -29,7 +29,7 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 			if (game->GetInputDevice()->IsKeyDown(Keys::LeftButton) ||
 		        !fpscc.isLMBActivated)
 			{
-				fpscc.yaw -= fpscc.sensitivityX *
+				fpscc.yaw += fpscc.sensitivityX *
 			                 game->GetInputDevice()->MouseOffsetInTick.x;
 				while (fpscc.yaw < -XM_2PI)
 					fpscc.yaw += XM_2PI;
@@ -69,7 +69,7 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 			if (game->GetInputDevice()->IsKeyDown(Keys::A))
 			{
 				Vector3 tmp = XMVector4Transform(
-					Vector3(1, 0, 0), Matrix::CreateFromYawPitchRoll(
+					Vector3(-1, 0, 0), Matrix::CreateFromYawPitchRoll(
 										  fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
 				tc.position_[0] += dT * fpscc.speed * tmp.x;
@@ -79,7 +79,7 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 			if (game->GetInputDevice()->IsKeyDown(Keys::D))
 			{
 				Vector3 tmp = XMVector4Transform(
-					Vector3(-1, 0, 0), Matrix::CreateFromYawPitchRoll(
+					Vector3(1, 0, 0), Matrix::CreateFromYawPitchRoll(
 										   fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
 				tc.position_[0] += dT * fpscc.speed * tmp.x;
