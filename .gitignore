@@ -593,3 +593,8 @@ references/*
 **Assets/
 
 *log.txt
+
+# Folders and files that should not be ignored despite bad name
+!libs/EASTL/include/EASTL/internal/atomic/arch/x86/
+!*fmod*.dll
+!*fmod*.lib
