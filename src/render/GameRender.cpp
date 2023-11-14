@@ -17,6 +17,10 @@
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
+#ifdef USE_IMGUI
+#include "imgui_impl_win32.h"
+#endif // USE_IMGUI
+
 void D3E::GameRender::Init()
 {
 	Debug::LogMessage("[GameRender] Init started");
@@ -49,6 +53,10 @@ void D3E::GameRender::Init()
 	framebufferDesc1.addColorAttachment(nvrhiSwapChain[1]);
 	framebufferDesc1.setDepthAttachment(nvrhiDepthBuffer);
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
+
+#ifdef USE_IMGUI
+	InitImGui();
+#endif // USE_IMGUI
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
@@ -189,7 +197,7 @@ D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent
 {
 	assert(parentApp != nullptr);
 	assert(hInstance != nullptr);
-	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 640, 480, parent);
+	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1920, 1080, parent);
 	messageCallback_ = new NvrhiMessageCallback();
 }
 
@@ -236,3 +244,54 @@ void D3E::GameRender::PrepareDraw(entt::registry& registry)
 		sys->Run(registry, device_, commandList_);
 	}
 }
+
+void D3E::GameRender::EndDraw(entt::registry& registry)
+{
+#ifdef USE_IMGUI
+	RenderImGui();
+#endif // USE_IMGUI
+}
+
+void D3E::GameRender::UpdateAnimations(float dT)
+{
+#ifdef USE_IMGUI
+	int w, h;
+	float scaleX, scaleY;
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2(float(display_->ClientWidth), float(display_->ClientHeight));
+	//io.DisplayFramebufferScale.x = scaleX;
+	//io.DisplayFramebufferScale.y = scaleY;
+
+	imGuiNvrhi_.beginFrame(dT);
+#endif // USE_IMGUI
+}
+
+#ifdef USE_IMGUI
+void D3E::GameRender::InitImGui()
+{
+	auto displayWin32 = dynamic_cast<DisplayWin32*>(display_.get());
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplWin32_Init(displayWin32->hWnd);
+	imGuiNvrhi_.init(device_);
+	//imGuiNvrhi_.backbufferResizing();
+}
+
+void D3E::GameRender::RenderImGui()
+{
+	ImGui_ImplWin32_NewFrame();
+
+	ImGui::ShowDemoWindow();
+	ImGui::Render();
+
+	// Obtain the current framebuffer from the graphics API
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+
+	imGuiNvrhi_.render(currentFramebuffer);
+}
+#endif // USE_IMGUI

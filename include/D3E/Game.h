@@ -31,6 +31,8 @@ namespace D3E
 
 		InputDevice* GetInputDevice();
 
+		float GetDeltaTime() const;
+
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
@@ -55,6 +57,8 @@ namespace D3E
 		GameRender* gameRender_;
 
 		InputDevice* inputDevice_;
+
+		float deltaTime_;
 
 	private:
 		void HandleMessages();

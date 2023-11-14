@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 void D3E::Game::Run()
 {
 	App::Run();
@@ -27,14 +29,12 @@ void D3E::Game::Run()
 	{
 		HandleMessages();
 
-		float deltaTime = 0;
-
 		{
 			using namespace eastl::chrono;
-			deltaTime = duration_cast<duration<float, milliseconds::period>>(steady_clock::now() - *prevCycleTimePoint).count();
+			deltaTime_ = duration_cast<duration<float, milliseconds::period>>(steady_clock::now() - *prevCycleTimePoint).count();
 		}
 
-		Update(deltaTime);
+		Update(deltaTime_);
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
@@ -72,6 +72,8 @@ void D3E::Game::Update(const float deltaTime)
 	for(auto [entity, transform]: view.each()) {
 		// ...
 	}
+
+	gameRender_->UpdateAnimations(deltaTime);
 
 	inputDevice_->EndTick();
 }
@@ -143,6 +145,11 @@ D3E::InputDevice* D3E::Game::GetInputDevice()
 
 LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+	{
+		return true;
+	}
+
 	switch (msg)
 	{
 		case WM_KEYDOWN:
@@ -195,4 +202,9 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	}
+}
+
+float D3E::Game::GetDeltaTime() const
+{
+	return deltaTime_;
 }

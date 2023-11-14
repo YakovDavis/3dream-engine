@@ -12,9 +12,7 @@ list (FILTER Private EXCLUDE REGEX "freetype.")
 
 include_directories(./imgui)
 
-add_library(imgui STATIC ${Public} ${Private}
-        ../../src/imgui_backend/imgui_impl_nvrhi.cpp
-        ../../src/imgui_backend/imgui_impl_nvrhi.h)
+add_library(imgui STATIC ${Public} ${Private})
 
 target_include_directories(imgui
     PUBLIC
