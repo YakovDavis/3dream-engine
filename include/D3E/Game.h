@@ -32,6 +32,8 @@ namespace D3E
 
 		InputDevice* GetInputDevice();
 
+		float GetDeltaTime() const;
+
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam,
@@ -59,6 +61,7 @@ namespace D3E
 
 		InputDevice* inputDevice_;
 
+		float deltaTime_;
 		SoundEngine* soundEngine_;
 
 	private:

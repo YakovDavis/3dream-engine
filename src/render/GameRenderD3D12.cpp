@@ -18,6 +18,19 @@ void D3E::GameRenderD3D12::CreateCommandQueues()
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	queueDesc.NodeMask = 1;
 	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+
+	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
+
+	ThrowIfFailed(md3dDevice->CreateCommandList(
+		0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		mDirectCmdListAlloc.Get(),
+		nullptr,
+		IID_PPV_ARGS(mCommandList.GetAddressOf())));
+
+	//mCommandList->Close();
 }
 
 void D3E::GameRenderD3D12::CreateNativeSwapChain()
