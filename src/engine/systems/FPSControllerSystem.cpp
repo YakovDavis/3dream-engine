@@ -44,7 +44,7 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 			}
 
 			const auto lastpos = tc.position_;
-			eastl::fixed_vector<float, 3, false> velocity = {0.f, 0.f, 0.f};
+			Vector3 velocity = {0.f, 0.f, 0.f};
 
 			if (game->GetInputDevice()->IsKeyDown(Keys::W))
 			{
@@ -52,9 +52,9 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 					Vector3(0, 0, 1), Matrix::CreateFromYawPitchRoll(
 										  fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
-				tc.position_[0] += dT * fpscc.speed * tmp.x;
-				tc.position_[1] += dT * fpscc.speed * tmp.y;
-				tc.position_[2] += dT * fpscc.speed * tmp.z;
+				tc.position_.x += dT * fpscc.speed * tmp.x;
+				tc.position_.y += dT * fpscc.speed * tmp.y;
+				tc.position_.z += dT * fpscc.speed * tmp.z;
 			}
 			if (game->GetInputDevice()->IsKeyDown(Keys::S))
 			{
@@ -62,9 +62,9 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 					Vector3(0, 0, -1), Matrix::CreateFromYawPitchRoll(
 										   fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
-				tc.position_[0] += dT * fpscc.speed * tmp.x;
-				tc.position_[1] += dT * fpscc.speed * tmp.y;
-				tc.position_[2] += dT * fpscc.speed * tmp.z;
+				tc.position_.x += dT * fpscc.speed * tmp.x;
+				tc.position_.y += dT * fpscc.speed * tmp.y;
+				tc.position_.z += dT * fpscc.speed * tmp.z;
 			}
 			if (game->GetInputDevice()->IsKeyDown(Keys::A))
 			{
@@ -72,9 +72,9 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 					Vector3(-1, 0, 0), Matrix::CreateFromYawPitchRoll(
 										  fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
-				tc.position_[0] += dT * fpscc.speed * tmp.x;
-				tc.position_[1] += dT * fpscc.speed * tmp.y;
-				tc.position_[2] += dT * fpscc.speed * tmp.z;
+				tc.position_.x += dT * fpscc.speed * tmp.x;
+				tc.position_.y += dT * fpscc.speed * tmp.y;
+				tc.position_.z += dT * fpscc.speed * tmp.z;
 			}
 			if (game->GetInputDevice()->IsKeyDown(Keys::D))
 			{
@@ -82,17 +82,17 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 					Vector3(1, 0, 0), Matrix::CreateFromYawPitchRoll(
 										   fpscc.yaw, fpscc.pitch, 0.0f));
 				tmp.Normalize();
-				tc.position_[0] += dT * fpscc.speed * tmp.x;
-				tc.position_[1] += dT * fpscc.speed * tmp.y;
-				tc.position_[2] += dT * fpscc.speed * tmp.z;
+				tc.position_.x += dT * fpscc.speed * tmp.x;
+				tc.position_.y += dT * fpscc.speed * tmp.y;
+				tc.position_.z += dT * fpscc.speed * tmp.z;
 			}
 			if (game->GetInputDevice()->IsKeyDown(Keys::E))
 			{
-				tc.position_[1] += dT * fpscc.speed;
+				tc.position_.y += dT * fpscc.speed;
 			}
 			if (game->GetInputDevice()->IsKeyDown(Keys::Z))
 			{
-				tc.position_[1] -= dT * fpscc.speed;
+				tc.position_.y -= dT * fpscc.speed;
 			}
 			Vector4 Up = XMVector4Transform(
 				Vector3(0, 1, 0),
@@ -100,16 +100,16 @@ void D3E::FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 			Vector4 Forward = XMVector4Transform(
 				Vector3(0, 0, 1),
 				Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
-			cc.up[0] = Up.x;
-			cc.up[1] = Up.y;
-			cc.up[2] = Up.z;
-			cc.forward[0] = Forward.x;
-			cc.forward[1] = Forward.y;
-			cc.forward[2] = Forward.z;
+			cc.up.x = Up.x;
+			cc.up.y = Up.y;
+			cc.up.z = Up.z;
+			cc.forward.x = Forward.x;
+			cc.forward.y = Forward.y;
+			cc.forward.z = Forward.z;
 
-			velocity[0] = (tc.position_[0] - lastpos[0]) * (1000 / dT);
-			velocity[1] = (tc.position_[1] - lastpos[1]) * (1000 / dT);
-			velocity[2] = (tc.position_[2] - lastpos[2]) * (1000 / dT);
+			velocity.x = (tc.position_.x - lastpos.x) * (1000 / dT);
+			velocity.y = (tc.position_.y - lastpos.y) * (1000 / dT);
+			velocity.z = (tc.position_.z - lastpos.z) * (1000 / dT);
 
 			se->SetListenerTransform(tc.position_, velocity, cc.forward, cc.up);
 		});

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "D3E/Debug.h"
-#include "EASTL/fixed_vector.h"
+#include "SimpleMath.h"
 #include "fmod.hpp"
 #include "fmod_errors.h"
 
@@ -20,9 +20,9 @@ namespace D3E
 	}
 
 	inline FMOD_VECTOR
-	VectorToFmod(const eastl::fixed_vector<float, 3, false>& pos)
+	VectorToFmod(const DirectX::SimpleMath::Vector3& pos)
 	{
-		return FMOD_VECTOR{pos[0], pos[1], pos[2]};
+		return FMOD_VECTOR{pos.x, pos.y, pos.z};
 	}
 
 	inline int CheckError(FMOD_RESULT result)

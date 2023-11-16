@@ -1,14 +1,14 @@
 #pragma once
 
-#include "EASTL/fixed_vector.h"
+#include "SimpleMath.h"
 
 namespace D3E
 {
 	struct CameraComponent
 	{
-		eastl::fixed_vector<float, 3, false> offset = {0, 0, 0};
-		eastl::fixed_vector<float, 3, false> forward = {0, 0, 1};
-		eastl::fixed_vector<float, 3, false> up = {0, 1, 0};
+		DirectX::SimpleMath::Vector3 offset = {0, 0, 0};
+		DirectX::SimpleMath::Vector3 forward = {0, 0, 1};
+		DirectX::SimpleMath::Vector3 up = {0, 1, 0};
 		bool isOrthographic = false;
 		float orthographicWidth = 50.0f;
 		float orthographicHeight = 50.0f;

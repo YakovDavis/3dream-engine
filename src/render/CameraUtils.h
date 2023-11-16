@@ -8,8 +8,8 @@ namespace D3E
 	class CameraUtils
 	{
 	public:
-		static DirectX::SimpleMath::Matrix GetViewProj(const eastl::fixed_vector<float, 3, false>& parentLoc, const CameraComponent& cameraComponent);
-		static DirectX::SimpleMath::Matrix GetView(const eastl::fixed_vector<float, 3, false>& parentLoc, const CameraComponent& cameraComponent);
+		static DirectX::SimpleMath::Matrix GetViewProj(const DirectX::SimpleMath::Vector3& parentLoc, const CameraComponent& cameraComponent);
+		static DirectX::SimpleMath::Matrix GetView(const DirectX::SimpleMath::Vector3& parentLoc, const CameraComponent& cameraComponent);
 		static DirectX::SimpleMath::Matrix GetProj(const CameraComponent& cameraComponent);
 	};
 }
