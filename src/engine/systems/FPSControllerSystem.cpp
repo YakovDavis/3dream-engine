@@ -22,6 +22,9 @@ void FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
 	auto view =
 		reg.view<TransformComponent, CameraComponent, FPSControllerComponent>();
 
+	if (view.begin() == view.end())
+		Debug::LogError("FPS controller entity not found");
+
 	auto controllerEntity = view.front();
 
 	view.each(
