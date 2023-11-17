@@ -21,6 +21,11 @@ SoundEngineListenerSystem::SoundEngineListenerSystem(entt::registry& registry)
 void SoundEngineListenerSystem::Run(entt::registry& reg, Game* game, float dT)
 {
 	auto& se = SoundEngine::GetInstance();
+
+	// const auto lastpos = tc.position_;
+
+	// eastl::fixed_vector<float, 3, false> velocity = {0.f, 0.f, 0.f};
+
 	eastl::fixed_vector<float, 3, false> location{};
 	eastl::fixed_vector<float, 3, false> up{};
 	eastl::fixed_vector<float, 3, false> forward{};
