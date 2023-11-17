@@ -6,7 +6,6 @@ namespace D3E
 {
 	struct ObjectInfoComponent
 	{
-		ObjectInfoComponent* parent;
 		eastl::string name;
 	};
 }
