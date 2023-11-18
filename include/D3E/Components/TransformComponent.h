@@ -1,10 +1,12 @@
 #pragma once
 
-#include "EASTL/fixed_vector.h"
+#include "SimpleMath.h"
+
+using namespace DirectX::SimpleMath;
 
 struct TransformComponent
 {
-	eastl::fixed_vector<float, 3, false> position_;
-	eastl::fixed_vector<float, 4, false> rotation_;
-	eastl::fixed_vector<float, 3, false> scale_;
+	Vector3 position_;
+	Vector4 rotation_;
+	Vector3 scale_;
 };
