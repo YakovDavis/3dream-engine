@@ -14,7 +14,7 @@
 void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                          nvrhi::CommandListHandle& commandList)
 {
-	eastl::fixed_vector<float, 3, false> origin = {0, 0, 0};
+	Vector3 origin = {0, 0, 0};
 
 	auto playerView = reg.view<const TransformComponent, const CameraComponent, const FPSControllerComponent>();
 
@@ -22,9 +22,9 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 
 	for(auto [entity, tc, cc, fpscc] : playerView.each())
 	{
-		origin[0] = tc.position_[0] + cc.offset[0];
-		origin[1] = tc.position_[1] + cc.offset[1];
-		origin[2] = tc.position_[2] + cc.offset[2];
+		origin.x = tc.position_.x + cc.offset.x;
+		origin.y = tc.position_.y + cc.offset.y;
+		origin.z = tc.position_.z + cc.offset.z;
 		cameraCopy = cc;
 		break;
 	}
@@ -41,9 +41,9 @@ void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffe
 				  // Fill the constant buffer
 				  PerObjectConstBuffer constBufferData = {};
 
-				  DirectX::SimpleMath::Vector3 translation = {tc.position_[0], tc.position_[1], tc.position_[2]};
-				  DirectX::SimpleMath::Quaternion rotation = {tc.rotation_[0], tc.rotation_[1], tc.rotation_[2], tc.rotation_[3]};
-				  DirectX::SimpleMath::Vector3 scale = {tc.scale_[0], tc.scale_[1], tc.scale_[2]};
+				  DirectX::SimpleMath::Vector3 translation = {tc.position_.x, tc.position_.y, tc.position_.z};
+				  DirectX::SimpleMath::Quaternion rotation = {tc.rotation_.x, tc.rotation_.y, tc.rotation_.z, tc.rotation_.w};
+				  DirectX::SimpleMath::Vector3 scale = {tc.scale_.x, tc.scale_.y, tc.scale_.z};
 
 				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(scale) * DirectX::SimpleMath::Matrix::CreateTranslation(translation);
 
