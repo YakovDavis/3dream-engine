@@ -11,7 +11,8 @@ namespace D3E
 	class GameRender;
 	class Display;
 	class DisplayWin32;
-	class InputDevice;
+	class InputDevice;	
+	class SoundEngine;
 
 	class Game : public App
 	{
@@ -54,7 +55,8 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
-		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
+		void*
+			prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
 
 		GameRender* gameRender_;
 
@@ -62,7 +64,11 @@ namespace D3E
 
 		float deltaTime_;
 
+		SoundEngine* soundEngine_;
+
+		double totalTime = 0.0;
+
 	private:
 		void HandleMessages();
 	};
-}
+} // namespace D3E

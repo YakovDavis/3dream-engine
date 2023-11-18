@@ -15,11 +15,10 @@
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
-
+#include "assetmng/DefaultAssetLoader.h"
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
 #ifdef USE_IMGUI
-#include "assetmng/DefaultAssetLoader.h"
 #include "imgui_impl_win32.h"
 #endif // USE_IMGUI
 
