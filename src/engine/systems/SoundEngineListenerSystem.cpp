@@ -2,6 +2,7 @@
 
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
+#include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "EASTL/fixed_vector.h"
@@ -13,18 +14,15 @@ using namespace D3E;
 
 SoundEngineListenerSystem::SoundEngineListenerSystem(entt::registry& registry)
 	: transformObserver_{registry, entt::collector.update<TransformComponent>()
-                                       .where<CameraComponent>()},
-	  cameraObserver_{registry, entt::collector.update<CameraComponent>()}
+                                       .where<SoundListenerComponent>()},
+	  cameraObserver_{registry, entt::collector.update<CameraComponent>()
+                                    .where<SoundListenerComponent>()}
 {
 }
 
 void SoundEngineListenerSystem::Run(entt::registry& reg, Game* game, float dT)
 {
 	auto& se = SoundEngine::GetInstance();
-
-	// const auto lastpos = tc.position_;
-
-	// eastl::fixed_vector<float, 3, false> velocity = {0.f, 0.f, 0.f};
 
 	eastl::fixed_vector<float, 3, false> location{};
 	eastl::fixed_vector<float, 3, false> up{};

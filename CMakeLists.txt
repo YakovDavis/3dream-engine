@@ -12,7 +12,7 @@ add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
 #find_program(DIRECTX_DXC_TOOL DXC.EXE
-#          REQUIRED HINTS ${DIRECTX_DXC_PATH})
+#         REQUIRED HINTS ${DIRECTX_DXC_PATH})
 add_subdirectory(libs/DirectXTK12)
 
 add_subdirectory(libs/imgui)
@@ -109,6 +109,9 @@ add_library(D3Engine SHARED
         src/sound_engine/SoundEngine.h
         src/sound_engine/SoundEngineCommon.h
         src/sound_engine/SoundEngine.cpp
+        src/engine/systems/SoundEngineListenerSystem.h
+        src/engine/systems/SoundEngineListenerSystem.cpp
+        include/D3E/Components/sound/SoundListenerComponent.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
