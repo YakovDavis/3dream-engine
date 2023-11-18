@@ -1,5 +1,7 @@
 #include "CameraUtils.h"
 
+#include "D3E/CommonCpp.h"
+
 #define USE_LH_MATRICES
 
 using namespace DirectX::SimpleMath;

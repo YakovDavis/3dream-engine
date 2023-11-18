@@ -1,5 +1,6 @@
 #include "EditorUtils.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Game.h"
 #include "D3E/Debug.h"
 #include "engine/components/ObjectInfoComponent.h"

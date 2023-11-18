@@ -1,5 +1,6 @@
 #include "FPSControllerSystem.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
@@ -17,7 +18,7 @@
 using namespace DirectX::SimpleMath;
 using namespace D3E;
 
-void FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
+void D3E::FPSControllerSystem::Update(entt::registry& reg, Game* game, float dT)
 {
 	auto view =
 		reg.view<TransformComponent, CameraComponent, FPSControllerComponent>();

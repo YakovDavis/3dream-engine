@@ -1,11 +1,6 @@
-#include "D3E/EntryPoint.h"
-#include "D3E/Game.h"
+#include "CubeGame.h"
 
-class CubeGame : public D3E::Game
-{
-	void Init() override;
-	void Update(float deltaTime) override;
-};
+#include "D3E/systems/CreationSystems.h"
 
 void CubeGame::Update(float deltaTime)
 {
@@ -15,9 +10,10 @@ void CubeGame::Update(float deltaTime)
 void CubeGame::Init()
 {
 	Game::Init();
-}
 
-D3E::App* D3E::CreateApp()
-{
-	return new CubeGame();
+	LoadTexture("wood", "wood.png");
+
+	D3E::CreationSystems::CreateDefaultPlayer(GetRegistry());
+
+	D3E::CreationSystems::CreateCubeSM(GetRegistry());
 }

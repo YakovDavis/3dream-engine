@@ -30,10 +30,6 @@ include_directories(libs/stb)
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
-add_subdirectory(libs/FMOD)
-
-get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
-
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
@@ -42,10 +38,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JoltPhysics)
 
+get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
-        include/D3E/Common.h
+        include/D3E/CommonHeader.h
         include/D3E/EntryPoint.h
         include/D3E/App.h
         src/core/Game.cpp
@@ -82,8 +79,6 @@ add_library(D3Engine SHARED
         src/render/PerObjectConstBuffer.h
         src/render/systems/StaticMeshRenderSystem.cpp
         src/render/systems/StaticMeshRenderSystem.h
-        include/D3E/systems/PerTickSystem.h
-        include/D3E/systems/PerRenderTickSystem.h
         src/assetmng/MeshData.h
         src/render/VertexIndexBufferInfo.h
         src/assetmng/MeshFactory.cpp
@@ -99,7 +94,6 @@ add_library(D3Engine SHARED
         src/assetmng/AssetManager.cpp
         include/D3E/AssetManager.h
         src/engine/components/ObjectInfoComponent.h
-        include/D3E/systems/RenderSystem.h
         src/render/systems/StaticMeshInitSystem.cpp
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "D3E/systems/PerRenderTickSystem.h"
-#include "D3E/systems/RenderSystem.h"
+#include "D3E/CommonHeader.h"
+
+#include "D3E/systems/GameSystem.h"
 #include "Display.h"
 #include "EASTL/shared_ptr.h"
 #include "EASTL/vector.h"
@@ -27,7 +28,7 @@ namespace D3E
 	class GameRender
 	{
 	public:
-		virtual void Init();
+		virtual void Init(eastl::vector<GameSystem*>& systems);
 		virtual void OnResize();
 
 #ifdef USE_IMGUI
@@ -43,12 +44,14 @@ namespace D3E
 
 		virtual void UpdateAnimations(float dT);
 
-		virtual void PrepareDraw(entt::registry& registry);
-		virtual void Draw(entt::registry& registry);
-		virtual void EndDraw(entt::registry& registry);
+		virtual void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;
+
+		void LoadTexture(const String& name, const String& fileName);
 
 		void DestroyResources();
 
@@ -69,10 +72,6 @@ namespace D3E
 		nvrhi::TextureHandle nvrhiDepthBuffer;
 
 		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
-
-		eastl::vector<PerRenderTickSystem*> perTickRenderSystems;
-
-		eastl::vector<RenderSystem*> initRenderSystems;
 
 		NvrhiMessageCallback* messageCallback_;
 

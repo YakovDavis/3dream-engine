@@ -1,7 +1,8 @@
 #include "GameRender.h"
 
+#include "D3E/CommonCpp.h"
 #include "CameraUtils.h"
-#include "D3E/Common.h"
+#include "D3E/CommonHeader.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -14,14 +15,14 @@
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
-
+#include "assetmng/DefaultAssetLoader.h"
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
 #ifdef USE_IMGUI
 #include "imgui_impl_win32.h"
 #endif // USE_IMGUI
 
-void D3E::GameRender::Init()
+void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 {
 	Debug::LogMessage("[GameRender] Init started");
 	if (!device_.Get())
@@ -61,92 +62,15 @@ void D3E::GameRender::Init()
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
 
-	// TEMPORARY SECTION, to be moved
+	DefaultAssetLoader::LoadPrimitiveMeshes();
+	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
+	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0]);
+	DefaultAssetLoader::LoadDefaultSamplers(device_);
 
-	ShaderFactory::AddVertexShader("SimpleForward", "SimpleForward.hlsl", "VSMain");
-
-	nvrhi::VertexAttributeDesc attributes[] = {
-		nvrhi::VertexAttributeDesc()
-			.setName("POSITION")
-			.setFormat(nvrhi::Format::RGBA32_FLOAT)
-			.setOffset(offsetof(Vertex, pos))
-			.setElementStride(sizeof(Vertex)),
-		nvrhi::VertexAttributeDesc()
-			.setName("NORMAL")
-			.setFormat(nvrhi::Format::RGBA32_FLOAT)
-			.setOffset(offsetof(Vertex, normal))
-			.setElementStride(sizeof(Vertex)),
-		nvrhi::VertexAttributeDesc()
-			.setName("TANGENT")
-			.setFormat(nvrhi::Format::RGBA32_FLOAT)
-			.setOffset(offsetof(Vertex, tangentU))
-			.setElementStride(sizeof(Vertex)),
-		nvrhi::VertexAttributeDesc()
-			.setName("TEXCOORD")
-			.setFormat(nvrhi::Format::RGBA32_FLOAT)
-			.setOffset(offsetof(Vertex, tex))
-			.setElementStride(sizeof(Vertex)),
-	};
-	ShaderFactory::AddInputLayout("SimpleForward", attributes, 4, ShaderFactory::GetVertexShader("SimpleForward"));
-
-	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
-
-	nvrhi::BindingLayoutDesc layoutDesc0 = {};
-	layoutDesc0.setVisibility(nvrhi::ShaderType::Vertex);
-	layoutDesc0.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
-	ShaderFactory::AddBindingLayout("SimpleForwardV", layoutDesc0);
-
-	nvrhi::BindingLayoutDesc layoutDesc1 = {};
-	layoutDesc1.setVisibility(nvrhi::ShaderType::Pixel);
-	layoutDesc1.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
-	layoutDesc1.addItem(nvrhi::BindingLayoutItem::Sampler(0));
-	ShaderFactory::AddBindingLayout("SimpleForwardP", layoutDesc1);
-
-	nvrhi::DepthStencilState depthStencilState = {};
-	depthStencilState.setDepthTestEnable(true);
-	depthStencilState.setDepthWriteEnable(true);
-	depthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Less);
-	depthStencilState.setStencilEnable(true);
-
-	nvrhi::RasterState rasterState = {};
-	rasterState.frontCounterClockwise = false;
-	rasterState.setCullBack();
-
-	nvrhi::BlendState blendState = {};
-	blendState.targets[0] = {};
-
-	nvrhi::RenderState renderState = {};
-	renderState.depthStencilState = depthStencilState;
-	renderState.rasterState = rasterState;
-	renderState.blendState = blendState;
-
-	nvrhi::GraphicsPipelineDesc pipelineDesc = {};
-	pipelineDesc.setInputLayout(ShaderFactory::GetInputLayout("SimpleForward"));
-	pipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("SimpleForward"));
-	pipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("SimpleForward"));
-	pipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SimpleForwardV"));
-	pipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SimpleForwardP"));
-	pipelineDesc.setRenderState(renderState);
-	pipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
-	ShaderFactory::AddGraphicsPipeline("SimpleForward", pipelineDesc, nvrhiFramebuffer[0]);
-
-	MeshData sm = {};
-	GeometryGenerator::CreateBox(sm, 1.0f, 1.0f, 1.0f, 0);
-
-	MeshFactory::AddMeshFromData("Cube", sm);
-
-	auto samplerDesc = nvrhi::SamplerDesc();
-	TextureFactory::AddSampler("Base", device_, samplerDesc);
-
-	MeshFactory::FillMeshBuffers("Cube", device_, commandList_);
-
-	TextureFactory::LoadTexture("wood", "wood.png", device_, commandList_);
-
-	// END OF TEMPORARY SECTION
-
-	initRenderSystems.push_back(new StaticMeshInitSystem);
-
-	perTickRenderSystems.push_back(new StaticMeshRenderSystem);
+	for (auto& sys : systems)
+	{
+		sys->InitRender();
+	}
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -216,7 +140,7 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 	return commandList_;
 }
 
-void D3E::GameRender::Draw(entt::registry& registry)
+void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
 	// Obtain the current framebuffer from the graphics API
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
@@ -227,9 +151,9 @@ void D3E::GameRender::Draw(entt::registry& registry)
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, false, 0U);
 
-	for (auto& sys : perTickRenderSystems)
+	for (auto& sys : systems)
 	{
-		sys->Render(registry, currentFramebuffer, commandList_);
+		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
 
 	// Close and execute the command list
@@ -237,19 +161,29 @@ void D3E::GameRender::Draw(entt::registry& registry)
 	device_->executeCommandList(commandList_);
 }
 
-void D3E::GameRender::PrepareDraw(entt::registry& registry)
+void D3E::GameRender::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
-	for (auto& sys : initRenderSystems)
+	for (auto& sys : systems)
 	{
-		sys->Run(registry, device_, commandList_);
+		sys->PreDraw(registry, commandList_, device_);
 	}
 }
 
-void D3E::GameRender::EndDraw(entt::registry& registry)
+void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
+	for (auto& sys : systems)
+	{
+		sys->PostDraw(registry, commandList_, device_);
+	}
 #ifdef USE_IMGUI
 	RenderImGui();
 #endif // USE_IMGUI
+}
+
+void D3E::GameRender::LoadTexture(const String& name,
+                                  const String& fileName)
+{
+	TextureFactory::LoadTexture(name, fileName, device_, commandList_);
 }
 
 void D3E::GameRender::UpdateAnimations(float dT)
@@ -279,7 +213,6 @@ void D3E::GameRender::InitImGui()
 
 	ImGui_ImplWin32_Init(displayWin32->hWnd);
 	imGuiNvrhi_.init(device_);
-	//imGuiNvrhi_.backbufferResizing();
 }
 
 void D3E::GameRender::RenderImGui()

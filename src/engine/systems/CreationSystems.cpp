@@ -1,5 +1,6 @@
 #include "D3E/systems/CreationSystems.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
