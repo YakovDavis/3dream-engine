@@ -1,11 +1,11 @@
 #pragma once
 
-#include "D3E/systems/PerRenderTickSystem.h"
+#include "D3E/systems/GameSystem.h"
 
 namespace D3E
 {
-	class StaticMeshRenderSystem : public PerRenderTickSystem
+	class StaticMeshRenderSystem : public GameSystem
 	{
-		void Render(entt::registry& reg, nvrhi::IFramebuffer*, nvrhi::CommandListHandle& commandList) override;
+		void Draw(entt::registry& reg, nvrhi::IFramebuffer* fb, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) override;
 	};
 }

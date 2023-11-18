@@ -1,4 +1,6 @@
 #include "InputDevice.h"
+
+#include "D3E/CommonCpp.h"
 #include <iostream>
 #include "D3E/Game.h"
 #include "render/DisplayWin32.h"

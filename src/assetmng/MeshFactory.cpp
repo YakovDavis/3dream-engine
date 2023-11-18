@@ -1,14 +1,15 @@
 #include "MeshFactory.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Debug.h"
 
 bool D3E::MeshFactory::isInitialized_ = false;
 D3E::Game* D3E::MeshFactory::activeGame_;
-eastl::unordered_map<eastl::string, D3E::MeshData> D3E::MeshFactory::meshData_ {};
-eastl::unordered_map<eastl::string, nvrhi::BufferHandle> D3E::MeshFactory::vBuffers_ {};
-eastl::unordered_map<eastl::string, nvrhi::VertexBufferBinding> D3E::MeshFactory::vbBindings_ {};
-eastl::unordered_map<eastl::string, nvrhi::BufferHandle> D3E::MeshFactory::iBuffers_ {};
-eastl::unordered_map<eastl::string, nvrhi::IndexBufferBinding> D3E::MeshFactory::ibBindings_ {};
+eastl::unordered_map<D3E::String, D3E::MeshData> D3E::MeshFactory::meshData_ {};
+eastl::unordered_map<D3E::String, nvrhi::BufferHandle> D3E::MeshFactory::vBuffers_ {};
+eastl::unordered_map<D3E::String, nvrhi::VertexBufferBinding> D3E::MeshFactory::vbBindings_ {};
+eastl::unordered_map<D3E::String, nvrhi::BufferHandle> D3E::MeshFactory::iBuffers_ {};
+eastl::unordered_map<D3E::String, nvrhi::IndexBufferBinding> D3E::MeshFactory::ibBindings_ {};
 
 void D3E::MeshFactory::Initialize(D3E::Game* game)
 {
@@ -31,13 +32,13 @@ void D3E::MeshFactory::DestroyResources()
 	isInitialized_ = false;
 }
 
-void D3E::MeshFactory::AddMeshFromData(const eastl::string& name,
+void D3E::MeshFactory::AddMeshFromData(const String& name,
 	const D3E::MeshData& meshData)
 {
 	meshData_.insert({name, meshData});
 }
 
-void D3E::MeshFactory::FillMeshBuffers(const eastl::string& name,
+void D3E::MeshFactory::FillMeshBuffers(const String& name,
                                        nvrhi::DeviceHandle& device,
                                        nvrhi::CommandListHandle& commandList)
 {
@@ -80,7 +81,7 @@ void D3E::MeshFactory::FillMeshBuffers(const eastl::string& name,
 	ibBindings_.insert({name, indexBufferBinding});
 }
 
-nvrhi::BufferHandle D3E::MeshFactory::GetVertexBuffer(const eastl::string& name)
+nvrhi::BufferHandle D3E::MeshFactory::GetVertexBuffer(const String& name)
 {
 	if (vBuffers_.find(name) == vBuffers_.end())
 	{
@@ -90,7 +91,7 @@ nvrhi::BufferHandle D3E::MeshFactory::GetVertexBuffer(const eastl::string& name)
 }
 
 nvrhi::VertexBufferBinding D3E::MeshFactory::GetVertexBufferBinding(
-	const eastl::string& name)
+	const String& name)
 {
 	if (vbBindings_.find(name) == vbBindings_.end())
 	{
@@ -99,7 +100,7 @@ nvrhi::VertexBufferBinding D3E::MeshFactory::GetVertexBufferBinding(
 	return vbBindings_[name];
 }
 
-nvrhi::BufferHandle D3E::MeshFactory::GetIndexBuffer(const eastl::string& name)
+nvrhi::BufferHandle D3E::MeshFactory::GetIndexBuffer(const String& name)
 {
 	if (iBuffers_.find(name) == iBuffers_.end())
 	{
@@ -109,7 +110,7 @@ nvrhi::BufferHandle D3E::MeshFactory::GetIndexBuffer(const eastl::string& name)
 }
 
 nvrhi::IndexBufferBinding D3E::MeshFactory::GetIndexBufferBinding(
-	const eastl::string& name)
+	const String& name)
 {
 	if (ibBindings_.find(name) == ibBindings_.end())
 	{
@@ -118,7 +119,7 @@ nvrhi::IndexBufferBinding D3E::MeshFactory::GetIndexBufferBinding(
 	return ibBindings_[name];
 }
 
-D3E::MeshData D3E::MeshFactory::GetMeshData(const eastl::string& name)
+D3E::MeshData D3E::MeshFactory::GetMeshData(const String& name)
 {
 	if (meshData_.find(name) == meshData_.end())
 	{

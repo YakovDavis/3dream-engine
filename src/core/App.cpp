@@ -1,5 +1,7 @@
 #include "D3E/App.h"
 
+#include "D3E/CommonCpp.h"
+
 /*#include <Jolt/Jolt.h>
 
 #include <Jolt/RegisterTypes.h>
@@ -12,6 +14,16 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>*/
+
+void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+{
+	return new uint8_t[size];
+}
+
+void * __cdecl operator new[](unsigned __int64 size, unsigned __int64 flags, unsigned __int64 debugFlags, char const * name, int a,unsigned int b, char const* file, int line)
+{
+	return new uint8_t[size];
+}
 
 LRESULT D3E::App::WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {
