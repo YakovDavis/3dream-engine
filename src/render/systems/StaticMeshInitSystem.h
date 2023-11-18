@@ -1,11 +1,11 @@
 #pragma once
 
-#include "D3E/systems/RenderSystem.h"
+#include "D3E/systems/GameSystem.h"
 
 namespace D3E
 {
-	class StaticMeshInitSystem : public RenderSystem
+	class StaticMeshInitSystem : public GameSystem
 	{
-		void Run(entt::registry& reg, nvrhi::IDevice* device, nvrhi::CommandListHandle& commandList) override;
+		void PreDraw(entt::registry& reg, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) override;
 	};
 }

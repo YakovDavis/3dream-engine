@@ -1,5 +1,6 @@
 #include "StaticMeshRenderSystem.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
@@ -10,8 +11,8 @@
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
 
-void D3E::StaticMeshRenderSystem::Render(entt::registry& reg, nvrhi::IFramebuffer* fb,
-                                         nvrhi::CommandListHandle& commandList)
+void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
+                                         nvrhi::ICommandList* commandList, nvrhi::IDevice* device)
 {
 	eastl::fixed_vector<float, 3, false> origin = {0, 0, 0};
 

@@ -5,31 +5,31 @@
 std::fstream D3E::Debug::fileStream;
 HANDLE D3E::Debug::console = GetStdHandle(STD_OUTPUT_HANDLE);;
 
-void D3E::Debug::LogMessage(const eastl::string& text)
+void D3E::Debug::LogMessage(const String& text)
 {
 	auto time = GetTime();
-	const eastl::string message = time + " " + text;
+	const String message = time + " " + text;
 	PrintColoredText(Color::White, message);
 	LogText(message);
 }
 
-void D3E::Debug::LogWarning(const eastl::string& text)
+void D3E::Debug::LogWarning(const String& text)
 {
 	auto time = GetTime();
-	const eastl::string warning = time + " " + text;
+	const String warning = time + " " + text;
 	PrintColoredText(Color::Yellow, warning);
 	LogText("WARNING: " + warning);
 }
 
-void D3E::Debug::LogError(const eastl::string& text)
+void D3E::Debug::LogError(const String& text)
 {
 	auto time = GetTime();
-	const eastl::string error = time + " " + text;
+	const String error = time + " " + text;
 	PrintColoredText(Color::Red, error);
 	LogText("ERROR!!!: " + error);
 }
 
-void D3E::Debug::Assert(bool condition, const eastl::string& text)
+void D3E::Debug::Assert(bool condition, const String& text)
 {
 	if(!condition)
 	{
@@ -60,7 +60,7 @@ void D3E::Debug::CloseLog()
 	}
 }
 
-void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const eastl::string& text)
+void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const String& text)
 {
 	if(!console)
 	{
@@ -104,7 +104,7 @@ void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const eastl::string& 
 	                            FOREGROUND_BLUE |
 	                            FOREGROUND_INTENSITY);
 }
-void D3E::Debug::LogText(const eastl::string& text)
+void D3E::Debug::LogText(const String& text)
 {
 	if (!fileStream.is_open())
 	{
@@ -118,7 +118,7 @@ void D3E::Debug::LogText(const eastl::string& text)
 
 	fileStream << text.c_str() << std::endl;
 }
-eastl::string D3E::Debug::GetTime()
+D3E::String D3E::Debug::GetTime()
 {
 	const auto now = std::chrono::system_clock::now();
 	const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
@@ -130,7 +130,7 @@ eastl::string D3E::Debug::GetTime()
 	return ss.str().c_str();
 }
 
-void D3E::Debug::HandleLastWindowsError(const eastl::string& errorPlace)
+void D3E::Debug::HandleLastWindowsError(const String& errorPlace)
 {
 	// Retrieve the system error message for the last-error code
 
@@ -147,7 +147,7 @@ void D3E::Debug::HandleLastWindowsError(const eastl::string& errorPlace)
 		(LPTSTR) &lpMsgBuf,
 		0, nullptr );
 
-	eastl::string ErrorStr = errorPlace + " failed with error " + std::to_string(dw).c_str() + ": " + static_cast<char*>(lpMsgBuf);
+	String ErrorStr = errorPlace + " failed with error " + std::to_string(dw).c_str() + ": " + static_cast<char*>(lpMsgBuf);
 
 	LogError(ErrorStr);
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "EASTL/string.h"
+#include "D3E/CommonHeader.h"
 
 namespace D3E
 {
 	struct ObjectInfoComponent
 	{
-		eastl::string name;
+		String name;
 	};
 }

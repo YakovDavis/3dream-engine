@@ -1,5 +1,7 @@
 #include "CameraUtils.h"
 
+#include "D3E/CommonCpp.h"
+
 using namespace DirectX::SimpleMath;
 
 Matrix D3E::CameraUtils::GetViewProj(const eastl::fixed_vector<float, 3, false>& parentLoc, const D3E::CameraComponent& cameraComponent)

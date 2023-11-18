@@ -1,5 +1,6 @@
 #include "D3E/Game.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/systems/CreationSystems.h"
@@ -10,8 +11,8 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
-
-#include <iostream>
+#include "render/systems/StaticMeshInitSystem.h"
+#include "render/systems/StaticMeshRenderSystem.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -49,22 +50,25 @@ void D3E::Game::Init()
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
-	gameRender_->Init();
+	gameRender_->Init(systems_);
 
 	inputDevice_ = new InputDevice(this);
 
-	CreationSystems::CreateDefaultPlayer(registry_);
+	systems_.push_back(new StaticMeshInitSystem);
+	systems_.push_back(new StaticMeshRenderSystem);
+	systems_.push_back(new D3E::FPSControllerSystem);
 
-	CreationSystems::CreateCubeSM(registry_);
-
-	perTickSystems.push_back(new FPSControllerSystem);
+	for (auto& sys : systems_)
+	{
+		sys->InitRender();
+	}
 }
 
 void D3E::Game::Update(const float deltaTime)
 {
-	for (auto& sys : perTickSystems)
+	for (auto& sys : systems_)
 	{
-		sys->Run(registry_, this, deltaTime);
+		sys->Update(registry_, this, deltaTime);
 	}
 
 	auto view = registry_.view<const TransformComponent>();
@@ -80,9 +84,9 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_);
-	gameRender_->Draw(registry_);
-	gameRender_->EndDraw(registry_);
+	gameRender_->PrepareDraw(registry_, systems_);
+	gameRender_->Draw(registry_, systems_);
+	gameRender_->EndDraw(registry_, systems_);
 
 	gameRender_->Present();
 
@@ -207,4 +211,10 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 float D3E::Game::GetDeltaTime() const
 {
 	return deltaTime_;
+}
+
+void D3E::Game::LoadTexture(const String& name,
+                            const String& fileName)
+{
+	gameRender_->LoadTexture(name, fileName);
 }

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "D3E/systems/PerTickSystem.h"
+#include "D3E/systems/GameSystem.h"
 
 namespace D3E
 {
-	class FPSControllerSystem : public PerTickSystem
+	class FPSControllerSystem : public GameSystem
 	{
 	public:
-		void Run(entt::registry& reg, Game* game, float dT) override;
+		void Update(entt::registry& reg, Game* game, float dT) override;
 	};
 }
