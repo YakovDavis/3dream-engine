@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EASTL/string.h"
+#include "D3E/CommonHeader.h"
 #include "EASTL/vector.h"
 #include "nvrhi/nvrhi.h"
 
@@ -8,8 +8,8 @@ namespace D3E
 {
 	struct StaticMeshComponent
 	{
-		eastl::string meshName;
-		eastl::string pipelineName;
+		String meshName;
+		String pipelineName;
 		nvrhi::BufferHandle constantBuffer;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
 

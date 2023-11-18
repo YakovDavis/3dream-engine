@@ -55,6 +55,8 @@ SOFTWARE.
 
 #include "imgui_nvrhi.h"
 
+#include "D3E/CommonCpp.h"
+
 #include "render/ShaderFactory.h"
 
 struct VERTEX_CONSTANT_BUFFER

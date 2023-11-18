@@ -1,5 +1,6 @@
 #include "GameRenderD3D12.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Game.h"
 #include "D3E/Debug.h"
 #include "DisplayWin32.h"
@@ -94,7 +95,7 @@ void D3E::GameRenderD3D12::CreateNativeSwapChain()
 	Debug::LogMessage("[GameRenderD3D12] Native swapchain creation finished");
 }
 
-void D3E::GameRenderD3D12::Init()
+void D3E::GameRenderD3D12::Init(eastl::vector<GameSystem*>& systems)
 {
 	UpdateDisplayWin32();
 
@@ -108,7 +109,7 @@ void D3E::GameRenderD3D12::Init()
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 
-	GameRender::Init();
+	GameRender::Init(systems);
 }
 
 void D3E::GameRenderD3D12::FlushCommandQueue()
@@ -433,13 +434,13 @@ void D3E::GameRenderD3D12::Present()
 	mFrameCount++;
 }
 
-void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry)
+void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
 	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForSingleObject(mFrameFenceEvents[bufferIndex], INFINITE);
 
-	GameRender::PrepareDraw(registry);
+	GameRender::PrepareDraw(registry, systems);
 }
 
 UINT D3E::GameRenderD3D12::GetCurrentFrameBuffer()

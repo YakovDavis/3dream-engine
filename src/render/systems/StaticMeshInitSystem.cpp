@@ -1,5 +1,6 @@
 #include "StaticMeshInitSystem.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -10,8 +11,8 @@
 #include "render/ShaderFactory.h"
 #include "engine/components/ObjectInfoComponent.h"
 
-void D3E::StaticMeshInitSystem::Run(entt::registry& reg, nvrhi::IDevice* device,
-                                    nvrhi::CommandListHandle& commandList)
+void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* commandList,
+                                        nvrhi::IDevice* device)
 {
 	auto view = reg.view<const ObjectInfoComponent, StaticMeshComponent>();
 

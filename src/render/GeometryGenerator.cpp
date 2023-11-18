@@ -3,6 +3,8 @@
 //***************************************************************************************
 
 #include "GeometryGenerator.h"
+
+#include "D3E/CommonCpp.h"
 #include <algorithm>
 
 using namespace DirectX;

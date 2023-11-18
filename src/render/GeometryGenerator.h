@@ -43,7 +43,7 @@ namespace D3E
 		///< summary>
 		/// Creates a geosphere centered at the origin with the given radius.  The depth controls the level of tessellation.
 		///</summary>
-		void CreateGeosphere(MeshData& sm, float radius, uint32 numSubdivisions);
+		static void CreateGeosphere(MeshData& sm, float radius, uint32 numSubdivisions);
 
 		///< summary>
 		/// Creates a cylinder parallel to the y-axis, and centered about the origin. The bottom and top radius can vary to form various cone shapes rather than true
