@@ -5,6 +5,7 @@
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
@@ -40,6 +41,8 @@ void D3E::Game::Run()
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
+
+		ConsoleManager::getInstance()->handleConsoleInput();
 
 		{
 			using namespace eastl::chrono;
