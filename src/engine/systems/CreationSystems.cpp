@@ -3,9 +3,12 @@
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 
-entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc)
+entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry,
+                                                const ObjectInfoComponent& info,
+                                                const TransformComponent& tc)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
@@ -35,7 +38,9 @@ entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry, const 
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry, const TransformComponent& tc)
+entt::entity
+D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
+                                          const TransformComponent& tc)
 {
 	const auto e = registry.create();
 
@@ -43,18 +48,21 @@ entt::entity D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
 	info.name = "Player";
 
 	TransformComponent transform(tc);
-//	transform.position_ = {0, 0, -10};
-//	transform.rotation_ = {0, 0, 0, 1};
-//	transform.scale_ = {1, 1, 1};
+	//	transform.position_ = {0, 0, -10};
+	//	transform.rotation_ = {0, 0, 0, 1};
+	//	transform.scale_ = {1, 1, 1};
 
 	CameraComponent camera;
 
 	FPSControllerComponent fps;
 
+	SoundListenerComponent slc;
+
 	registry.emplace<ObjectInfoComponent>(e, info);
 	registry.emplace<TransformComponent>(e, transform);
 	registry.emplace<CameraComponent>(e, camera);
 	registry.emplace<FPSControllerComponent>(e, fps);
+	registry.emplace<SoundListenerComponent>(e, slc);
 
 	return e;
 }

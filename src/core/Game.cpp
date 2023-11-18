@@ -1,12 +1,14 @@
 #include "D3E/Game.h"
 
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
@@ -15,7 +17,10 @@
 
 #include <iostream>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
+                                                             UINT msg,
+                                                             WPARAM wParam,
+                                                             LPARAM lParam);
 
 void D3E::Game::Run()
 {
@@ -35,7 +40,9 @@ void D3E::Game::Run()
 
 		{
 			using namespace eastl::chrono;
-			deltaTime_ = duration_cast<duration<float, milliseconds::period>>(steady_clock::now() - *prevCycleTimePoint).count();
+			deltaTime_ = duration_cast<duration<float, milliseconds::period>>(
+							 steady_clock::now() - *prevCycleTimePoint)
+			                 .count();
 		}
 
 		Update(deltaTime_);
@@ -78,7 +85,7 @@ void D3E::Game::Init()
 	transform.position_ = {3, 1, 0};
 	transform.rotation_ = {0, 0, 0, 1};
 	transform.scale_ = {1, 1, 1};
-	//auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
+	// auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
 
 	auto& sc = registry_.get<SoundComponent>(cube);
 
@@ -86,6 +93,7 @@ void D3E::Game::Init()
 	soundEngine_->PlaySound3D(sc.fileName, sc.location);
 
 	perTickSystems.push_back(new FPSControllerSystem);
+	perTickSystems.push_back(new SoundEngineListenerSystem(registry_));
 }
 
 void D3E::Game::Update(const float deltaTime)
@@ -96,8 +104,12 @@ void D3E::Game::Update(const float deltaTime)
 	{
 		ObjectInfoComponent info;
 		TransformComponent transform;
-		info.name = ("Cube" + std::to_string(floor(totalTime / 2000.0))).c_str();
-		transform.position_ = {1.0f * ((int)(totalTime / 500.0f) % 10 - 5), 1.0f * ((int)(totalTime / 500.0f) / 100 % 10 - 5), 1.0f * ((int)(totalTime / 500.0f) / 10 % 10 - 5)};
+		info.name =
+			("Cube" + std::to_string(floor(totalTime / 2000.0))).c_str();
+		transform.position_ = {
+			1.0f * ((int)(totalTime / 500.0f) % 10 - 5),
+			1.0f * ((int)(totalTime / 500.0f) / 100 % 10 - 5),
+			1.0f * ((int)(totalTime / 500.0f) / 10 % 10 - 5)};
 		transform.rotation_ = {0, 0, 0, 1};
 		transform.scale_ = {1, 1, 1};
 		auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
