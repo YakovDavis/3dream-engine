@@ -141,7 +141,7 @@ void SoundEngine::UnloadSound(const string& soundName)
 }
 
 void SoundEngine::PlaySound3D(const string& soundName,
-                              const eastl::fixed_vector<float, 3, false> loc,
+                              const DirectX::SimpleMath::Vector3 loc,
                               float dbVolume)
 {
 	auto* sound = GetSound(soundName);
@@ -178,12 +178,12 @@ void SoundEngine::PlaySound3D(const string& soundName,
 
 void SoundEngine::PlaySound2D(const string& soundName, float dbVolume)
 {
-	const eastl::fixed_vector<float, 3, false> v = {0.f, 0.f, 0.f};
+	const DirectX::SimpleMath::Vector3 v = {0.f, 0.f, 0.f};
 	PlaySound3D(soundName, v, dbVolume);
 }
 
 void SoundEngine::SetChannelLocation(
-	int channelId, const eastl::fixed_vector<float, 3, false> loc)
+	int channelId, const DirectX::SimpleMath::Vector3 loc)
 {
 }
 
@@ -198,10 +198,10 @@ void SoundEngine::SetChannelVolume(int channelId, float dbVolume)
 }
 
 void D3E::SoundEngine::SetListenerTransform(
-	eastl::fixed_vector<float, 3, false> location,
-	eastl::fixed_vector<float, 3, false> velocity,
-	eastl::fixed_vector<float, 3, false> forward,
-	eastl::fixed_vector<float, 3, false> upv)
+	DirectX::SimpleMath::Vector3 location,
+	DirectX::SimpleMath::Vector3 velocity,
+	DirectX::SimpleMath::Vector3 forward,
+	DirectX::SimpleMath::Vector3 upv)
 {
 	FMOD_VECTOR loc = VectorToFmod(location);
 	FMOD_VECTOR vel = VectorToFmod(velocity);

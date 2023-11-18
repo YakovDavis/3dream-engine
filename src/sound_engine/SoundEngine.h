@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EASTL/fixed_vector.h"
+#include "SimpleMath.h"
 #include "EASTL/map.h"
 #include "EASTL/string.h"
 #include "SoundEngineCommon.h"
@@ -48,17 +48,17 @@ namespace D3E
 		               bool isLooping = false, bool stream = false);
 		void UnloadSound(const eastl::string& soundName);
 		void PlaySound3D(const eastl::string& soundName,
-		                 const eastl::fixed_vector<float, 3, false> loc,
+		                 const DirectX::SimpleMath::Vector3 loc,
 		                 float dbVolume = 1.0f);
 		void PlaySound2D(const eastl::string& soundName, float dbVolume = 1.0f);
 		void SetChannelLocation(int channelId,
-		                        const eastl::fixed_vector<float, 3, false> loc);
+		                        const DirectX::SimpleMath::Vector3 loc);
 		void SetChannelVolume(int channelId, float dbVolume);
 
-		void SetListenerTransform(eastl::fixed_vector<float, 3, false> location,
-		                         eastl::fixed_vector<float, 3, false> velocity,
-		                         eastl::fixed_vector<float, 3, false> forward,
-		                         eastl::fixed_vector<float, 3, false> up);
+		void SetListenerTransform(DirectX::SimpleMath::Vector3 location,
+		                          DirectX::SimpleMath::Vector3 velocity,
+		                          DirectX::SimpleMath::Vector3 forward,
+		                          DirectX::SimpleMath::Vector3 up);
 
 		bool IsPlaying(int channelId) const;
 	};

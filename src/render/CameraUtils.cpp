@@ -4,16 +4,16 @@
 
 using namespace DirectX::SimpleMath;
 
-Matrix D3E::CameraUtils::GetViewProj(const eastl::fixed_vector<float, 3, false>& parentLoc, const D3E::CameraComponent& cameraComponent)
+Matrix D3E::CameraUtils::GetViewProj(const Vector3& parentLoc, const D3E::CameraComponent& cameraComponent)
 {
 	return GetView(parentLoc, cameraComponent) * GetProj(cameraComponent);
 }
 
-Matrix D3E::CameraUtils::GetView(const eastl::fixed_vector<float, 3, false>& parentLoc, const D3E::CameraComponent& cameraComponent)
+Matrix D3E::CameraUtils::GetView(const Vector3& parentLoc, const D3E::CameraComponent& cameraComponent)
 {
-	Vector3 worldPos(parentLoc[0] + cameraComponent.offset[0], parentLoc[1] + cameraComponent.offset[1], parentLoc[2] + cameraComponent.offset[2]);
-	Vector3 target(worldPos.x + cameraComponent.forward[0], worldPos.y + cameraComponent.forward[1], worldPos.z + cameraComponent.forward[2]);
-	Vector3 up(cameraComponent.up[0], cameraComponent.up[1], cameraComponent.up[2]);
+	Vector3 worldPos(parentLoc.x + cameraComponent.offset.x, parentLoc.y + cameraComponent.offset.y, parentLoc.z + cameraComponent.offset.z);
+	Vector3 target(worldPos.x + cameraComponent.forward.x, worldPos.y + cameraComponent.forward.y, worldPos.z + cameraComponent.forward.z);
+	Vector3 up(cameraComponent.up.x, cameraComponent.up.y, cameraComponent.up.z);
 #ifdef USE_LH_MATRICES
 	return DirectX::XMMatrixLookAtLH(worldPos, target, up);
 #else
