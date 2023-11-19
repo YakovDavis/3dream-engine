@@ -12,7 +12,7 @@ add_executable(${PROJECT_NAME} WIN32
 set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${D3E_ROOT_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC "${D3E_ROOT_DIR}/include" "${D3E_ROOT_DIR}/libs/uuid_v4")
 
 add_library(D3E_LIB SHARED IMPORTED)
 set_target_properties(D3E_LIB PROPERTIES

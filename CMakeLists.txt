@@ -8,11 +8,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+option(BUILD_SHARED_LIBS OFF)
+option(ASSIMP_INSTALL OFF)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
 #find_program(DIRECTX_DXC_TOOL DXC.EXE
 #         REQUIRED HINTS ${DIRECTX_DXC_PATH})
+option(BUILD_XAUDIO_WIN10 OFF)
 add_subdirectory(libs/DirectXTK12)
 
 add_subdirectory(libs/imgui)
@@ -32,13 +35,15 @@ add_subdirectory(libs/FMOD)
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
-FetchContent_Declare(
-        JoltPhysics
-        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-        SOURCE_SUBDIR "Build"
-)
-FetchContent_MakeAvailable(JoltPhysics)
+include_directories(libs/uuid_v4)
+
+#FetchContent_Declare(
+#        JoltPhysics
+#        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+#        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+#        SOURCE_SUBDIR "Build"
+#)
+#FetchContent_MakeAvailable(JoltPhysics)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
@@ -112,6 +117,10 @@ add_library(D3Engine SHARED
         src/core/SimpleMath.cpp
         include/SimpleMath.h
         include/SimpleMath.inl
+        include/D3E/Uuid.h
+        src/utils/Uuid.cpp 
+        src/engine/systems/ChildTransformSynchronizationSystem.h
+        src/engine/systems/ChildTransformSynchronizationSystem.cpp
         include/D3E/engine/ConsoleManager.h
         src/engine/ConsoleManager.cpp
         include/D3E/engine/ConsoleVariable.h
@@ -122,7 +131,7 @@ add_library(D3Engine SHARED
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
-target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+#target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
 
 if(WIN32)
     target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)

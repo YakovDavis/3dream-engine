@@ -9,6 +9,7 @@
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
+#include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
@@ -20,7 +21,10 @@
 #include "sound_engine/SoundEngine.h"
 #include <thread>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
+                                                             UINT msg,
+                                                             WPARAM wParam,
+                                                             LPARAM lParam);
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -95,7 +99,8 @@ void D3E::Game::Init()
 
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
-	systems_.push_back(new D3E::FPSControllerSystem);
+	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
@@ -252,8 +257,7 @@ float D3E::Game::GetDeltaTime() const
 	return deltaTime_;
 }
 
-void D3E::Game::LoadTexture(const String& name,
-                            const String& fileName)
+void D3E::Game::LoadTexture(const String& name, const String& fileName)
 {
 	gameRender_->LoadTexture(name, fileName);
 }
