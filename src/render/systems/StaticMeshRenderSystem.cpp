@@ -7,6 +7,7 @@
 #include "D3E/Debug.h"
 #include "D3E/components/TransformComponent.h"
 #include "D3E/components/render/StaticMeshComponent.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "assetmng/MeshFactory.h"
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
@@ -51,10 +52,11 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 
+				  auto renderModeCVar = ConsoleManager::getInstance()->findConsoleVariable("renderingMode");
 
 				  // Set the graphics state: pipeline, framebuffer, viewport, bindings.
 				  auto graphicsState = nvrhi::GraphicsState()
-		                                   .setPipeline(ShaderFactory::GetGraphicsPipeline(smc.pipelineName))
+		                                   .setPipeline(renderModeCVar->getInt() == 0 ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName) : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
 		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1920, 1080)))
 		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "V"))

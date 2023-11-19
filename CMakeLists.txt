@@ -121,6 +121,12 @@ add_library(D3Engine SHARED
         src/utils/Uuid.cpp 
         src/engine/systems/ChildTransformSynchronizationSystem.h
         src/engine/systems/ChildTransformSynchronizationSystem.cpp
+        include/D3E/engine/ConsoleManager.h
+        src/engine/ConsoleManager.cpp
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/IntConsoleVariable.h
+        include/D3E/engine/FloatConsoleVariable.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

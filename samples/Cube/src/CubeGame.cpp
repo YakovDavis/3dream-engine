@@ -1,6 +1,7 @@
 #include "CubeGame.h"
 
 #include "D3E/systems/CreationSystems.h"
+#include "D3E/engine/ConsoleManager.h"
 
 void CubeGame::Update(float deltaTime)
 {
