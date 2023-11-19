@@ -23,7 +23,7 @@ set_target_properties(D3E_LIB PROPERTIES
 get_filename_component(EASTL_ROOT_DIR "${D3E_ROOT_DIR}/libs/EASTL" ABSOLUTE)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
-target_link_libraries(${PROJECT_NAME} ${D3E_LIB})
+target_link_libraries(${PROJECT_NAME} D3E_LIB)
 target_link_libraries(${PROJECT_NAME} ${EASTL_LIBRARY})
 
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/D3Engined.dll)

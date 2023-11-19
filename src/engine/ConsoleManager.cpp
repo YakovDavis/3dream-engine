@@ -1,5 +1,6 @@
 #include "D3E/engine/ConsoleManager.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 
 D3E::ConsoleManager* D3E::ConsoleManager::instance_ = nullptr;
@@ -42,51 +43,47 @@ D3E::ConsoleVariable* D3E::ConsoleManager::findConsoleVariable(const char* name)
 	return foundVariable->second;
 }
 
-void D3E::ConsoleManager::handleConsoleInput()
+void D3E::ConsoleManager::handleConsoleInput(std::string line)
 {
-	std::string line;
-	while (std::getline(std::cin, line))
+	int pos = line.find_first_of(' ');
+	if (pos == std::string::npos)
 	{
-		int pos = line.find_first_of(' ');
-		if (pos == std::string::npos)
+		ConsoleVariable* var = findConsoleVariable(line.data());
+		if (var)
 		{
-			ConsoleVariable* var = findConsoleVariable(line.data());
-			if (var)
+			if (var->getType() == tInt)
 			{
-				if (var->getType() == tInt)
-				{
-					std::cout << var->getInt() << "\n";
-				}
-				else
-				{
-					std::cout << var->getFloat() << "\n";
-				}
+				std::cout << var->getInt() << "\n";
 			}
 			else
 			{
-				std::cout << "No such variable\n";
+				std::cout << var->getFloat() << "\n";
 			}
 		}
 		else
 		{
-			std::string name = line.substr(0, pos);
-			std::string value = line.substr(pos+1);
-			ConsoleVariable* var = findConsoleVariable(name.data());
-			if (var)
+			std::cout << "No such variable\n";
+		}
+	}
+	else
+	{
+		std::string name = line.substr(0, pos);
+		std::string value = line.substr(pos+1);
+		ConsoleVariable* var = findConsoleVariable(name.data());
+		if (var)
+		{
+			if (var->getType() == tInt)
 			{
-				if (var->getType() == tInt)
-				{
-					var->setInt(std::stoi(value));
-				}
-				else
-				{
-					var->setFloat(std::stof(value));
-				}
+				var->setInt(std::stoi(value));
 			}
 			else
 			{
-				std::cout << "No such variable\n";
+				var->setFloat(std::stof(value));
 			}
+		}
+		else
+		{
+			std::cout << "No such variable\n";
 		}
 	}
 }

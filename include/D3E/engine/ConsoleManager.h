@@ -23,7 +23,7 @@ namespace D3E
 		void registerConsoleVariable(const char* name, int value);
 		void registerConsoleVariable(const char* name, float value);
 		ConsoleVariable* findConsoleVariable(const char* name);
-		void handleConsoleInput();
+		void handleConsoleInput(std::string line);
 	};
 }
 

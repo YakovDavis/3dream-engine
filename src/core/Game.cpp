@@ -35,7 +35,7 @@ void PollConsoleInput(D3E::Game* game)
 		std::getline(std::cin, input);
 
 		std::lock_guard<std::mutex> lock(game->consoleCommandQueueMutex);
-		game->consoleCommandQueue = game->consoleCommandQueue + " " + input;
+		game->consoleCommandQueue = input;
 	}
 }
 
@@ -263,8 +263,8 @@ void D3E::Game::CheckConsoleInput()
 	std::lock_guard<std::mutex> lock(consoleCommandQueueMutex);
 	if(!consoleCommandQueue.empty())
 	{
-		//console.execute(consoleCommandQueue, std::cout);
-		std::cout << consoleCommandQueue << '\n';
+		ConsoleManager::getInstance()->handleConsoleInput(consoleCommandQueue);
+		//std::cout << consoleCommandQueue << '\n';
 		consoleCommandQueue = std::string();
 	}
 }

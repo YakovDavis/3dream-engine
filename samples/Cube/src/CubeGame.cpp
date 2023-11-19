@@ -1,6 +1,7 @@
 #include "CubeGame.h"
 
 #include "D3E/systems/CreationSystems.h"
+#include "D3E/engine/ConsoleManager.h"
 
 void CubeGame::Update(float deltaTime)
 {
@@ -24,4 +25,6 @@ void CubeGame::Init()
 	tc.position_ = Vector3(0, 0, 0);
 
 	D3E::CreationSystems::CreateCubeSM(GetRegistry(), info, tc);
+
+    D3E::ConsoleManager::getInstance()->registerConsoleVariable("testVar", 1);
 }
