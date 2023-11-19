@@ -27,6 +27,8 @@ include_directories(libs/nvrhi/include)
 
 include_directories(libs/stb)
 
+add_subdirectory(libs/FMOD)
+
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
@@ -93,7 +95,7 @@ add_library(D3Engine SHARED
         src/editor/EditorUtils.h
         src/assetmng/AssetManager.cpp
         include/D3E/AssetManager.h
-        src/engine/components/ObjectInfoComponent.h
+        include/D3E/Components/ObjectInfoComponent.h
         src/render/systems/StaticMeshInitSystem.cpp
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
@@ -106,6 +108,10 @@ add_library(D3Engine SHARED
         src/engine/systems/SoundEngineListenerSystem.h
         src/engine/systems/SoundEngineListenerSystem.cpp
         include/D3E/Components/sound/SoundListenerComponent.h
+        src/assetmng/DefaultAssetLoader.cpp
+        src/core/SimpleMath.cpp
+        include/SimpleMath.h
+        include/SimpleMath.inl
 )
 
 target_include_directories(D3Engine PUBLIC include)
