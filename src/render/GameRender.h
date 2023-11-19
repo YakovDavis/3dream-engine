@@ -51,7 +51,7 @@ namespace D3E
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;
 
-		void LoadTexture(const String& name, const String& fileName);
+//		void LoadTexture(const String& name, const String& fileName);
 
 		void DestroyResources();
 

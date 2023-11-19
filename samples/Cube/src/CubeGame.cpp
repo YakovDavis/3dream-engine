@@ -11,8 +11,6 @@ void CubeGame::Init()
 {
 	Game::Init();
 
-	LoadTexture("wood", "wood.png");
-
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};
 	info.name = "Cube";
