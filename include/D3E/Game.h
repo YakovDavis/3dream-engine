@@ -5,6 +5,7 @@
 #include "EASTL/vector.h"
 
 #include <entt/entt.hpp>
+#include <mutex>
 
 namespace D3E
 {
@@ -40,6 +41,12 @@ namespace D3E
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
+		std::mutex consoleCommandQueueMutex;
+
+		std::string consoleCommandQueue;
+
+		bool isQuitRequested_ = false;
+
 	protected:
 		entt::registry registry_;
 
@@ -53,7 +60,7 @@ namespace D3E
 
 		virtual void DestroyResources();
 
-		bool isQuitRequested_ = false;
+		void CheckConsoleInput();
 
 		void*
 			prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
