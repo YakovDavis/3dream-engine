@@ -183,11 +183,11 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 #endif // USE_IMGUI
 }
 
-void D3E::GameRender::LoadTexture(const String& name,
-                                  const String& fileName)
-{
-	TextureFactory::LoadTexture(name, fileName, device_, commandList_);
-}
+//void D3E::GameRender::LoadTexture(const String& name,
+//                                  const String& fileName)
+//{
+//	TextureFactory::LoadTexture(name, fileName, device_, commandList_);
+//}
 
 void D3E::GameRender::UpdateAnimations(float dT)
 {

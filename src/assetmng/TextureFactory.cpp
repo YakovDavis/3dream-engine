@@ -13,23 +13,38 @@ D3E::Game* D3E::TextureFactory::activeGame_;
 eastl::unordered_map<D3E::String, D3E::Texture> D3E::TextureFactory::textures_ {};
 eastl::unordered_map<D3E::String, nvrhi::SamplerHandle> D3E::TextureFactory::samplers_ {};
 
-void D3E::TextureFactory::LoadTexture(const String& name, const String& fileName, nvrhi::DeviceHandle& device, nvrhi::CommandListHandle& commandList)
+void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
 	Texture texture;
 
-	texture.Filename = String(std::filesystem::current_path().string().c_str()) + "\\Textures\\" + fileName;
+	texture.MetaData = metaData;
 
-	Debug::LogMessage("[TextureFactory] Loading texture file " + texture.Filename);
+	Debug::LogMessage("[TextureFactory] Loading texture file " + eastl::string(texture.MetaData.filename.c_str()));
 
 	int width, height, comps;
 
-	auto imageData = stbi_load(texture.Filename.c_str(), &width, &height, &comps, 4);
+	auto imageData = stbi_load(texture.MetaData.filename.c_str(), &width, &height, &comps, 4);
 
 	if (!imageData)
 	{
 		Debug::LogError("[TextureFactory] Texture file not found");
-		Debug::LogError(texture.Filename);
+		Debug::LogError(texture.MetaData.filename.c_str());
 		return;
+	}
+
+	if (firstLoad)
+	{
+		metaData.format.channels = TextureChannels::RGBA8; // TODO: support other texture types
+	}
+
+	if (width != metaData.format.dimensions[0] || height != metaData.format.dimensions[1])
+	{
+		if (!firstLoad)
+		{
+			Debug::LogWarning("[TextureFactory] Texture metadata contains incorrect texture dimensions, adjusting");
+		}
+		metaData.format.dimensions[0] = width;
+		metaData.format.dimensions[1] = height;
 	}
 
 	auto& textureDesc = nvrhi::TextureDesc()
@@ -50,7 +65,7 @@ void D3E::TextureFactory::LoadTexture(const String& name, const String& fileName
 
 	device->executeCommandList(commandList);
 
-	textures_.insert({name, texture});
+	textures_.insert({texture.MetaData.uuid.c_str(), texture});
 }
 
 void D3E::TextureFactory::Initialize(Game* game)
