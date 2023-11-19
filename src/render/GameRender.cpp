@@ -17,10 +17,6 @@
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
-#ifdef USE_IMGUI
-#include "imgui_impl_win32.h"
-#endif // USE_IMGUI
-
 void D3E::GameRender::Init()
 {
 	Debug::LogMessage("[GameRender] Init started");
@@ -55,8 +51,8 @@ void D3E::GameRender::Init()
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
 
 #ifdef USE_IMGUI
-	InitImGui();
-#endif // USE_IMGUI
+	editor_ = D3E::Editor::Init(device_, display_);
+#endif
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
@@ -248,50 +244,13 @@ void D3E::GameRender::PrepareDraw(entt::registry& registry)
 void D3E::GameRender::EndDraw(entt::registry& registry)
 {
 #ifdef USE_IMGUI
-	RenderImGui();
+	editor_->Render(nvrhiFramebuffer[GetCurrentFrameBuffer()]);
 #endif // USE_IMGUI
 }
 
 void D3E::GameRender::UpdateAnimations(float dT)
 {
 #ifdef USE_IMGUI
-	int w, h;
-	float scaleX, scaleY;
-
-	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2(float(display_->ClientWidth), float(display_->ClientHeight));
-	//io.DisplayFramebufferScale.x = scaleX;
-	//io.DisplayFramebufferScale.y = scaleY;
-
-	imGuiNvrhi_.beginFrame(dT);
+	editor_->Update(dT);
 #endif // USE_IMGUI
 }
-
-#ifdef USE_IMGUI
-void D3E::GameRender::InitImGui()
-{
-	auto displayWin32 = dynamic_cast<DisplayWin32*>(display_.get());
-
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplWin32_Init(displayWin32->hWnd);
-	imGuiNvrhi_.init(device_);
-	//imGuiNvrhi_.backbufferResizing();
-}
-
-void D3E::GameRender::RenderImGui()
-{
-	ImGui_ImplWin32_NewFrame();
-
-	ImGui::ShowDemoWindow();
-	ImGui::Render();
-
-	// Obtain the current framebuffer from the graphics API
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
-
-	imGuiNvrhi_.render(currentFramebuffer);
-}
-#endif // USE_IMGUI
