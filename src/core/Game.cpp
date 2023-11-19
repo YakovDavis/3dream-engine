@@ -1,5 +1,6 @@
 #include "D3E/Game.h"
 
+#include "D3E/AssetManager.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
@@ -20,11 +21,7 @@
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
 #include <thread>
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
-                                                             UINT msg,
-                                                             WPARAM wParam,
-                                                             LPARAM lParam);
+#include <filesystem>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -94,6 +91,11 @@ void D3E::Game::Init()
 
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init(systems_);
+
+	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("wood", "textures/wood.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+
+	AssetManager::Get().LoadAssetsInFolder("textures/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	inputDevice_ = new InputDevice(this);
 
@@ -257,10 +259,11 @@ float D3E::Game::GetDeltaTime() const
 	return deltaTime_;
 }
 
-void D3E::Game::LoadTexture(const String& name, const String& fileName)
-{
-	gameRender_->LoadTexture(name, fileName);
-}
+//void D3E::Game::LoadTexture(const String& name,
+//                            const String& fileName)
+//{
+//	gameRender_->LoadTexture(name, fileName);
+//}
 
 void D3E::Game::CheckConsoleInput()
 {

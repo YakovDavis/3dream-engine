@@ -36,6 +36,7 @@ include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
 include_directories(libs/uuid_v4)
+include_directories(libs/nlohmann)
 
 #FetchContent_Declare(
 #        JoltPhysics
@@ -77,7 +78,7 @@ add_library(D3Engine SHARED
         src/assetmng/TextureFactory.cpp
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
-        src/render/magic_enum.hpp
+        src/core/magic_enum.hpp
         include/D3E/components/render/StaticMeshComponent.h
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
@@ -117,6 +118,8 @@ add_library(D3Engine SHARED
         src/core/SimpleMath.cpp
         include/SimpleMath.h
         include/SimpleMath.inl
+        src/assetmng/Texture2DMetaData.h
+        src/assetmng/Texture2DMetaData.cpp
         include/D3E/Uuid.h
         src/utils/Uuid.cpp 
         src/engine/systems/ChildTransformSynchronizationSystem.h

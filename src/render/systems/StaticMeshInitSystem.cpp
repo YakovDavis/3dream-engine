@@ -37,7 +37,7 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 					ShaderFactory::AddBindingSet(info.name + "V", bindingSetDescV, "SimpleForwardV");
 
 					nvrhi::BindingSetDesc bindingSetDescP = {};
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("wood")));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("24c71f11-0d38-4594-ae18-c8eedca9b896")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
 					ShaderFactory::AddBindingSet(info.name + "P", bindingSetDescP, "SimpleForwardP");
 
