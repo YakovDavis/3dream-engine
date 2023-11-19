@@ -6,9 +6,11 @@
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
+#include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
@@ -18,15 +20,25 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
-
+#include <thread>
 #include <filesystem>
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
                                                              WPARAM wParam,
                                                              LPARAM lParam);
+
+void PollConsoleInput(D3E::Game* game)
+{
+	while(!game->isQuitRequested_)
+	{
+		std::string input;
+		std::getline(std::cin, input);
+
+		std::lock_guard<std::mutex> lock(game->consoleCommandQueueMutex);
+		game->consoleCommandQueue = input;
+	}
+}
 
 void D3E::Game::Run()
 {
@@ -40,9 +52,13 @@ void D3E::Game::Run()
 
 	*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
+	std::thread inputCheckingThread(PollConsoleInput, this);
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
+
+		CheckConsoleInput(); //ConsoleManager::getInstance()->handleConsoleInput();
 
 		{
 			using namespace eastl::chrono;
@@ -57,6 +73,8 @@ void D3E::Game::Run()
 
 		Draw();
 	}
+
+	inputCheckingThread.detach();
 
 	DestroyResources();
 }
@@ -83,7 +101,8 @@ void D3E::Game::Init()
 
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
-	systems_.push_back(new D3E::FPSControllerSystem);
+	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
@@ -245,3 +264,14 @@ float D3E::Game::GetDeltaTime() const
 //{
 //	gameRender_->LoadTexture(name, fileName);
 //}
+
+void D3E::Game::CheckConsoleInput()
+{
+	std::lock_guard<std::mutex> lock(consoleCommandQueueMutex);
+	if(!consoleCommandQueue.empty())
+	{
+		ConsoleManager::getInstance()->handleConsoleInput(consoleCommandQueue);
+		//std::cout << consoleCommandQueue << '\n';
+		consoleCommandQueue = std::string();
+	}
+}

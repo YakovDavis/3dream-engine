@@ -31,7 +31,7 @@ void SoundEngineListenerSystem::Update(entt::registry& reg, Game* game, float dT
 		[&](const auto entity)
 		{
 			const auto& transform = reg.get<TransformComponent>(entity);
-			location = transform.position_;
+			location = transform.position;
 		});
 
 	cameraObserver_.each(

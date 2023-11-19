@@ -7,6 +7,7 @@
 #include "D3E/Debug.h"
 #include "D3E/components/TransformComponent.h"
 #include "D3E/components/render/StaticMeshComponent.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "assetmng/MeshFactory.h"
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
@@ -25,7 +26,7 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 
 	for(auto [entity, tc, cc, fpscc] : playerView.each())
 	{
-		origin = tc.position_ + cc.offset;
+		origin = tc.position + cc.offset;
 		cameraCopy = cc;
 		break;
 	}
@@ -42,19 +43,20 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  // Fill the constant buffer
 				  PerObjectConstBuffer constBufferData = {};
 
-				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(tc.scale_) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation_) * DirectX::SimpleMath::Matrix::CreateTranslation(tc.position_);
+				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(tc.scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation) * DirectX::SimpleMath::Matrix::CreateTranslation(tc.position);
 
 				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraCopy);
 				  constBufferData.gWorld = world;
 				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraCopy);
-				  constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(tc.scale_) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation_)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraCopy);
+				  constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(tc.scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraCopy);
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 
+				  auto renderModeCVar = ConsoleManager::getInstance()->findConsoleVariable("renderingMode");
 
 				  // Set the graphics state: pipeline, framebuffer, viewport, bindings.
 				  auto graphicsState = nvrhi::GraphicsState()
-		                                   .setPipeline(ShaderFactory::GetGraphicsPipeline(smc.pipelineName))
+		                                   .setPipeline(renderModeCVar->getInt() == 0 ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName) : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
 		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1920, 1080)))
 		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "V"))

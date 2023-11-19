@@ -116,6 +116,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb)
 	depthStencilState.setStencilEnable(true);
 
 	nvrhi::RasterState rasterState = {};
+	rasterState.fillMode = nvrhi::RasterFillMode::Solid;
 	rasterState.frontCounterClockwise = false;
 	rasterState.setCullBack();
 
@@ -136,6 +137,11 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb)
 	pipelineDesc.setRenderState(renderState);
 	pipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
 	ShaderFactory::AddGraphicsPipeline("SimpleForward", pipelineDesc, fb);
+
+	rasterState.fillMode = nvrhi::RasterFillMode::Wireframe;
+	renderState.rasterState = rasterState;
+	pipelineDesc.renderState = renderState;
+	ShaderFactory::AddGraphicsPipeline("WireFrame", pipelineDesc, fb);
 }
 
 void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)

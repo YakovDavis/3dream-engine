@@ -6,6 +6,7 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "DisplayWin32.h"
 #include "PerObjectConstBuffer.h"
 #include "ShaderFactory.h"
@@ -71,6 +72,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	{
 		sys->InitRender();
 	}
+
+	ConsoleManager::getInstance()->registerConsoleVariable("renderingMode", 0);
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
