@@ -75,7 +75,7 @@ void FPSControllerSystem::UpdateTransformComponent(
 			Vector3::Forward,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_ += dT * fpscc.speed * tmp;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::S))
 	{
@@ -83,7 +83,7 @@ void FPSControllerSystem::UpdateTransformComponent(
 			Vector3::Backward,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_ += dT * fpscc.speed * tmp;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::A))
 	{
@@ -91,7 +91,7 @@ void FPSControllerSystem::UpdateTransformComponent(
 			-Vector3::Left,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_ += dT * fpscc.speed * tmp;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::D))
 	{
@@ -99,15 +99,15 @@ void FPSControllerSystem::UpdateTransformComponent(
 			-Vector3::Right,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_ += dT * fpscc.speed * tmp;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::E))
 	{
-		tc.position_.y += dT * fpscc.speed;
+		tc.position.y += dT * fpscc.speed;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::Z))
 	{
-		tc.position_.y -= dT * fpscc.speed;
+		tc.position.y -= dT * fpscc.speed;
 	}
 }
 
