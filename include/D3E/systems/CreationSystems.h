@@ -1,7 +1,7 @@
 #pragma once
 
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/TransformComponent.h"
-#include "engine/components/ObjectInfoComponent.h"
 #include "entt/entt.hpp"
 
 namespace D3E

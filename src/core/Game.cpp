@@ -62,6 +62,12 @@ void D3E::Game::Init()
 {
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
+
+	for (auto& sys : systems_)
+	{
+		sys->Init();
+	}
+
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init(systems_);
 
@@ -71,74 +77,19 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new D3E::FPSControllerSystem);
 
-	for (auto& sys : systems_)
-	{
-		sys->InitRender();
-	}
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
-
-	ObjectInfoComponent info;
-	TransformComponent transform;
-
-	transform.position_ = {0, 0, -10};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	CreationSystems::CreateDefaultPlayer(registry_, transform);
-
-	info.name = "Cube";
-	transform.position_ = {0, 0, 0};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	auto cube = CreationSystems::CreateCubeSM(registry_, info, transform);
-
-	info.name = "Cube1";
-	transform.position_ = {3, 1, 0};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	// auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
-
-	auto& sc = registry_.get<SoundComponent>(cube);
-
-	soundEngine_->LoadSound(sc.fileName, sc.is3D, sc.isLooping, sc.isStreaming);
-	soundEngine_->PlaySound3D(sc.fileName, sc.location);
-
-	perTickSystems.push_back(new FPSControllerSystem);
-	perTickSystems.push_back(new SoundEngineListenerSystem(registry_));
 }
 
 void D3E::Game::Update(const float deltaTime)
 {
-	for (auto& sys : systems_)
 	totalTime += deltaTime;
-
-	if (totalTime / 500.0 - floor(totalTime / 500.0) < 0.1)
-	{
-		ObjectInfoComponent info;
-		TransformComponent transform;
-		info.name =
-			("Cube" + std::to_string(floor(totalTime / 2000.0))).c_str();
-		transform.position_ = {
-			1.0f * ((int)(totalTime / 500.0f) % 10 - 5),
-			1.0f * ((int)(totalTime / 500.0f) / 100 % 10 - 5),
-			1.0f * ((int)(totalTime / 500.0f) / 10 % 10 - 5)};
-		transform.rotation_ = {0, 0, 0, 1};
-		transform.scale_ = {1, 1, 1};
-		auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
-	}
 
 	soundEngine_->Update();
 
-	for (auto& sys : perTickSystems)
+	for (auto& sys : systems_)
 	{
 		sys->Update(registry_, this, deltaTime);
-	}
-
-	auto view = registry_.view<const TransformComponent>();
-	view.each([](const auto entity, const auto& transform) { /* ... */ });
-	for (auto [entity, transform] : view.each())
-	{
-		// ...
 	}
 
 	gameRender_->UpdateAnimations(deltaTime);

@@ -1,9 +1,9 @@
 #include "EditorUtils.h"
 
 #include "D3E/CommonCpp.h"
-#include "D3E/Game.h"
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Debug.h"
-#include "engine/components/ObjectInfoComponent.h"
+#include "D3E/Game.h"
 
 D3E::Game* D3E::EditorUtils::activeGame_ = nullptr;
 bool D3E::EditorUtils::initialized_ = false;

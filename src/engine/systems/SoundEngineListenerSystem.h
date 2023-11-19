@@ -1,16 +1,16 @@
 #pragma once
 
-#include "D3E/systems/PerTickSystem.h"
+#include "D3E/systems/GameSystem.h"
 
 #include <entt/entt.hpp>
 
 namespace D3E
 {
-	class SoundEngineListenerSystem : public PerTickSystem
+	class SoundEngineListenerSystem : public GameSystem
 	{
 	public:
-		SoundEngineListenerSystem(entt::registry& registry);
-		void Run(entt::registry& reg, Game* game, float dT) override;
+		explicit SoundEngineListenerSystem(entt::registry& registry);
+		void Update(entt::registry& reg, Game* game, float dT) override;
 
 	private:
 		entt::observer transformObserver_;

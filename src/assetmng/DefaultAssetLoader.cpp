@@ -116,7 +116,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb)
 	depthStencilState.setStencilEnable(true);
 
 	nvrhi::RasterState rasterState = {};
-	rasterState.frontCounterClockwise = true;
+	rasterState.frontCounterClockwise = false;
 	rasterState.setCullBack();
 
 	nvrhi::BlendState blendState = {};

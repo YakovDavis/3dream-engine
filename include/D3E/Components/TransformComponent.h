@@ -4,9 +4,12 @@
 
 using namespace DirectX::SimpleMath;
 
-struct TransformComponent
+namespace D3E
 {
-	Vector3 position_;
-	Vector4 rotation_;
-	Vector3 scale_;
-};
+	struct TransformComponent
+	{
+		Vector3 position_ = Vector3(0.0f, 0.0f, 0.0f);
+		Quaternion rotation_ = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+		Vector3 scale_ = Vector3(1.0f, 1.0f, 1.0f);
+	};
+}

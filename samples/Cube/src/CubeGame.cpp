@@ -13,7 +13,15 @@ void CubeGame::Init()
 
 	LoadTexture("wood", "wood.png");
 
-	D3E::CreationSystems::CreateDefaultPlayer(GetRegistry());
+	D3E::TransformComponent tc = {};
+	D3E::ObjectInfoComponent info = {};
+	info.name = "Cube";
 
-	D3E::CreationSystems::CreateCubeSM(GetRegistry());
+	tc.position_ = Vector3(0, 0, 10);
+
+	D3E::CreationSystems::CreateDefaultPlayer(GetRegistry(), tc);
+
+	tc.position_ = Vector3(0, 0, 0);
+
+	D3E::CreationSystems::CreateCubeSM(GetRegistry(), info, tc);
 }

@@ -5,7 +5,6 @@
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
-#include "EASTL/fixed_vector.h"
 #include "sound_engine/SoundEngine.h"
 
 #include <format>
@@ -20,13 +19,13 @@ SoundEngineListenerSystem::SoundEngineListenerSystem(entt::registry& registry)
 {
 }
 
-void SoundEngineListenerSystem::Run(entt::registry& reg, Game* game, float dT)
+void SoundEngineListenerSystem::Update(entt::registry& reg, Game* game, float dT)
 {
 	auto& se = SoundEngine::GetInstance();
 
-	eastl::fixed_vector<float, 3, false> location{};
-	eastl::fixed_vector<float, 3, false> up{};
-	eastl::fixed_vector<float, 3, false> forward{};
+	DirectX::SimpleMath::Vector3 location;
+	DirectX::SimpleMath::Vector3 up;
+	DirectX::SimpleMath::Vector3 forward;
 
 	transformObserver_.each(
 		[&](const auto entity)
