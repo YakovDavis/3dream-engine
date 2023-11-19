@@ -25,6 +25,4 @@ void CubeGame::Init()
 	tc.position_ = Vector3(0, 0, 0);
 
 	D3E::CreationSystems::CreateCubeSM(GetRegistry(), info, tc);
-
-    D3E::ConsoleManager::getInstance()->registerConsoleVariable("testVar", 1);
 }
