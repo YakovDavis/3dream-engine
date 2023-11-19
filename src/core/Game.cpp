@@ -18,6 +18,7 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
+#include <thread>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -25,6 +26,18 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
                                                              WPARAM wParam,
                                                              LPARAM lParam);
+
+void PollConsoleInput(D3E::Game* game)
+{
+	while(!game->isQuitRequested_)
+	{
+		std::string input;
+		std::getline(std::cin, input);
+
+		std::lock_guard<std::mutex> lock(game->consoleCommandQueueMutex);
+		game->consoleCommandQueue = game->consoleCommandQueue + " " + input;
+	}
+}
 
 void D3E::Game::Run()
 {
@@ -38,11 +51,13 @@ void D3E::Game::Run()
 
 	*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
+	std::thread inputCheckingThread(PollConsoleInput, this);
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
 
-		ConsoleManager::getInstance()->handleConsoleInput();
+		CheckConsoleInput(); //ConsoleManager::getInstance()->handleConsoleInput();
 
 		{
 			using namespace eastl::chrono;
@@ -57,6 +72,8 @@ void D3E::Game::Run()
 
 		Draw();
 	}
+
+	inputCheckingThread.detach();
 
 	DestroyResources();
 }
@@ -239,4 +256,15 @@ void D3E::Game::LoadTexture(const String& name,
                             const String& fileName)
 {
 	gameRender_->LoadTexture(name, fileName);
+}
+
+void D3E::Game::CheckConsoleInput()
+{
+	std::lock_guard<std::mutex> lock(consoleCommandQueueMutex);
+	if(!consoleCommandQueue.empty())
+	{
+		//console.execute(consoleCommandQueue, std::cout);
+		std::cout << consoleCommandQueue << '\n';
+		consoleCommandQueue = std::string();
+	}
 }
