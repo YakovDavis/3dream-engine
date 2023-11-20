@@ -19,10 +19,6 @@
 #include "assetmng/DefaultAssetLoader.h"
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
-#ifdef USE_IMGUI
-#include "imgui_impl_win32.h"
-#endif // USE_IMGUI
-
 void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 {
 	Debug::LogMessage("[GameRender] Init started");
@@ -57,8 +53,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
 
 #ifdef USE_IMGUI
-	InitImGui();
-#endif // USE_IMGUI
+	editor_ = D3E::Editor::Init(device_, display_);
+#endif
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
 	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
@@ -80,6 +76,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 void D3E::GameRender::DestroyResources()
 {
+//	editor_->Release();
 }
 
 void D3E::GameRender::OnResize()
@@ -179,7 +176,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 		sys->PostDraw(registry, commandList_, device_);
 	}
 #ifdef USE_IMGUI
-	RenderImGui();
+	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()]);
 #endif // USE_IMGUI
 }
 
@@ -192,42 +189,6 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 void D3E::GameRender::UpdateAnimations(float dT)
 {
 #ifdef USE_IMGUI
-	int w, h;
-	float scaleX, scaleY;
-
-	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2(float(display_->ClientWidth), float(display_->ClientHeight));
-	//io.DisplayFramebufferScale.x = scaleX;
-	//io.DisplayFramebufferScale.y = scaleY;
-
-	imGuiNvrhi_.beginFrame(dT);
+	editor_->BeginDraw(dT);
 #endif // USE_IMGUI
 }
-
-#ifdef USE_IMGUI
-void D3E::GameRender::InitImGui()
-{
-	auto displayWin32 = dynamic_cast<DisplayWin32*>(display_.get());
-
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplWin32_Init(displayWin32->hWnd);
-	imGuiNvrhi_.init(device_);
-}
-
-void D3E::GameRender::RenderImGui()
-{
-	ImGui_ImplWin32_NewFrame();
-
-	ImGui::ShowDemoWindow();
-	ImGui::Render();
-
-	// Obtain the current framebuffer from the graphics API
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
-
-	imGuiNvrhi_.render(currentFramebuffer);
-}
-#endif // USE_IMGUI
