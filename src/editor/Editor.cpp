@@ -14,8 +14,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 {
 	static bool opt_fullscreen = true;
 	static bool opt_padding = false;
-	static ImGuiDockNodeFlags dockSpace_flags = ImGuiDockNodeFlags_None;
-	dockSpace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+	static ImGuiDockNodeFlags dockSpace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	if (opt_fullscreen)
@@ -28,10 +27,6 @@ void ShowExampleAppDockSpace(bool* p_open)
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	}
-	else
-	{
-		dockSpace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
 	}
 
 	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
@@ -163,7 +158,7 @@ void D3E::Editor::Release()
 	if(ImGui::GetCurrentContext())
 	{
 		ImGui::DestroyContext();
-		ImGui_ImplWin32_Shutdown();
+		//ImGui_ImplWin32_Shutdown();
 	}
 }
 void D3E::Editor::DrawHeader()
