@@ -1,5 +1,6 @@
 #include "D3E/systems/CreationSystems.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
@@ -19,16 +20,16 @@ entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry,
 	infoComponent.name = info.name;
 
 	TransformComponent transform(tc);
-	transform.position_ = tc.position_;
-	transform.rotation_ = tc.rotation_;
-	transform.scale_ = tc.scale_;
+	transform.position = tc.position;
+	transform.rotation = tc.rotation;
+	transform.scale = tc.scale;
 
 	SoundComponent sound;
 	sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
-	sound.location = transform.position_;
+	sound.location = transform.position;
 
 	registry.emplace<ObjectInfoComponent>(e, info);
 	registry.emplace<TransformComponent>(e, tc);

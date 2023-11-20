@@ -1,5 +1,7 @@
 #include "StaticMeshInitSystem.h"
 
+#include "D3E/CommonCpp.h"
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -8,10 +10,9 @@
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
-#include "engine/components/ObjectInfoComponent.h"
 
-void D3E::StaticMeshInitSystem::Run(entt::registry& reg, nvrhi::IDevice* device,
-                                    nvrhi::CommandListHandle& commandList)
+void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* commandList,
+                                        nvrhi::IDevice* device)
 {
 	auto view = reg.view<const ObjectInfoComponent, StaticMeshComponent>();
 
@@ -36,7 +37,7 @@ void D3E::StaticMeshInitSystem::Run(entt::registry& reg, nvrhi::IDevice* device,
 					ShaderFactory::AddBindingSet(info.name + "V", bindingSetDescV, "SimpleForwardV");
 
 					nvrhi::BindingSetDesc bindingSetDescP = {};
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("wood")));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("24c71f11-0d38-4594-ae18-c8eedca9b896")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
 					ShaderFactory::AddBindingSet(info.name + "P", bindingSetDescP, "SimpleForwardP");
 

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "App.h"
-#include "D3E/systems/PerTickSystem.h"
+#include "D3E/systems/GameSystem.h"
 #include "EASTL/vector.h"
 
 #include <entt/entt.hpp>
+#include <mutex>
 
 namespace D3E
 {
@@ -32,17 +33,24 @@ namespace D3E
 
 		InputDevice* GetInputDevice();
 
-		float GetDeltaTime() const;
+		[[nodiscard]] float GetDeltaTime() const;
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
-		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam,
-		                LPARAM lParam) override;
+//		void LoadTexture(const String& name, const String& fileName);
+
+		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+
+		std::mutex consoleCommandQueueMutex;
+
+		std::string consoleCommandQueue;
+
+		bool isQuitRequested_ = false;
 
 	protected:
 		entt::registry registry_;
 
-		eastl::vector<PerTickSystem*> perTickSystems;
+		eastl::vector<GameSystem*> systems_;
 
 		virtual void Init();
 
@@ -52,7 +60,7 @@ namespace D3E
 
 		virtual void DestroyResources();
 
-		bool isQuitRequested_ = false;
+		void CheckConsoleInput();
 
 		void*
 			prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
@@ -62,6 +70,7 @@ namespace D3E
 		InputDevice* inputDevice_;
 
 		float deltaTime_;
+
 		SoundEngine* soundEngine_;
 
 		double totalTime = 0.0;

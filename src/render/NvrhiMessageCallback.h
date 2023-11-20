@@ -15,19 +15,19 @@ namespace D3E
 				switch (severity)
 				{
 					case MessageSeverity::Info:
-						Debug::LogMessage(eastl::string("[NVRHI] ") +
+						Debug::LogMessage(String("[NVRHI] ") +
 						                       messageText);
 						break;
 					case MessageSeverity::Warning:
-						Debug::LogWarning(eastl::string("[NVRHI] ") +
+						Debug::LogWarning(String("[NVRHI] ") +
 						                       messageText);
 						break;
 					case MessageSeverity::Error:
-						Debug::LogError(eastl::string("[NVRHI] ") +
+						Debug::LogError(String("[NVRHI] ") +
 						                     messageText);
 						break;
 					case MessageSeverity::Fatal:
-						Debug::LogError(eastl::string("[NVRHI] ") +
+						Debug::LogError(String("[NVRHI] ") +
 						                     messageText);
 						break;
 					default:;

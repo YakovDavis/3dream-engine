@@ -1,7 +1,6 @@
 #pragma once
 
 #include <DXGI.h>
-#include <string>
 #include "GameRender.h"
 #include <dxgi1_5.h>
 #include "D3dUtil.h"
@@ -22,9 +21,9 @@ namespace D3E
 		explicit GameRenderD3D12(App* parent, HINSTANCE hInstance);
 		~GameRenderD3D12() override = default;
 
-		void Init() override;
+		void Init(eastl::vector<GameSystem*>& systems) override;
 		void OnResize() override;
-		void PrepareDraw(entt::registry& registry) override;
+		void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems) override;
 
 		void Present() override;
 

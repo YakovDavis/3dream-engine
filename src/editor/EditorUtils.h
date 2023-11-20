@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EASTL/string.h"
+#include "D3E/CommonHeader.h"
 #include "EASTL/vector.h"
 
 namespace D3E
@@ -9,7 +9,7 @@ namespace D3E
 
 	struct ObjectInfo
 	{
-		eastl::string name;
+		String name;
 	};
 
 	class EditorUtils

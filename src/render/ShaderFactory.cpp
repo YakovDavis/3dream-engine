@@ -1,21 +1,23 @@
 #include "ShaderFactory.h"
 
-#include <fstream>
+#include "D3E/CommonCpp.h"
+#include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "render/GameRender.h"
+
 #include <filesystem>
-#include "D3E/Debug.h"
+#include <fstream>
 
 bool D3E::ShaderFactory::isInitialized_ = false;
 D3E::Game* D3E::ShaderFactory::activeGame_;
-eastl::unordered_map<eastl::string, nvrhi::InputLayoutHandle> D3E::ShaderFactory::iLayouts_ {};
-eastl::unordered_map<eastl::string, nvrhi::BindingLayoutHandle> D3E::ShaderFactory::bLayouts_ {};
-eastl::unordered_map<eastl::string, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSets_ {};
-eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
-eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
-eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
-eastl::unordered_map<eastl::string, nvrhi::ShaderHandle> D3E::ShaderFactory::cShaders_ {};
-eastl::unordered_map<eastl::string, nvrhi::GraphicsPipelineHandle > D3E::ShaderFactory::gPipelines_ {};
+eastl::unordered_map<D3E::String, nvrhi::InputLayoutHandle> D3E::ShaderFactory::iLayouts_ {};
+eastl::unordered_map<D3E::String, nvrhi::BindingLayoutHandle> D3E::ShaderFactory::bLayouts_ {};
+eastl::unordered_map<D3E::String, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSets_ {};
+eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
+eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
+eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
+eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::cShaders_ {};
+eastl::unordered_map<D3E::String, nvrhi::GraphicsPipelineHandle > D3E::ShaderFactory::gPipelines_ {};
 
 void D3E::ShaderFactory::Initialize(Game* game)
 {
@@ -38,15 +40,15 @@ void D3E::ShaderFactory::DestroyResources()
 	isInitialized_ = false;
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::AddVertexShader(const eastl::string& name,
-                                    					const eastl::string& fileName,
-                                                        const eastl::string& entryPoint)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddVertexShader(const String& name,
+                                    					const String& fileName,
+                                                        const String& entryPoint)
 {
 	auto adjustedName = GetBinaryShaderFileName(fileName, entryPoint);
 	std::ifstream file(adjustedName.c_str(), std::ios::binary | std::ios::ate);
 	if (!file.good())
 	{
-		Debug::LogError(eastl::string("Can't open binary shader file ") + adjustedName + eastl::string(". Try recompiling the shaders."));
+		Debug::LogError(String("Can't open binary shader file ") + adjustedName + String(". Try recompiling the shaders."));
 	}
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
@@ -59,15 +61,15 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::AddVertexShader(const eastl::stri
 	return vShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::AddPixelShader(const eastl::string& name,
-                                                       const eastl::string& fileName,
-                                                       const eastl::string& entryPoint)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddPixelShader(const String& name,
+                                                       const String& fileName,
+                                                       const String& entryPoint)
 {
 	auto adjustedName = GetBinaryShaderFileName(fileName, entryPoint);
 	std::ifstream file(adjustedName.c_str(), std::ios::binary | std::ios::ate);
 	if (file.bad())
 	{
-		Debug::LogError(eastl::string("Can't open binary shader file ") + adjustedName + eastl::string(". Try recompiling the shaders."));
+		Debug::LogError(String("Can't open binary shader file ") + adjustedName + String(". Try recompiling the shaders."));
 	}
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
@@ -80,15 +82,15 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::AddPixelShader(const eastl::strin
 	return pShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::AddGeometryShader(const eastl::string& name,
-                                                          const eastl::string& fileName,
-                                                          const eastl::string& entryPoint)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddGeometryShader(const String& name,
+                                                          const String& fileName,
+                                                          const String& entryPoint)
 {
 	auto adjustedName = GetBinaryShaderFileName(fileName, entryPoint);
 	std::ifstream file(adjustedName.c_str(), std::ios::binary | std::ios::ate);
 	if (file.bad())
 	{
-		Debug::LogError(eastl::string("Can't open binary shader file ") + adjustedName + eastl::string(". Try recompiling the shaders."));
+		Debug::LogError(String("Can't open binary shader file ") + adjustedName + String(". Try recompiling the shaders."));
 	}
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
@@ -101,7 +103,7 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::AddGeometryShader(const eastl::st
 	return gShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::GetVertexShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetVertexShader(const String& name)
 {
 	if (vShaders_.find(name) == vShaders_.end())
 	{
@@ -110,7 +112,7 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::GetVertexShader(const eastl::stri
 	return vShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::GetPixelShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetPixelShader(const String& name)
 {
 	if (pShaders_.find(name) == pShaders_.end())
 	{
@@ -119,7 +121,7 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::GetPixelShader(const eastl::strin
 	return pShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::GetGeometryShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetGeometryShader(const String& name)
 {
 	if (gShaders_.find(name) == gShaders_.end())
 	{
@@ -128,12 +130,12 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::GetGeometryShader(const eastl::st
 	return gShaders_[name];
 }
 
-eastl::string D3E::ShaderFactory::GetBinaryShaderFileName(const eastl::string& fileName,
-                                                          const eastl::string& entryPoint)
+D3E::String D3E::ShaderFactory::GetBinaryShaderFileName(const String& fileName,
+                                                          const String& entryPoint)
 {
-	eastl::string adjustedName = fileName;
+	String adjustedName = fileName;
 	size_t pos = adjustedName.find(".hlsl");
-	if (pos != eastl::string::npos)
+	if (pos != String::npos)
 	{
 		adjustedName.erase(pos, 5);
 	}
@@ -143,20 +145,20 @@ eastl::string D3E::ShaderFactory::GetBinaryShaderFileName(const eastl::string& f
 		adjustedName += "_" + entryPoint;
 	}
 
-	adjustedName = eastl::string(std::filesystem::current_path().string().c_str()) + "\\Shaders\\" + adjustedName + ".dxil";
+	adjustedName = String(std::filesystem::current_path().string().c_str()) + "\\Shaders\\" + adjustedName + ".dxil";
 
 	return adjustedName;
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::AddComputeShader(const eastl::string& name,
-                                                         const eastl::string& fileName,
-                                                         const eastl::string& entryPoint)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::AddComputeShader(const String& name,
+                                                         const String& fileName,
+                                                         const String& entryPoint)
 {
 	auto adjustedName = GetBinaryShaderFileName(fileName, entryPoint);
 	std::ifstream file(adjustedName.c_str(), std::ios::binary | std::ios::ate);
 	if (file.bad())
 	{
-		Debug::LogError(eastl::string("Can't open binary shader file ") + adjustedName + eastl::string(". Try recompiling the shaders."));
+		Debug::LogError(String("Can't open binary shader file ") + adjustedName + String(". Try recompiling the shaders."));
 	}
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
@@ -169,7 +171,7 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::AddComputeShader(const eastl::str
 	return cShaders_[name];
 }
 
-const nvrhi::ShaderHandle& D3E::ShaderFactory::GetComputeShader(const eastl::string& name)
+const nvrhi::ShaderHandle& D3E::ShaderFactory::GetComputeShader(const String& name)
 {
 	if (cShaders_.find(name) == cShaders_.end())
 	{
@@ -178,7 +180,7 @@ const nvrhi::ShaderHandle& D3E::ShaderFactory::GetComputeShader(const eastl::str
 	return cShaders_[name];
 }
 
-const nvrhi::InputLayoutHandle& D3E::ShaderFactory::AddInputLayout(const eastl::string& name,
+const nvrhi::InputLayoutHandle& D3E::ShaderFactory::AddInputLayout(const String& name,
                                                             nvrhi::VertexAttributeDesc* desc,
                                                             uint32_t count,
                                                             const nvrhi::ShaderHandle& vs)
@@ -187,7 +189,7 @@ const nvrhi::InputLayoutHandle& D3E::ShaderFactory::AddInputLayout(const eastl::
 	return iLayouts_[name];
 }
 
-const nvrhi::InputLayoutHandle& D3E::ShaderFactory::GetInputLayout(const eastl::string& name)
+const nvrhi::InputLayoutHandle& D3E::ShaderFactory::GetInputLayout(const String& name)
 {
 	if (iLayouts_.find(name) == iLayouts_.end())
 	{
@@ -196,14 +198,14 @@ const nvrhi::InputLayoutHandle& D3E::ShaderFactory::GetInputLayout(const eastl::
 	return iLayouts_[name];
 }
 
-const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::AddBindingLayout(const eastl::string& name,
+const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::AddBindingLayout(const String& name,
                                      const nvrhi::BindingLayoutDesc& desc)
 {
 	bLayouts_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingLayout(desc)});
 	return bLayouts_[name];
 }
 
-const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::GetBindingLayout(const eastl::string& name)
+const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::GetBindingLayout(const String& name)
 {
 	if (bLayouts_.find(name) == bLayouts_.end())
 	{
@@ -212,7 +214,7 @@ const nvrhi::BindingLayoutHandle& D3E::ShaderFactory::GetBindingLayout(const eas
 	return bLayouts_[name];
 }
 
-const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::AddGraphicsPipeline(const eastl::string& name,
+const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::AddGraphicsPipeline(const String& name,
                                                                             const nvrhi::GraphicsPipelineDesc& desc,
                                                                             const nvrhi::FramebufferHandle& fb)
 {
@@ -220,7 +222,7 @@ const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::AddGraphicsPipeline(con
 	return gPipelines_[name];
 }
 
-const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::GetGraphicsPipeline(const eastl::string& name)
+const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::GetGraphicsPipeline(const String& name)
 {
 	if (gPipelines_.find(name) == gPipelines_.end())
 	{
@@ -229,7 +231,7 @@ const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::GetGraphicsPipeline(con
 	return gPipelines_[name];
 }
 
-const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSet(const eastl::string& name)
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSet(const String& name)
 {
 	if (bSets_.find(name) == bSets_.end())
 	{
@@ -238,8 +240,8 @@ const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSet(const eastl::st
 	return bSets_[name];
 }
 
-const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSet(const eastl::string& name,
-                                  const nvrhi::BindingSetDesc& desc, const eastl::string& bLayoutName)
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSet(const String& name,
+                                  const nvrhi::BindingSetDesc& desc, const String& bLayoutName)
 {
 	bSets_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
 	return bSets_[name];

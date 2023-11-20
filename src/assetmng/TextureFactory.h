@@ -1,6 +1,8 @@
 #pragma once
-#include "EASTL/string.h"
+
+#include "D3E/CommonHeader.h"
 #include "EASTL/unordered_map.h"
+#include "Texture2DMetaData.h"
 #include "nvrhi/nvrhi.h"
 
 #include <d3d12.h>
@@ -11,8 +13,8 @@ namespace D3E
 
 	struct Texture
 	{
-		eastl::string Filename;
 		nvrhi::TextureHandle Handle;
+		Texture2DMetaData MetaData;
 	};
 
 	class TextureFactory
@@ -20,8 +22,8 @@ namespace D3E
 	private:
 		static bool isInitialized_;
 		static Game* activeGame_;
-		static eastl::unordered_map<eastl::string, Texture>	textures_;
-		static eastl::unordered_map<eastl::string, nvrhi::SamplerHandle> samplers_;
+		static eastl::unordered_map<String, Texture> textures_;
+		static eastl::unordered_map<String, nvrhi::SamplerHandle> samplers_;
 
 	public:
 		TextureFactory() = delete;
@@ -29,10 +31,10 @@ namespace D3E
 		static bool IsInitialized() { return isInitialized_; }
 		static void DestroyResources();
 
-		static nvrhi::TextureHandle GetTextureHandle(const eastl::string& name);
-		static void LoadTexture(const eastl::string& name, const eastl::string& fileName, nvrhi::DeviceHandle& device, nvrhi::CommandListHandle commandList);
+		static nvrhi::TextureHandle GetTextureHandle(const String& name);
+		static void LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
-		static nvrhi::SamplerHandle& GetSampler(const eastl::string& name);
-		static nvrhi::SamplerHandle& AddSampler(const eastl::string& name, nvrhi::IDevice* device, const nvrhi::SamplerDesc& desc);
+		static nvrhi::SamplerHandle& GetSampler(const String& name);
+		static nvrhi::SamplerHandle& AddSampler(const String& name, nvrhi::IDevice* device, const nvrhi::SamplerDesc& desc);
 	};
 }

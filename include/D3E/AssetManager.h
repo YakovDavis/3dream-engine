@@ -1,5 +1,9 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
+#include "EASTL/string.h"
+#include "nvrhi/nvrhi.h"
+
 namespace D3E
 {
 	class AssetManager
@@ -7,7 +11,9 @@ namespace D3E
 	public:
 		static AssetManager& Get();
 
+		void LoadAssetsInFolder(const String& folder, bool recursive, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
+		void CreateTexture(const String& name, const String& filename, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 	private:
 		AssetManager() = default;

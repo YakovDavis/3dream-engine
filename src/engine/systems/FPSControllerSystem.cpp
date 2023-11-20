@@ -1,5 +1,6 @@
 #include "FPSControllerSystem.h"
 
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
@@ -8,6 +9,7 @@
 #include "SimpleMath.h"
 #include "input/InputDevice.h"
 #include "input/Keys.h"
+#include "sound_engine/SoundEngine.h"
 
 #include <format>
 #include <iostream>
@@ -17,7 +19,7 @@
 using namespace DirectX::SimpleMath;
 using namespace D3E;
 
-void FPSControllerSystem::Run(entt::registry& reg, Game* game, float dT)
+void D3E::FPSControllerSystem::Update(entt::registry& reg, Game* game, float dT)
 {
 	auto view =
 		reg.view<TransformComponent, CameraComponent, FPSControllerComponent>();
@@ -55,7 +57,7 @@ void FPSControllerSystem::UpdateFpsComponent(FPSControllerComponent& fpscc,
 			fpscc.yaw += XM_2PI;
 		while (fpscc.yaw > XM_2PI)
 			fpscc.yaw -= XM_2PI;
-		fpscc.pitch +=
+		fpscc.pitch -=
 			fpscc.sensitivityY * game->GetInputDevice()->MouseOffsetInTick.y;
 		while (fpscc.pitch < -XM_2PI)
 			fpscc.pitch += XM_2PI;
@@ -70,66 +72,48 @@ void FPSControllerSystem::UpdateTransformComponent(
 	if (game->GetInputDevice()->IsKeyDown(Keys::W))
 	{
 		Vector3 tmp = XMVector4Transform(
-			Vector3(0, 0, 1),
+			Vector3::Forward,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_[0] += dT * fpscc.speed * tmp.x;
-		tc.position_[1] += dT * fpscc.speed * tmp.y;
-		tc.position_[2] += dT * fpscc.speed * tmp.z;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::S))
 	{
 		Vector3 tmp = XMVector4Transform(
-			Vector3(0, 0, -1),
+			Vector3::Backward,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_[0] += dT * fpscc.speed * tmp.x;
-		tc.position_[1] += dT * fpscc.speed * tmp.y;
-		tc.position_[2] += dT * fpscc.speed * tmp.z;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::A))
 	{
 		Vector3 tmp = XMVector4Transform(
-			Vector3(-1, 0, 0),
+			-Vector3::Left,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_[0] += dT * fpscc.speed * tmp.x;
-		tc.position_[1] += dT * fpscc.speed * tmp.y;
-		tc.position_[2] += dT * fpscc.speed * tmp.z;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::D))
 	{
 		Vector3 tmp = XMVector4Transform(
-			Vector3(1, 0, 0),
+			-Vector3::Right,
 			Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 		tmp.Normalize();
-		tc.position_[0] += dT * fpscc.speed * tmp.x;
-		tc.position_[1] += dT * fpscc.speed * tmp.y;
-		tc.position_[2] += dT * fpscc.speed * tmp.z;
+		tc.position += dT * fpscc.speed * tmp;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::E))
 	{
-		tc.position_[1] += dT * fpscc.speed;
+		tc.position.y += dT * fpscc.speed;
 	}
 	if (game->GetInputDevice()->IsKeyDown(Keys::Z))
 	{
-		tc.position_[1] -= dT * fpscc.speed;
+		tc.position.y -= dT * fpscc.speed;
 	}
 }
 
 void FPSControllerSystem::UpdateCameraComponent(CameraComponent& cc,
                                                 FPSControllerComponent& fpscc)
 {
-	Vector4 Up = XMVector4Transform(
-		Vector3(0, 1, 0),
-		Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
-	Vector4 Forward = XMVector4Transform(
-		Vector3(0, 0, 1),
-		Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
-	cc.up[0] = Up.x;
-	cc.up[1] = Up.y;
-	cc.up[2] = Up.z;
-	cc.forward[0] = Forward.x;
-	cc.forward[1] = Forward.y;
-	cc.forward[2] = Forward.z;
+	cc.up = Vector3::Transform(Vector3::Up, Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
+	cc.forward = Vector3::Transform(Vector3::Forward, Matrix::CreateFromYawPitchRoll(fpscc.yaw, fpscc.pitch, 0.0f));
 }

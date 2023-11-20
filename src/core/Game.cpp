@@ -1,26 +1,44 @@
 #include "D3E/Game.h"
 
+#include "D3E/AssetManager.h"
+#include "D3E/CommonCpp.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/engine/ConsoleManager.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "editor/EditorUtils.h"
+#include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/systems/StaticMeshInitSystem.h"
+#include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
-
-#include <iostream>
+#include <thread>
+#include <filesystem>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
                                                              WPARAM wParam,
                                                              LPARAM lParam);
+
+void PollConsoleInput(D3E::Game* game)
+{
+	while(!game->isQuitRequested_)
+	{
+		std::string input;
+		std::getline(std::cin, input);
+
+		std::lock_guard<std::mutex> lock(game->consoleCommandQueueMutex);
+		game->consoleCommandQueue = input;
+	}
+}
 
 void D3E::Game::Run()
 {
@@ -34,9 +52,13 @@ void D3E::Game::Run()
 
 	*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
+	std::thread inputCheckingThread(PollConsoleInput, this);
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
+
+		CheckConsoleInput(); //ConsoleManager::getInstance()->handleConsoleInput();
 
 		{
 			using namespace eastl::chrono;
@@ -52,6 +74,8 @@ void D3E::Game::Run()
 		Draw();
 	}
 
+	inputCheckingThread.detach();
+
 	DestroyResources();
 }
 
@@ -59,74 +83,40 @@ void D3E::Game::Init()
 {
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
+
+	for (auto& sys : systems_)
+	{
+		sys->Init();
+	}
+
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
-	gameRender_->Init();
+	gameRender_->Init(systems_);
+
+	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("wood", "textures/wood.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+
+	AssetManager::Get().LoadAssetsInFolder("textures/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	inputDevice_ = new InputDevice(this);
 
+	systems_.push_back(new StaticMeshInitSystem);
+	systems_.push_back(new StaticMeshRenderSystem);
+	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
-
-	ObjectInfoComponent info;
-	TransformComponent transform;
-
-	transform.position_ = {0, 0, -10};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	CreationSystems::CreateDefaultPlayer(registry_, transform);
-
-	info.name = "Cube";
-	transform.position_ = {0, 0, 0};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	auto cube = CreationSystems::CreateCubeSM(registry_, info, transform);
-
-	info.name = "Cube1";
-	transform.position_ = {3, 1, 0};
-	transform.rotation_ = {0, 0, 0, 1};
-	transform.scale_ = {1, 1, 1};
-	// auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
-
-	auto& sc = registry_.get<SoundComponent>(cube);
-
-	soundEngine_->LoadSound(sc.fileName, sc.is3D, sc.isLooping, sc.isStreaming);
-	soundEngine_->PlaySound3D(sc.fileName, sc.location);
-
-	perTickSystems.push_back(new FPSControllerSystem);
-	perTickSystems.push_back(new SoundEngineListenerSystem(registry_));
 }
 
 void D3E::Game::Update(const float deltaTime)
 {
 	totalTime += deltaTime;
 
-	if (totalTime / 500.0 - floor(totalTime / 500.0) < 0.1)
-	{
-		ObjectInfoComponent info;
-		TransformComponent transform;
-		info.name =
-			("Cube" + std::to_string(floor(totalTime / 2000.0))).c_str();
-		transform.position_ = {
-			1.0f * ((int)(totalTime / 500.0f) % 10 - 5),
-			1.0f * ((int)(totalTime / 500.0f) / 100 % 10 - 5),
-			1.0f * ((int)(totalTime / 500.0f) / 10 % 10 - 5)};
-		transform.rotation_ = {0, 0, 0, 1};
-		transform.scale_ = {1, 1, 1};
-		auto cube1 = CreationSystems::CreateCubeSM(registry_, info, transform);
-	}
-
 	soundEngine_->Update();
 
-	for (auto& sys : perTickSystems)
+	for (auto& sys : systems_)
 	{
-		sys->Run(registry_, this, deltaTime);
-	}
-
-	auto view = registry_.view<const TransformComponent>();
-	view.each([](const auto entity, const auto& transform) { /* ... */ });
-	for (auto [entity, transform] : view.each())
-	{
-		// ...
+		sys->Update(registry_, this, deltaTime);
 	}
 
 	gameRender_->UpdateAnimations(deltaTime);
@@ -136,9 +126,9 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_);
-	gameRender_->Draw(registry_);
-	gameRender_->EndDraw(registry_);
+	gameRender_->PrepareDraw(registry_, systems_);
+	gameRender_->Draw(registry_, systems_);
+	gameRender_->EndDraw(registry_, systems_);
 
 	gameRender_->Present();
 
@@ -268,4 +258,21 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 float D3E::Game::GetDeltaTime() const
 {
 	return deltaTime_;
+}
+
+//void D3E::Game::LoadTexture(const String& name,
+//                            const String& fileName)
+//{
+//	gameRender_->LoadTexture(name, fileName);
+//}
+
+void D3E::Game::CheckConsoleInput()
+{
+	std::lock_guard<std::mutex> lock(consoleCommandQueueMutex);
+	if(!consoleCommandQueue.empty())
+	{
+		ConsoleManager::getInstance()->handleConsoleInput(consoleCommandQueue);
+		//std::cout << consoleCommandQueue << '\n';
+		consoleCommandQueue = std::string();
+	}
 }

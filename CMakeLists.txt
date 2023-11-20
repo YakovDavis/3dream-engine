@@ -8,11 +8,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+option(BUILD_SHARED_LIBS OFF)
+option(ASSIMP_INSTALL OFF)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
 #find_program(DIRECTX_DXC_TOOL DXC.EXE
 #         REQUIRED HINTS ${DIRECTX_DXC_PATH})
+option(BUILD_XAUDIO_WIN10 OFF)
 add_subdirectory(libs/DirectXTK12)
 
 add_subdirectory(libs/imgui)
@@ -27,25 +30,27 @@ include_directories(libs/nvrhi/include)
 
 include_directories(libs/stb)
 
+add_subdirectory(libs/FMOD)
+
 include_directories(libs/DirectXTK12/Inc)
 include_directories(libs/DirectXTK12/Src)
 
-add_subdirectory(libs/FMOD)
+include_directories(libs/uuid_v4)
+include_directories(libs/nlohmann)
+
+#FetchContent_Declare(
+#        JoltPhysics
+#        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+#        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+#        SOURCE_SUBDIR "Build"
+#)
+#FetchContent_MakeAvailable(JoltPhysics)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
-
-FetchContent_Declare(
-        JoltPhysics
-        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-        SOURCE_SUBDIR "Build"
-)
-FetchContent_MakeAvailable(JoltPhysics)
-
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
 
 add_library(D3Engine SHARED
-        include/D3E/Common.h
+        include/D3E/CommonHeader.h
         include/D3E/EntryPoint.h
         include/D3E/App.h
         src/core/Game.cpp
@@ -73,7 +78,7 @@ add_library(D3Engine SHARED
         src/assetmng/TextureFactory.cpp
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
-        src/render/magic_enum.hpp
+        src/core/magic_enum.hpp
         include/D3E/components/render/StaticMeshComponent.h
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
@@ -82,8 +87,6 @@ add_library(D3Engine SHARED
         src/render/PerObjectConstBuffer.h
         src/render/systems/StaticMeshRenderSystem.cpp
         src/render/systems/StaticMeshRenderSystem.h
-        include/D3E/systems/PerTickSystem.h
-        include/D3E/systems/PerRenderTickSystem.h
         src/assetmng/MeshData.h
         src/render/VertexIndexBufferInfo.h
         src/assetmng/MeshFactory.cpp
@@ -98,8 +101,7 @@ add_library(D3Engine SHARED
         src/editor/EditorUtils.h
         src/assetmng/AssetManager.cpp
         include/D3E/AssetManager.h
-        src/engine/components/ObjectInfoComponent.h
-        include/D3E/systems/RenderSystem.h
+        include/D3E/Components/ObjectInfoComponent.h
         src/render/systems/StaticMeshInitSystem.cpp
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
@@ -114,11 +116,27 @@ add_library(D3Engine SHARED
         include/D3E/Components/sound/SoundListenerComponent.h
         src/editor/Editor.cpp
         src/editor/Editor.h
+        src/assetmng/DefaultAssetLoader.cpp
+        src/core/SimpleMath.cpp
+        include/SimpleMath.h
+        include/SimpleMath.inl
+        src/assetmng/Texture2DMetaData.h
+        src/assetmng/Texture2DMetaData.cpp
+        include/D3E/Uuid.h
+        src/utils/Uuid.cpp 
+        src/engine/systems/ChildTransformSynchronizationSystem.h
+        src/engine/systems/ChildTransformSynchronizationSystem.cpp
+        include/D3E/engine/ConsoleManager.h
+        src/engine/ConsoleManager.cpp
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/IntConsoleVariable.h
+        include/D3E/engine/FloatConsoleVariable.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
-target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+#target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
 
 if(WIN32)
     target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)
