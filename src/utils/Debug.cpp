@@ -13,6 +13,16 @@ void D3E::Debug::LogMessage(const eastl::string& text)
 	LogText(message);
 }
 
+void D3E::Debug::LogMessage(const int& text)
+{
+	auto time = GetTime();
+	std::stringstream stream;
+	stream << time.c_str() << " " << text;
+	auto message = stream.str().c_str();
+	PrintColoredText(Color::White, message);
+	LogText(message);
+}
+
 void D3E::Debug::LogWarning(const eastl::string& text)
 {
 	auto time = GetTime();

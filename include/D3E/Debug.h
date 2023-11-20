@@ -20,6 +20,7 @@ namespace D3E
 		static HANDLE console;
 	public:
 		static void LogMessage(const eastl::string& text);
+		static void LogMessage(const int& text);
 		static void LogWarning(const eastl::string& text);
 		static void LogError(const eastl::string& text);
 

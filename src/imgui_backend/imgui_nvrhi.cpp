@@ -227,9 +227,10 @@ bool D3E::ImGui_NVRHI::reallocateBuffer(nvrhi::BufferHandle& buffer, size_t requ
     return true;
 }
 
-bool D3E::ImGui_NVRHI::beginFrame(float elapsedTimeSeconds)
+bool D3E::ImGui_NVRHI::beginFrame(float elapsedTimeSeconds, ImVec2 displaySize)
 {
-    ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = displaySize;
     io.DeltaTime = elapsedTimeSeconds;
     io.MouseDrawCursor = false;
 

@@ -85,7 +85,7 @@ namespace D3E
 		eastl::vector<ImDrawIdx> idxBuffer;
 
         bool init(const nvrhi::DeviceHandle& renderer);
-        bool beginFrame(float elapsedTimeSeconds);
+        bool beginFrame(float elapsedTimeSeconds, ImVec2 displaySize);
         bool render(nvrhi::IFramebuffer* framebuffer);
         void backbufferResizing();
 

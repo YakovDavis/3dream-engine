@@ -11,13 +11,25 @@ namespace D3E
 	class Editor
 	{
 	private:
-		ImGui_NVRHI imGuiNvrhi_;
-		eastl::shared_ptr<Display> display_;
-		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display);
 		static Editor* instance_;
 	public:
 		static Editor* Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display);
-		void Render(nvrhi::IFramebuffer* currentFramebuffer);
-		void Update(float deltaTime);
+
+	private:
+		ImGui_NVRHI imGuiNvrhi_;
+		eastl::shared_ptr<Display> display_;
+		float color_[4] = {0.f, 0.f, 0.f, 0.f};
+	private:
+		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display);
+		void SetStyle();
+		void DrawHeader();
+		void DrawPlay();
+		void DrawHierarchy();
+		void DrawInspector();
+		void DrawContentBrowser();
+	public:
+		void BeginDraw(float deltaTime);
+		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer);
+		void Release();
 	};
 }

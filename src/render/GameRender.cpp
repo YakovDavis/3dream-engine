@@ -149,6 +149,7 @@ void D3E::GameRender::Init()
 
 void D3E::GameRender::DestroyResources()
 {
+//	editor_->Release();
 }
 
 void D3E::GameRender::OnResize()
@@ -244,13 +245,13 @@ void D3E::GameRender::PrepareDraw(entt::registry& registry)
 void D3E::GameRender::EndDraw(entt::registry& registry)
 {
 #ifdef USE_IMGUI
-	editor_->Render(nvrhiFramebuffer[GetCurrentFrameBuffer()]);
+	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()]);
 #endif // USE_IMGUI
 }
 
 void D3E::GameRender::UpdateAnimations(float dT)
 {
 #ifdef USE_IMGUI
-	editor_->Update(dT);
+	editor_->BeginDraw(dT);
 #endif // USE_IMGUI
 }

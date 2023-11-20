@@ -148,6 +148,7 @@ void D3E::Game::Draw()
 void D3E::Game::DestroyResources()
 {
 	soundEngine_->Release();
+	gameRender_->editor_->Release();
 	Debug::CloseLog();
 }
 
