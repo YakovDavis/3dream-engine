@@ -27,6 +27,7 @@ namespace D3E
 		void DrawHierarchy();
 		void DrawInspector();
 		void DrawContentBrowser();
+		void DrawConsole();
 	public:
 		void BeginDraw(float deltaTime);
 		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer);
