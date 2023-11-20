@@ -114,6 +114,8 @@ add_library(D3Engine SHARED
         src/engine/systems/SoundEngineListenerSystem.h
         src/engine/systems/SoundEngineListenerSystem.cpp
         include/D3E/Components/sound/SoundListenerComponent.h
+        src/editor/Editor.cpp
+        src/editor/Editor.h
         src/assetmng/DefaultAssetLoader.cpp
         src/core/SimpleMath.cpp
         include/SimpleMath.h

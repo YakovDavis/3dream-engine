@@ -14,8 +14,7 @@
 #define USE_IMGUI
 
 #ifdef USE_IMGUI
-#include "imgui.h"
-#include "imgui_backend/imgui_nvrhi.h"
+#include "editor/Editor.h"
 #endif // USE_IMGUI
 
 namespace D3E
@@ -30,11 +29,6 @@ namespace D3E
 	public:
 		virtual void Init(eastl::vector<GameSystem*>& systems);
 		virtual void OnResize();
-
-#ifdef USE_IMGUI
-		void InitImGui();
-		void RenderImGui();
-#endif // USE_IMGUI
 
 		Display* GetDisplay();
 		nvrhi::DeviceHandle& GetDevice();
@@ -77,9 +71,7 @@ namespace D3E
 
 		nvrhi::InputLayoutHandle inputLayout_;
 
-#ifdef USE_IMGUI
-		ImGui_NVRHI imGuiNvrhi_;
-#endif // USE_IMGUI
+		D3E::Editor* editor_;
 
 		friend class Game;
 	};
