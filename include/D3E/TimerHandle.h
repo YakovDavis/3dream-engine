@@ -5,6 +5,7 @@ namespace D3E
 	class TimerHandle
 	{
 		friend class TimerManager;
+		friend struct TimerHandleHash;
 
 	public:
 		TimerHandle();
@@ -17,5 +18,13 @@ namespace D3E
 
 	private:
 		int id_;
+	};
+
+	struct TimerHandleHash
+	{
+		size_t operator()(const TimerHandle& handle) const
+		{
+			return handle.id_;
+		}
 	};
 } // namespace D3E
