@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace D3E
 {
 	class TimerHandle
@@ -17,7 +19,7 @@ namespace D3E
 		bool operator!=(const TimerHandle& other) const;
 
 	private:
-		int id_;
+		uint64_t id_;
 	};
 
 	struct TimerHandleHash

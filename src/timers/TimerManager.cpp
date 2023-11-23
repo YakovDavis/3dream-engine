@@ -1,24 +1,94 @@
 #include "D3E/TimerManager.h"
 
+#include "D3E/Debug.h"
+
+#include <format>
+
 using namespace D3E;
 
 // Public members
 
+void Foo()
+{
+}
+
 void TimerManager::Tick(float dT)
 {
 	time_ += dT;
+	lastTickedFrame_ = game_->GetFrameCount();
 }
 
 void TimerManager::SetTimer(TimerHandle& handle, float rate, bool looping,
                             float firstDelay)
 {
+	if (FindTimer(handle))
+	{
+		ClearTimer(handle);
+	}
+
+	if (rate < 0.f)
+	{
+		handle.Invalidate();
+		return;
+	}
+
+	Timer newTimer;
+	newTimer.rate_ = rate;
+	newTimer.looping_ = looping;
+
+	const auto delay = firstDelay >= 0.f ? firstDelay : rate;
+
+	TimerHandle newTimerHandle;
+
+	if (TickedThisFrame())
+	{
+		newTimer.expireTime_ = time_ + delay;
+		newTimer.state_ = TimerState::Active;
+		newTimerHandle = AddTimer(newTimer);
+		activeTimers_.insert(newTimerHandle);
+	}
+	else
+	{
+		newTimer.expireTime_ = delay;
+		newTimer.state_ = TimerState::Pending;
+		newTimerHandle = AddTimer(newTimer);
+		pendingTimers_.insert(newTimerHandle);
+	}
+
+	handle = newTimerHandle;
 }
 
 void TimerManager::ClearTimer(TimerHandle& handle)
 {
-	if (FindTimer(handle))
+	if (const auto timer = FindTimer(handle))
 	{
-		// TODO(Denis): Internal clear?
+		switch (timer->state_)
+		{
+			case TimerState::Pending:
+			{
+				pendingTimers_.erase(handle);
+				RemoveTimer(handle);
+				break;
+			}
+			case TimerState::Active:
+			{
+				timer->state_ = TimerState::PendingRemoval;
+				break;
+			}
+			case TimerState::PendingRemoval:
+			{
+				break;
+			}
+			case TimerState::Paused:
+			{
+				pausedTimers_.erase(handle);
+				RemoveTimer(handle);
+				break;
+			}
+			default:
+				Debug::LogError(
+					"[TimerManager] : ClearTimer() : unknown timer state");
+		}
 	}
 
 	handle.Invalidate();
@@ -26,10 +96,64 @@ void TimerManager::ClearTimer(TimerHandle& handle)
 
 void TimerManager::PauseTimer(TimerHandle& handle)
 {
+	auto timer = FindTimer(handle);
+
+	if (!timer || timer->state_ == TimerState::Paused)
+	{
+		return;
+	}
+
+	auto previousState = timer->state_;
+
+	switch (previousState)
+	{
+		case TimerState::PendingRemoval:
+		{
+			break;
+		}
+		case TimerState::Active:
+		{
+			activeTimers_.erase(handle);
+			break;
+		}
+		case TimerState::Pending:
+		{
+			pendingTimers_.erase(handle);
+			break;
+		}
+	}
+
+	pausedTimers_.insert(handle);
+	timer->state_ = TimerState::Paused;
+
+	if (previousState != TimerState::Pending)
+	{
+		timer->expireTime_ -= time_;
+	}
 }
 
 void TimerManager::UnPauseTimer(TimerHandle& handle)
 {
+	auto timer = FindTimer(handle);
+
+	if (!timer || timer->state_ != TimerState::Paused)
+	{
+		return;
+	}
+
+	if (TickedThisFrame())
+	{
+		timer->expireTime_ += time_;
+		timer->state_ = TimerState::Active;
+		activeTimers_.insert(handle);
+	}
+	else
+	{
+		timer->state_ = TimerState::Pending;
+		pendingTimers_.insert(handle);
+	}
+
+	pausedTimers_.erase(handle);
 }
 
 float TimerManager::GetTimerRate(TimerHandle& handle) const
@@ -75,8 +199,7 @@ float TimerManager::GetTimerElapsed(TimerHandle& handle) const
 	switch (timer->state_)
 	{
 		case TimerState::Active:
-			return timer->rate_ -
-			       (timer->expireTime_ - time_); // TODO(Denis): double check
+			return timer->rate_ - (timer->expireTime_ - time_);
 		default:
 			return timer->rate_ - timer->expireTime_;
 	}
@@ -94,7 +217,7 @@ float TimerManager::GetTimerRemaining(TimerHandle& handle) const
 	switch (timer->state_)
 	{
 		case TimerState::Active:
-			return timer->expireTime_ - time_; // TODO(Denis): double check x2
+			return timer->expireTime_ - time_;
 		default:
 			return timer->expireTime_;
 	}
@@ -127,4 +250,35 @@ Timer* TimerManager::FindTimer(const TimerHandle& handle)
 Timer const* TimerManager::FindTimer(const TimerHandle& handle) const
 {
 	return const_cast<TimerManager*>(this)->FindTimer(handle);
+}
+
+void TimerManager::RemoveTimer(const TimerHandle& handle)
+{
+	try
+	{
+		timers_.erase(handle);
+	}
+	catch (const std::exception& e)
+	{
+		Debug::LogError(
+			std::format("[TimerManager] : RemoveTimer() : exception: {}",
+		                e.what())
+				.c_str());
+		throw;
+	}
+}
+
+bool TimerManager::TickedThisFrame() const
+{
+	return lastTickedFrame_ == game_->GetFrameCount();
+}
+
+TimerHandle TimerManager::AddTimer(Timer& timer)
+{
+	TimerHandle handle;
+	handle.id_ = gen_(); // TODO(Denis): Refactor: Kinda bad idea, collisions may occur
+
+	timers_.insert({handle, std::move(timer)});
+
+	return handle;
 }

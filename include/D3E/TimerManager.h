@@ -2,8 +2,11 @@
 
 #include "EASTL/unordered_map.h"
 #include "EASTL/unordered_set.h"
+#include "Game.h"
 #include "Timer.h"
 #include "TimerHandle.h"
+
+#include <random>
 
 namespace D3E
 {
@@ -26,10 +29,14 @@ namespace D3E
 
 	private:
 		double time_;
+		size_t lastTickedFrame_;
+		Game* game_;
+		std::mt19937_64 gen_;
 
 		eastl::unordered_map<TimerHandle, Timer, TimerHandleHash> timers_;
-		eastl::unordered_set<TimerHandle> pendingTimers_;
-		eastl::unordered_set<TimerHandle> pausedTimers_;
+		eastl::unordered_set<TimerHandle, TimerHandleHash> pendingTimers_;
+		eastl::unordered_set<TimerHandle, TimerHandleHash> pausedTimers_;
+		eastl::unordered_set<TimerHandle, TimerHandleHash> activeTimers_;
 
 		TimerManager();
 		TimerManager(const TimerManager&) = delete;
@@ -38,5 +45,8 @@ namespace D3E
 
 		Timer* FindTimer(const TimerHandle& handle);
 		Timer const* FindTimer(const TimerHandle& handle) const;
+		void RemoveTimer(const TimerHandle& handle);
+		bool TickedThisFrame() const;
+		TimerHandle AddTimer(Timer& timer);
 	};
 } // namespace D3E
