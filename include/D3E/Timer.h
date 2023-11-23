@@ -9,7 +9,8 @@ namespace D3E
 		Pending,
 		Active,
 		Paused,
-		PendingRemoval
+		PendingRemoval,
+		Executing
 	};
 
 	class Timer

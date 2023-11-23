@@ -8,14 +8,23 @@ using namespace D3E;
 
 // Public members
 
-void Foo()
-{
-}
-
 void TimerManager::Tick(float dT)
 {
-	time_ += dT;
+
+	if (TickedThisFrame())
+	{
+		return;
+	}
+
+	// Increase timer manager clock
+	managerTime_ += dT;
+
+	ProcessActiveTimersInternal();
+
+	// Tick
 	lastTickedFrame_ = game_->GetFrameCount();
+
+	ProcessPendingTimersInternal();
 }
 
 void TimerManager::SetTimer(TimerHandle& handle, float rate, bool looping,
@@ -42,7 +51,7 @@ void TimerManager::SetTimer(TimerHandle& handle, float rate, bool looping,
 
 	if (TickedThisFrame())
 	{
-		newTimer.expireTime_ = time_ + delay;
+		newTimer.expireTime_ = managerTime_ + delay;
 		newTimer.state_ = TimerState::Active;
 		newTimerHandle = AddTimer(newTimer);
 		activeTimers_.insert(newTimerHandle);
@@ -128,7 +137,7 @@ void TimerManager::PauseTimer(TimerHandle& handle)
 
 	if (previousState != TimerState::Pending)
 	{
-		timer->expireTime_ -= time_;
+		timer->expireTime_ -= managerTime_;
 	}
 }
 
@@ -143,7 +152,7 @@ void TimerManager::UnPauseTimer(TimerHandle& handle)
 
 	if (TickedThisFrame())
 	{
-		timer->expireTime_ += time_;
+		timer->expireTime_ += managerTime_;
 		timer->state_ = TimerState::Active;
 		activeTimers_.insert(handle);
 	}
@@ -199,7 +208,7 @@ float TimerManager::GetTimerElapsed(TimerHandle& handle) const
 	switch (timer->state_)
 	{
 		case TimerState::Active:
-			return timer->rate_ - (timer->expireTime_ - time_);
+			return timer->rate_ - (timer->expireTime_ - managerTime_);
 		default:
 			return timer->rate_ - timer->expireTime_;
 	}
@@ -217,7 +226,7 @@ float TimerManager::GetTimerRemaining(TimerHandle& handle) const
 	switch (timer->state_)
 	{
 		case TimerState::Active:
-			return timer->expireTime_ - time_;
+			return timer->expireTime_ - managerTime_;
 		default:
 			return timer->expireTime_;
 	}
@@ -276,9 +285,87 @@ bool TimerManager::TickedThisFrame() const
 TimerHandle TimerManager::AddTimer(Timer& timer)
 {
 	TimerHandle handle;
-	handle.id_ = gen_(); // TODO(Denis): Refactor: Kinda bad idea, collisions may occur
+	handle.id_ =
+		gen_(); // TODO(Denis): Refactor: Kinda bad idea, collisions may occur
 
 	timers_.insert({handle, std::move(timer)});
 
 	return handle;
+}
+
+void TimerManager::ProcessPendingTimersInternal()
+{
+	if (pendingTimers_.empty())
+	{
+		return;
+	}
+
+	for (const auto& handle : pendingTimers_)
+	{
+		auto& timerToActivate = timers_[handle];
+
+		timerToActivate.expireTime_ += managerTime_;
+		timerToActivate.state_ = TimerState::Active;
+		activeTimers_.insert(handle);
+	}
+
+	pendingTimers_.clear();
+}
+
+void TimerManager::ProcessActiveTimersInternal()
+{
+	for (auto& h : activeTimers_)
+	{
+		// Make local copy to prevent invalidation
+		TimerHandle handle = h;
+		auto timer = &timers_[handle];
+
+		if (timer->state_ == TimerState::PendingRemoval)
+		{
+			activeTimers_.erase(handle);
+			RemoveTimer(handle);
+
+			continue;
+		}
+
+		if (managerTime_ > timer->expireTime_)
+		{
+			executingTimerHandle_ = handle;
+			timer->state_ = TimerState::Executing;
+
+			// TODO(Denis): Do we need this at all?
+			int callCount =
+				timer->looping_
+					? (managerTime_ - timer->expireTime_) / timer->rate_
+					: 1;
+
+			for (int i = 0; i < callCount; ++i)
+			{
+				//
+				// TODO(Denis): Execute timer delegate
+				//
+
+				// Check if timer invalidated itself during delegate call
+				if (!FindTimer(executingTimerHandle_))
+				{
+					break;
+				}
+			}
+
+			if (timer)
+			{
+				if (timer->looping_)
+				{
+					timer->expireTime_ += callCount * timer->rate_;
+					timer->state_ = TimerState::Active;
+				}
+				else
+				{
+					activeTimers_.erase(executingTimerHandle_);
+				}
+
+				executingTimerHandle_.Invalidate();
+			}
+		}
+	}
 }

@@ -13,7 +13,7 @@ namespace D3E
 	class TimerManager
 	{
 	public:
-		void Tick(float dT);
+		void Tick(float dT);		
 		void SetTimer(TimerHandle& handle, float rate, bool looping = false,
 		              float firstDelay = -.1f);
 		void SetTimerForNextTick();
@@ -28,10 +28,11 @@ namespace D3E
 		float GetTimerRemaining(TimerHandle& handle) const;
 
 	private:
-		double time_;
+		double managerTime_;
 		size_t lastTickedFrame_;
 		Game* game_;
 		std::mt19937_64 gen_;
+		TimerHandle executingTimerHandle_;
 
 		eastl::unordered_map<TimerHandle, Timer, TimerHandleHash> timers_;
 		eastl::unordered_set<TimerHandle, TimerHandleHash> pendingTimers_;
@@ -48,5 +49,7 @@ namespace D3E
 		void RemoveTimer(const TimerHandle& handle);
 		bool TickedThisFrame() const;
 		TimerHandle AddTimer(Timer& timer);
+		void ProcessPendingTimersInternal();
+		void ProcessActiveTimersInternal();
 	};
 } // namespace D3E
