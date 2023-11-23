@@ -132,7 +132,12 @@ add_library(D3Engine SHARED
         include/D3E/engine/ConsoleVariable.h
         include/D3E/engine/IntConsoleVariable.h
         include/D3E/engine/FloatConsoleVariable.h
-)
+        include/D3E/Timer.h
+        src/timers/Timer.cpp 
+        include/D3E/TimerManager.h
+        src/timers/TimerManager.cpp
+        include/D3E/TimerHandle.h 
+        src/timers/TimerHandle.cpp)
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
