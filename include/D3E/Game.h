@@ -70,6 +70,7 @@ namespace D3E
 		InputDevice* inputDevice_;
 
 		float deltaTime_;
+		size_t frameCount_;
 
 		SoundEngine* soundEngine_;
 

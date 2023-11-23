@@ -72,6 +72,8 @@ void D3E::Game::Run()
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
 		Draw();
+
+		++frameCount_;
 	}
 
 	inputCheckingThread.detach();
@@ -186,6 +188,11 @@ entt::registry& D3E::Game::GetRegistry()
 const entt::registry& D3E::Game::GetRegistry() const
 {
 	return registry_;
+}
+
+size_t D3E::Game::GetFrameCount()
+{
+	return frameCount_;
 }
 
 D3E::InputDevice* D3E::Game::GetInputDevice()
