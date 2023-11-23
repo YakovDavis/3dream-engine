@@ -37,6 +37,8 @@ namespace D3E
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
+		size_t GetFrameCount();
+
 //		void LoadTexture(const String& name, const String& fileName);
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
