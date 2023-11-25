@@ -7,8 +7,8 @@ namespace D3E
 {
 	struct ObjectInfoComponent
 	{
-		Uuid parentId = EmptyId;
+		String parentId = EmptyIdString;
 		String name;
-		Uuid id;
+		String id;
 	};
 } // namespace D3E

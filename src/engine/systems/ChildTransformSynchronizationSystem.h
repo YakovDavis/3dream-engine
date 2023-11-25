@@ -22,8 +22,7 @@ namespace D3E
 		                               entt::entity entity);
 
 		entt::observer transformUpdateObserver_;
-		eastl::unordered_map<Uuid, eastl::unordered_set<entt::entity>,
-		                     D3E::UuidHash>
+		eastl::unordered_map<String, eastl::unordered_set<entt::entity>>
 			childEntities_;
 	};
 } // namespace D3E
