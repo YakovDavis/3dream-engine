@@ -94,8 +94,11 @@ void D3E::Game::Init()
 
 	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
 	//AssetManager::Get().CreateTexture("wood", "textures/wood.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("duck", "textures/duck.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateMesh("duck", "models/duck.obj");
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	inputDevice_ = new InputDevice(this);
 
