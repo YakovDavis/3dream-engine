@@ -16,7 +16,8 @@ namespace D3E
 		static Game* activeGame_;
 		static eastl::unordered_map<String, nvrhi::InputLayoutHandle> iLayouts_;
 		static eastl::unordered_map<String, nvrhi::BindingLayoutHandle> bLayouts_;
-		static eastl::unordered_map<String, nvrhi::BindingSetHandle> bSets_;
+		static eastl::unordered_map<String, nvrhi::BindingSetHandle> bSetsV_;
+		static eastl::unordered_map<String, nvrhi::BindingSetHandle> bSetsP_;
 		static eastl::unordered_map<String, nvrhi::ShaderHandle> vShaders_;
 		static eastl::unordered_map<String, nvrhi::ShaderHandle> pShaders_;
 		static eastl::unordered_map<String, nvrhi::ShaderHandle> gShaders_;
@@ -33,7 +34,8 @@ namespace D3E
 
 		static const nvrhi::InputLayoutHandle& AddInputLayout(const String& name, nvrhi::VertexAttributeDesc* desc, uint32_t count, const nvrhi::ShaderHandle& vs);
 		static const nvrhi::BindingLayoutHandle& AddBindingLayout(const String& name, const nvrhi::BindingLayoutDesc& desc);
-		static const nvrhi::BindingSetHandle& AddBindingSet(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
+		static const nvrhi::BindingSetHandle& AddBindingSetV(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
+		static const nvrhi::BindingSetHandle& AddBindingSetP(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
 		static const nvrhi::ShaderHandle& AddVertexShader(const String& name, const String& fileName, const String& entryPoint);
 		static const nvrhi::ShaderHandle& AddPixelShader(const String& name, const String& fileName, const String& entryPoint);
 		static const nvrhi::ShaderHandle& AddGeometryShader(const String& name, const String& fileName, const String& entryPoint);
@@ -42,7 +44,8 @@ namespace D3E
 
 		static const nvrhi::InputLayoutHandle& GetInputLayout(const String& name);
 		static const nvrhi::BindingLayoutHandle& GetBindingLayout(const String& name);
-		static const nvrhi::BindingSetHandle& GetBindingSet(const String& name);
+		static const nvrhi::BindingSetHandle& GetBindingSetV(const String& name);
+		static const nvrhi::BindingSetHandle& GetBindingSetP(const String& name);
 		static const nvrhi::ShaderHandle& GetVertexShader(const String& name);
 		static const nvrhi::ShaderHandle& GetPixelShader(const String& name);
 		static const nvrhi::ShaderHandle& GetGeometryShader(const String& name);

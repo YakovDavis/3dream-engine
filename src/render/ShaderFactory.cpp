@@ -12,7 +12,8 @@ bool D3E::ShaderFactory::isInitialized_ = false;
 D3E::Game* D3E::ShaderFactory::activeGame_;
 eastl::unordered_map<D3E::String, nvrhi::InputLayoutHandle> D3E::ShaderFactory::iLayouts_ {};
 eastl::unordered_map<D3E::String, nvrhi::BindingLayoutHandle> D3E::ShaderFactory::bLayouts_ {};
-eastl::unordered_map<D3E::String, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSets_ {};
+eastl::unordered_map<D3E::String, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSetsV_ {};
+eastl::unordered_map<D3E::String, nvrhi::BindingSetHandle> D3E::ShaderFactory::bSetsP_ {};
 eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::vShaders_ {};
 eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::pShaders_ {};
 eastl::unordered_map<D3E::String, nvrhi::ShaderHandle> D3E::ShaderFactory::gShaders_ {};
@@ -231,18 +232,34 @@ const nvrhi::GraphicsPipelineHandle& D3E::ShaderFactory::GetGraphicsPipeline(con
 	return gPipelines_[name];
 }
 
-const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSet(const String& name)
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSetV(const String& name)
 {
-	if (bSets_.find(name) == bSets_.end())
+	if (bSetsV_.find(name) == bSetsV_.end())
 	{
-		Debug::LogError("[ShaderFactory] Binding layout not found");
+		Debug::LogError("[ShaderFactory] Binding set not found");
 	}
-	return bSets_[name];
+	return bSetsV_[name];
 }
 
-const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSet(const String& name,
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSetP(const String& name)
+{
+	if (bSetsP_.find(name) == bSetsP_.end())
+	{
+		Debug::LogError("[ShaderFactory] Binding set not found");
+	}
+	return bSetsP_[name];
+}
+
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSetV(const String& name,
                                   const nvrhi::BindingSetDesc& desc, const String& bLayoutName)
 {
-	bSets_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
-	return bSets_[name];
+	bSetsV_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
+	return bSetsV_[name];
+}
+
+const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSetP(const String& name,
+                                                                  const nvrhi::BindingSetDesc& desc, const String& bLayoutName)
+{
+	bSetsP_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
+	return bSetsP_[name];
 }

@@ -9,6 +9,16 @@ Uuid UuidGenerator::NewGuid()
 	return g.getUUID();
 }
 
+std::string UuidGenerator::NewGuidStdStr()
+{
+	return NewGuid().str();
+}
+
+String UuidGenerator::NewGuidString()
+{
+	return NewGuidStdStr().c_str();
+}
+
 size_t UuidHash::operator()(const Uuid& ref) const
 {
 	return ref.hash();

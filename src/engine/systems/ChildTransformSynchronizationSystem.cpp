@@ -31,7 +31,7 @@ void ChildTransformSynchronizationSystem::Update(entt::registry& reg,
 		{
 			auto& info = reg.get<ObjectInfoComponent>(entity);
 
-			if (info.parentId != EmptyId)
+			if (info.parentId != EmptyIdString)
 				return;
 
 			if (childEntities_.find(info.id) == childEntities_.end())
@@ -64,7 +64,7 @@ void ChildTransformSynchronizationSystem::TransformCreatedHandler(
 {
 	const auto& objectInfo = registry.get<ObjectInfoComponent>(entity);
 
-	if (objectInfo.parentId != EmptyId)
+	if (objectInfo.parentId != EmptyIdString)
 	{
 		if (childEntities_.find(objectInfo.parentId) == childEntities_.end())
 		{
@@ -80,7 +80,7 @@ void ChildTransformSynchronizationSystem::TransformDestroyedHandler(
 {
 	const auto& objectInfo = registry.get<ObjectInfoComponent>(entity);
 
-	if (objectInfo.parentId != EmptyId)
+	if (objectInfo.parentId != EmptyIdString)
 	{
 		childEntities_[objectInfo.parentId].erase(entity);
 	}

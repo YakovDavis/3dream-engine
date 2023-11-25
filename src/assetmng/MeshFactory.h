@@ -4,6 +4,8 @@
 #include "EASTL/unordered_map.h"
 #include "EASTL/vector.h"
 #include "MeshData.h"
+#include "MeshMetaData.h"
+#include "assimp/scene.h"
 #include "render/VertexIndexBufferInfo.h"
 
 namespace D3E
@@ -22,19 +24,23 @@ namespace D3E
 		static eastl::unordered_map<String, nvrhi::BufferHandle> iBuffers_;
 		static eastl::unordered_map<String, nvrhi::IndexBufferBinding> ibBindings_;
 
+		static void ProcessNode(const D3E::MeshMetaData& metaData, aiNode* node, const aiScene* scene);
+		static void ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* mesh, const aiScene* scene);
+
 	public:
 		MeshFactory() = delete;
 		static void Initialize(Game* game);
 		static bool IsInitialized() { return isInitialized_; }
 		static void DestroyResources();
 
-		static void AddMeshFromData(const String& name, const MeshData& meshData);
-		static void FillMeshBuffers(const String& name, nvrhi::DeviceHandle& device, nvrhi::CommandListHandle& commandList);
+		static void AddMeshFromData(const String& uuid, const MeshData& meshData);
+		static void LoadMesh(const MeshMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+		static void FillMeshBuffers(const String& uuid, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
-		static MeshData GetMeshData(const String& name);
-		static nvrhi::BufferHandle GetVertexBuffer(const String& name);
-		static nvrhi::VertexBufferBinding GetVertexBufferBinding(const String& name);
-		static nvrhi::BufferHandle GetIndexBuffer(const String& name);
-		static nvrhi::IndexBufferBinding GetIndexBufferBinding(const String& name);
+		static MeshData GetMeshData(const String& uuid);
+		static nvrhi::BufferHandle GetVertexBuffer(const String& uuid);
+		static nvrhi::VertexBufferBinding GetVertexBufferBinding(const String& uuid);
+		static nvrhi::BufferHandle GetIndexBuffer(const String& uuid);
+		static nvrhi::IndexBufferBinding GetIndexBufferBinding(const String& uuid);
 	};
 }
