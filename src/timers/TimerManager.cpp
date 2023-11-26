@@ -8,6 +8,13 @@ using namespace D3E;
 
 // Public members
 
+TimerManager& TimerManager::GetInstance()
+{
+	static TimerManager instance;
+
+	return instance;
+}
+
 void TimerManager::Tick(float dT)
 {
 
@@ -232,6 +239,10 @@ float TimerManager::GetTimerRemaining(TimerHandle& handle) const
 }
 
 // Private members
+
+TimerManager::TimerManager()
+{
+}
 
 void TimerManager::SetTimerInternal(TimerHandle& handle,
                                     TimerDelegate&& delegate, float rate,

@@ -13,6 +13,11 @@ namespace D3E
 	class TimerManager
 	{
 	public:
+		TimerManager(const TimerManager&) = delete;
+		TimerManager& operator=(const TimerManager&) = delete;
+
+		TimerManager& GetInstance();
+
 		void Tick(float dT);
 		void SetTimer(TimerHandle& handle, float rate, bool looping = false,
 		              float firstDelay = -.1f);
@@ -30,7 +35,7 @@ namespace D3E
 
 		// TODO(Denis): implement SetTimerForNextTick
 		void SetTimerForNextTick();
-		
+
 		void ClearTimer(TimerHandle& handle);
 		void PauseTimer(TimerHandle& handle);
 		void UnPauseTimer(TimerHandle& handle);
@@ -54,9 +59,6 @@ namespace D3E
 		eastl::unordered_set<TimerHandle, TimerHandleHash> activeTimers_;
 
 		TimerManager();
-		TimerManager(const TimerManager&) = delete;
-
-		TimerManager& operator=(const TimerManager&) = delete;
 
 		void SetTimerInternal(TimerHandle& handle, TimerDelegate&& delegate,
 		                      float rate, bool looping, float firstDelay);
