@@ -14,33 +14,33 @@ void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 	MeshData sm = {};
 
 	GeometryGenerator::CreateBox(sm, 1.0f, 1.0f, 1.0f, 0);
-	MeshFactory::AddMeshFromData("Cube", sm);
+	MeshFactory::AddMeshFromData(kCubeUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 
 	GeometryGenerator::CreateQuad(sm, 0, 0, 1.0f, 1.0f, 0.0f);
-	MeshFactory::AddMeshFromData("Plane", sm);
+	MeshFactory::AddMeshFromData(kPlaneUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 
 	GeometryGenerator::CreateCylinder(sm, 1.0f, 1.0f,
 	                                  1.0f, 16, 1);
-	MeshFactory::AddMeshFromData("Cylinder", sm);
+	MeshFactory::AddMeshFromData(kCyllinderUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 
 	GeometryGenerator::CreateSphere(sm, 1.0f, 16, 16);
-	MeshFactory::AddMeshFromData("Sphere", sm);
+	MeshFactory::AddMeshFromData(kSphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 
 	GeometryGenerator::CreateGeosphere(sm, 1, 0);
-	MeshFactory::AddMeshFromData("Geosphere", sm);
+	MeshFactory::AddMeshFromData(kGeosphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 
 	GeometryGenerator::CreateGrid(sm, 1.0f, 1.0f, 64, 64);
-	MeshFactory::AddMeshFromData("Grid", sm);
+	MeshFactory::AddMeshFromData(kGridUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
 }
@@ -48,12 +48,12 @@ void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 void D3E::DefaultAssetLoader::FillPrimitiveMeshBuffers(
 	nvrhi::DeviceHandle& device, nvrhi::CommandListHandle& commandList)
 {
-	eastl::vector<String> meshNames = {"Cube", "Plane", "Cylinder", "Sphere",
-	                                         "Geosphere", "Grid"};
+	eastl::vector<String> meshUuids = {kCubeUUID, kPlaneUUID, kCyllinderUUID, kSphereUUID,
+	                                         kGeosphereUUID, kGridUUID};
 
-	for (const auto& name : meshNames)
+	for (const auto& uuid : meshUuids)
 	{
-		MeshFactory::FillMeshBuffers("Cube", device, commandList);
+		MeshFactory::FillMeshBuffers(uuid, device, commandList);
 	}
 }
 

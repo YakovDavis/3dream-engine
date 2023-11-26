@@ -2,10 +2,13 @@
 
 #include "D3E/CommonCpp.h"
 #include "D3E/Debug.h"
+#include "MeshFactory.h"
+#include "MeshMetaData.h"
 #include "Texture2DMetaData.h"
 #include "TextureFactory.h"
 #include "json.hpp"
 #include "uuid_v4.h"
+
 #include <filesystem>
 #include <fstream>
 
@@ -47,6 +50,12 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder,
 				metadata.get_to(asset);
 				TextureFactory::LoadTexture(asset, false, device, commandList);
 			}
+			if (metadata.at("type") == "mesh")
+			{
+				MeshMetaData asset;
+				metadata.get_to(asset);
+				MeshFactory::LoadMesh(asset, false, device, commandList);
+			}
 		}
 	}
 }
@@ -62,6 +71,29 @@ void D3E::AssetManager::CreateTexture(const D3E::String& name,
 	asset.name = name.c_str();
 
 	TextureFactory::LoadTexture(asset, true, device, commandList);
+
+	json j(asset);
+	const size_t last_slash_idx = filename.rfind('/');
+	std::string dir = "";
+	if (std::string::npos != last_slash_idx)
+	{
+		dir = filename.substr(0, last_slash_idx).c_str();
+	}
+	std::ofstream o(dir + "/" + asset.name + ".meta");
+	o << std::setw(4) << j << std::endl;
+}
+
+void D3E::AssetManager::CreateMesh(const D3E::String& name,
+                                   const D3E::String& filename,
+                                   nvrhi::IDevice* device,
+                                   nvrhi::ICommandList* commandList)
+{
+	MeshMetaData asset;
+	asset.uuid = uuidGenerator.getUUID().str();
+	asset.filename = filename.c_str();
+	asset.name = name.c_str();
+
+	MeshFactory::LoadMesh(asset, true, device, commandList);
 
 	json j(asset);
 	const size_t last_slash_idx = filename.rfind('/');

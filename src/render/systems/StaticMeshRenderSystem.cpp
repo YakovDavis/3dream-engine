@@ -59,15 +59,15 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 		                                   .setPipeline(renderModeCVar->getInt() == 0 ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName) : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
 		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1920, 1080)))
-		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "V"))
-		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "P"))
-		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshName));
-				  graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding(smc.meshName));
+		                                   .addBindingSet(ShaderFactory::GetBindingSetV(info.id))
+		                                   .addBindingSet(ShaderFactory::GetBindingSetP(info.id))
+		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshUuid));
+				  graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding(smc.meshUuid));
 				  commandList->setGraphicsState(graphicsState);
 
 				  // Draw our geometry
 				  auto drawArguments = nvrhi::DrawArguments()
-		                                   .setVertexCount(MeshFactory::GetMeshData(smc.meshName).indices.size());
+		                                   .setVertexCount(MeshFactory::GetMeshData(smc.meshUuid).indices.size());
 				  commandList->drawIndexed(drawArguments);
 			  });
 }

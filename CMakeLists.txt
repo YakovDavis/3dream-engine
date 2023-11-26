@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-option(BUILD_SHARED_LIBS OFF)
-option(ASSIMP_INSTALL OFF)
+option(BUILD_SHARED_LIBS ON)
+option(ASSIMP_INSTALL ON)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
@@ -132,6 +132,10 @@ add_library(D3Engine SHARED
         include/D3E/engine/ConsoleVariable.h
         include/D3E/engine/IntConsoleVariable.h
         include/D3E/engine/FloatConsoleVariable.h
+
+        src/assetmng/MeshMetaData.cpp
+        src/assetmng/MeshMetaData.h
+        src/assetmng/MeshMetaData.h
         include/D3E/Timer.h
         src/timers/Timer.cpp 
         include/D3E/TimerManager.h
