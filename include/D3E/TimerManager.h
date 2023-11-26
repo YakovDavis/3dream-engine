@@ -30,8 +30,7 @@ namespace D3E
 		              float rate, bool looping = false, float firstDelay = -.1f)
 		{
 			SetTimerInternal(handle, TimerDelegate(), rate, looping,
-			                 firstDelay); // TODO(Denis): Find a way to store
-			                              // member delegate in TimerDelegate
+			                 firstDelay); // TODO(Denis): Find a way to store member delegate in TimerDelegate
 		};
 
 		// TODO(Denis): implement SetTimerForNextTick

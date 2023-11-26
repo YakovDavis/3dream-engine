@@ -22,7 +22,6 @@ void TimerManager::Init(Game* gameInstance)
 
 void TimerManager::Update(float dT)
 {
-
 	if (TickedThisFrame())
 	{
 		return;
@@ -268,6 +267,7 @@ void TimerManager::SetTimerInternal(TimerHandle& handle,
 	Timer newTimer;
 	newTimer.rate_ = rate;
 	newTimer.looping_ = looping;
+	newTimer.delegate_ = std::move(delegate);
 
 	const auto delay = firstDelay >= 0.f ? firstDelay : rate;
 
@@ -376,16 +376,16 @@ void TimerManager::ProcessPendingTimersInternal()
 
 void TimerManager::ProcessActiveTimersInternal()
 {
-	for (auto& h : activeTimers_)
+	for (auto it = activeTimers_.begin(); it != activeTimers_.end();)
 	{
 		// Make local copy to prevent invalidation
-		TimerHandle handle = h;
+		TimerHandle handle = (*it);
 		auto timer = &timers_[handle];
 
 		if (timer->state_ == TimerState::PendingRemoval)
 		{
-			activeTimers_.erase(handle);
 			RemoveTimer(handle);
+			it = activeTimers_.erase(it);
 
 			continue;
 		}
@@ -395,10 +395,9 @@ void TimerManager::ProcessActiveTimersInternal()
 			executingTimerHandle_ = handle;
 			timer->state_ = TimerState::Executing;
 
-			// TODO(Denis): Do we need this at all?
 			int callCount =
 				timer->looping_
-					? (managerTime_ - timer->expireTime_) / timer->rate_
+					? int((managerTime_ - timer->expireTime_) / timer->rate_) + 1
 					: 1;
 
 			for (int i = 0; i < callCount; ++i)
@@ -418,14 +417,19 @@ void TimerManager::ProcessActiveTimersInternal()
 				{
 					timer->expireTime_ += callCount * timer->rate_;
 					timer->state_ = TimerState::Active;
+					++it;
 				}
 				else
 				{
-					activeTimers_.erase(executingTimerHandle_);
+					RemoveTimer(handle);
+					it = activeTimers_.erase(it);
 				}
 
 				executingTimerHandle_.Invalidate();
+				continue;
 			}
 		}
+
+		++it;
 	}
 }
