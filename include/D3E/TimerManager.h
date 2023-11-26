@@ -13,10 +13,24 @@ namespace D3E
 	class TimerManager
 	{
 	public:
-		void Tick(float dT);		
+		void Tick(float dT);
 		void SetTimer(TimerHandle& handle, float rate, bool looping = false,
 		              float firstDelay = -.1f);
+		void SetTimer(TimerHandle& handle, FunctionDelegate delegate,
+		              float rate, bool looping = false,
+		              float firstDelay = -.1f);
+		template<typename T>
+		void SetTimer(TimerHandle& handle, T* object, void (T::*delegate)(),
+		              float rate, bool looping = false, float firstDelay = -.1f)
+		{
+			SetTimerInternal(handle, TimerDelegate(), rate, looping,
+			                 firstDelay); // TODO(Denis): Find a way to store
+			                              // member delegate in TimerDelegate
+		};
+
+		// TODO(Denis): implement SetTimerForNextTick
 		void SetTimerForNextTick();
+		
 		void ClearTimer(TimerHandle& handle);
 		void PauseTimer(TimerHandle& handle);
 		void UnPauseTimer(TimerHandle& handle);
@@ -44,6 +58,9 @@ namespace D3E
 
 		TimerManager& operator=(const TimerManager&) = delete;
 
+		void SetTimerInternal(TimerHandle& handle, TimerDelegate&& delegate,
+		                      float rate, bool looping, float firstDelay);
+		void SetTimerForNextTickInternal();
 		Timer* FindTimer(const TimerHandle& handle);
 		Timer const* FindTimer(const TimerHandle& handle) const;
 		void RemoveTimer(const TimerHandle& handle);

@@ -30,41 +30,18 @@ void TimerManager::Tick(float dT)
 void TimerManager::SetTimer(TimerHandle& handle, float rate, bool looping,
                             float firstDelay)
 {
-	if (FindTimer(handle))
-	{
-		ClearTimer(handle);
-	}
+	SetTimerInternal(handle, TimerDelegate(), rate, looping, firstDelay);
+}
 
-	if (rate < 0.f)
-	{
-		handle.Invalidate();
-		return;
-	}
+void TimerManager::SetTimer(TimerHandle& handle, FunctionDelegate delegate,
+                            float rate, bool looping, float firstDelay)
+{
+	SetTimerInternal(handle, delegate, rate, looping, firstDelay);
+}
 
-	Timer newTimer;
-	newTimer.rate_ = rate;
-	newTimer.looping_ = looping;
-
-	const auto delay = firstDelay >= 0.f ? firstDelay : rate;
-
-	TimerHandle newTimerHandle;
-
-	if (TickedThisFrame())
-	{
-		newTimer.expireTime_ = managerTime_ + delay;
-		newTimer.state_ = TimerState::Active;
-		newTimerHandle = AddTimer(newTimer);
-		activeTimers_.insert(newTimerHandle);
-	}
-	else
-	{
-		newTimer.expireTime_ = delay;
-		newTimer.state_ = TimerState::Pending;
-		newTimerHandle = AddTimer(newTimer);
-		pendingTimers_.insert(newTimerHandle);
-	}
-
-	handle = newTimerHandle;
+void TimerManager::SetTimerForNextTick()
+{
+	SetTimerForNextTickInternal();
 }
 
 void TimerManager::ClearTimer(TimerHandle& handle)
@@ -91,6 +68,16 @@ void TimerManager::ClearTimer(TimerHandle& handle)
 			case TimerState::Paused:
 			{
 				pausedTimers_.erase(handle);
+				RemoveTimer(handle);
+				break;
+			}
+			case TimerState::Executing:
+			{
+				Debug::Assert(executingTimerHandle_ == handle,
+				              "[TimerManager] : ClearTimer() : "
+				              "executingTimerHandle_ != handle");
+
+				executingTimerHandle_.Invalidate();
 				RemoveTimer(handle);
 				break;
 			}
@@ -128,6 +115,15 @@ void TimerManager::PauseTimer(TimerHandle& handle)
 		case TimerState::Pending:
 		{
 			pendingTimers_.erase(handle);
+			break;
+		}
+		case TimerState::Executing:
+		{
+			Debug::Assert(executingTimerHandle_ == handle,
+			              "[TimerManager] : ClearTimer() : "
+			              "executingTimerHandle_ != handle");
+
+			executingTimerHandle_.Invalidate();
 			break;
 		}
 	}
@@ -208,6 +204,7 @@ float TimerManager::GetTimerElapsed(TimerHandle& handle) const
 	switch (timer->state_)
 	{
 		case TimerState::Active:
+		case TimerState::Executing:
 			return timer->rate_ - (timer->expireTime_ - managerTime_);
 		default:
 			return timer->rate_ - timer->expireTime_;
@@ -227,12 +224,60 @@ float TimerManager::GetTimerRemaining(TimerHandle& handle) const
 	{
 		case TimerState::Active:
 			return timer->expireTime_ - managerTime_;
+		case TimerState::Executing:
+			return 0.f;
 		default:
 			return timer->expireTime_;
 	}
 }
 
 // Private members
+
+void TimerManager::SetTimerInternal(TimerHandle& handle,
+                                    TimerDelegate&& delegate, float rate,
+                                    bool looping, float firstDelay)
+{
+	if (FindTimer(handle))
+	{
+		ClearTimer(handle);
+	}
+
+	if (rate < 0.f)
+	{
+		handle.Invalidate();
+		return;
+	}
+
+	Timer newTimer;
+	newTimer.rate_ = rate;
+	newTimer.looping_ = looping;
+
+	const auto delay = firstDelay >= 0.f ? firstDelay : rate;
+
+	TimerHandle newTimerHandle;
+
+	if (TickedThisFrame())
+	{
+		newTimer.expireTime_ = managerTime_ + delay;
+		newTimer.state_ = TimerState::Active;
+		newTimerHandle = AddTimer(newTimer);
+		activeTimers_.insert(newTimerHandle);
+	}
+	else
+	{
+		newTimer.expireTime_ = delay;
+		newTimer.state_ = TimerState::Pending;
+		newTimerHandle = AddTimer(newTimer);
+		pendingTimers_.insert(newTimerHandle);
+	}
+
+	handle = newTimerHandle;
+}
+
+void TimerManager::SetTimerForNextTickInternal()
+{
+	// TODO(Denis): Implement SetTimerForNextTickInternal
+}
 
 Timer* TimerManager::FindTimer(const TimerHandle& handle)
 {

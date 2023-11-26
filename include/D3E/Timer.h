@@ -1,9 +1,27 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
 namespace D3E
 {
+	using FunctionDelegate = std::function<void()>;
+
+	struct TimerDelegate
+	{
+		FunctionDelegate functionDelegate;
+
+		TimerDelegate(){};
+		TimerDelegate(FunctionDelegate const& d) : functionDelegate(d){};
+
+		inline void Execute() {}
+
+		TimerDelegate(TimerDelegate&&) = default;
+		TimerDelegate(TimerDelegate&) = delete;
+		TimerDelegate& operator=(TimerDelegate&&) = default;
+		TimerDelegate& operator=(TimerDelegate&) = delete;
+	};
+
 	enum class TimerState : uint8_t
 	{
 		Pending,
@@ -30,5 +48,6 @@ namespace D3E
 		TimerState state_;
 		bool looping_;
 		double expireTime_;
+		TimerDelegate delegate_;
 	};
 } // namespace D3E
