@@ -14,7 +14,15 @@ namespace D3E
 		TimerDelegate(){};
 		TimerDelegate(FunctionDelegate const& d) : functionDelegate(d){};
 
-		inline void Execute() {}
+		inline void Execute()
+		{
+			if (!functionDelegate)
+			{
+				return;
+			}
+
+			functionDelegate();
+		}
 
 		TimerDelegate(TimerDelegate&&) = default;
 		TimerDelegate(TimerDelegate&) = delete;

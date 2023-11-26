@@ -397,9 +397,7 @@ void TimerManager::ProcessActiveTimersInternal()
 
 			for (int i = 0; i < callCount; ++i)
 			{
-				//
-				// TODO(Denis): Execute timer delegate
-				//
+				timer->delegate_.Execute();
 
 				// Check if timer invalidated itself during delegate call
 				if (!FindTimer(executingTimerHandle_))
