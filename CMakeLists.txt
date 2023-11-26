@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 option(BUILD_SHARED_LIBS ON)
-option(ASSIMP_INSTALL ON)
+option(ASSIMP_INSTALL OFF)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
@@ -132,7 +132,6 @@ add_library(D3Engine SHARED
         include/D3E/engine/ConsoleVariable.h
         include/D3E/engine/IntConsoleVariable.h
         include/D3E/engine/FloatConsoleVariable.h
-
         src/assetmng/MeshMetaData.cpp
         src/assetmng/MeshMetaData.h
         src/assetmng/MeshMetaData.h
@@ -174,6 +173,8 @@ target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(D3Engine PRIVATE ${NVRHI_DEFINES})
 
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
+
+add_subdirectory(samples/Ducks)
 
 install(TARGETS D3Engine
         RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/
