@@ -16,9 +16,10 @@ namespace D3E
 		TimerManager(const TimerManager&) = delete;
 		TimerManager& operator=(const TimerManager&) = delete;
 
-		TimerManager& GetInstance();
+		static TimerManager& GetInstance();
 
-		void Tick(float dT);
+		void Init(Game* gameInstance);
+		void Update(float dT);
 		void SetTimer(TimerHandle& handle, float rate, bool looping = false,
 		              float firstDelay = -.1f);
 		void SetTimer(TimerHandle& handle, FunctionDelegate delegate,

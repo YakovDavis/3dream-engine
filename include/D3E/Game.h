@@ -14,6 +14,7 @@ namespace D3E
 	class DisplayWin32;
 	class InputDevice;	
 	class SoundEngine;
+	class TimerManager;
 
 	class Game : public App
 	{

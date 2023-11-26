@@ -15,7 +15,12 @@ TimerManager& TimerManager::GetInstance()
 	return instance;
 }
 
-void TimerManager::Tick(float dT)
+void TimerManager::Init(Game* gameInstance)
+{
+	game_ = gameInstance;
+}
+
+void TimerManager::Update(float dT)
 {
 
 	if (TickedThisFrame())
@@ -241,6 +246,7 @@ float TimerManager::GetTimerRemaining(TimerHandle& handle) const
 // Private members
 
 TimerManager::TimerManager()
+	: game_(nullptr), lastTickedFrame_{0}, managerTime_{0}
 {
 }
 
