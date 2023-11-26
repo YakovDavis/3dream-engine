@@ -17,11 +17,14 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/systems/LightInitSystem.h"
+#include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
-#include <thread>
+
 #include <filesystem>
+#include <thread>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -107,6 +110,9 @@ void D3E::Game::Init()
 	systems_.push_back(new FPSControllerSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 
+	renderPPsystems_.push_back(new LightInitSystem);
+	renderPPsystems_.push_back(new LightRenderSystem);
+
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 }
@@ -129,9 +135,9 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_, systems_);
-	gameRender_->Draw(registry_, systems_);
-	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->PrepareDraw(registry_, systems_, renderPPsystems_);
+	gameRender_->Draw(registry_, systems_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, systems_, renderPPsystems_);
 
 	gameRender_->Present();
 

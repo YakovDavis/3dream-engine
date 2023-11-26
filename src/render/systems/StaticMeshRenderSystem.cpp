@@ -13,8 +13,6 @@
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
 
-#include <iostream>
-
 void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                          nvrhi::ICommandList* commandList, nvrhi::IDevice* device)
 {

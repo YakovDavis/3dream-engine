@@ -19,9 +19,10 @@ struct PS_IN
 
 struct GBuffer
 {
-	float4 DiffuseSpec : SV_Target0;
+	float3 Albedo : SV_Target0;
 	float3 WorldPos : SV_Target1;
 	float3 Normal : SV_Target2;
+	float3 MetalRoughnessSpecular : SV_Target3;
 };
 
 cbuffer cbPerObject : register(b0)
@@ -33,7 +34,15 @@ cbuffer cbPerObject : register(b0)
 };
 
 Texture2D AlbedoMap : register(t0);
-SamplerState AlbedoSampler : register(s0);
+Texture2D NormalMap : register(t1);
+Texture2D MetalnessMap : register(t2);
+Texture2D RoughnessMap : register(t3);
+TextureCube SpecularMap : register(t4);
+TextureCube IrradianceMap : register(t5);
+Texture2D SpecularBRDF_LUT : register(t6);
+
+SamplerState DefaultSampler : register(s0);
+SamplerState spBRDF_Sampler : register(s1);
 
 PS_IN VSMain(VS_IN input)
 {
@@ -49,14 +58,16 @@ PS_IN VSMain(VS_IN input)
 }
 
 [earlydepthstencil]
-GBuffer PSMain(PS_IN input) : SV_Target
+GBuffer PSMain(PS_IN input)// : SV_Target
 {
 	GBuffer result = (GBuffer)0;
 
-	float4 objColor = AlbedoMap.SampleLevel(AlbedoSampler, input.tex.xy, 0);
+	float4 objColor = AlbedoMap.SampleLevel(DefaultSampler, input.tex.xy, 0);
 	
-	result.DiffuseSpec.xyz = objColor.xyz;
-	result.DiffuseSpec.w = 0.5f;
+	result.Albedo.xyz = objColor.xyz;
+	result.MetalRoughnessSpecular.x = MetalnessMap.SampleLevel(DefaultSampler, input.tex.xy, 0).r;
+	result.MetalRoughnessSpecular.y = RoughnessMap.SampleLevel(DefaultSampler, input.tex.xy, 0).r;
+	result.MetalRoughnessSpecular.z = 0.5f; // spec
 	result.WorldPos = input.worldPos.xyz;
 	result.Normal = normalize(input.normal.xyz);
 	

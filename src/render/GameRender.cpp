@@ -52,6 +52,17 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	framebufferDesc1.setDepthAttachment(nvrhiDepthBuffer);
 	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
 
+	gbuffer_.Initialize(device_, commandList_, display_.get());
+	TextureFactory::RegisterGBuffer(&gbuffer_);
+
+	nvrhi::FramebufferDesc frameGBufferDesc = {};
+	frameGBufferDesc.addColorAttachment(gbuffer_.albedoBuffer);
+	frameGBufferDesc.addColorAttachment(gbuffer_.positionBuffer);
+	frameGBufferDesc.addColorAttachment(gbuffer_.normalBuffer);
+	frameGBufferDesc.addColorAttachment(gbuffer_.metalRoughnessBuffer);
+	frameGBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
+	frameGBuffer = device_->createFramebuffer(frameGBufferDesc);
+
 #ifdef USE_IMGUI
 	editor_ = D3E::Editor::Init(device_, display_);
 #endif
@@ -61,7 +72,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	DefaultAssetLoader::LoadPrimitiveMeshes();
 	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
-	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0]);
+	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0], frameGBuffer);
 	DefaultAssetLoader::LoadDefaultSamplers(device_);
 
 	for (auto& sys : systems)
@@ -140,7 +151,7 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 	return commandList_;
 }
 
-void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
+void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
 {
 	// Obtain the current framebuffer from the graphics API
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
@@ -149,9 +160,19 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 
 	// Clear the primary render target
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
+	//nvrhi::utils::ClearColorAttachment(commandList_, frameGBuffer, 0, nvrhi::Color(0.0f));
+	commandList_->clearTextureFloat(gbuffer_.albedoBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
+	commandList_->clearTextureFloat(gbuffer_.positionBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
+	commandList_->clearTextureFloat(gbuffer_.normalBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
+	commandList_->clearTextureFloat(gbuffer_.metalRoughnessBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, false, 0U);
 
 	for (auto& sys : systems)
+	{
+		sys->Draw(registry, frameGBuffer, commandList_, device_);
+	}
+
+	for (auto& sys : renderPPSystems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
@@ -161,17 +182,27 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 	device_->executeCommandList(commandList_);
 }
 
-void D3E::GameRender::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
+void D3E::GameRender::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
 {
 	for (auto& sys : systems)
 	{
 		sys->PreDraw(registry, commandList_, device_);
 	}
+
+	for (auto& sys : renderPPSystems)
+	{
+		sys->PreDraw(registry, commandList_, device_);
+	}
 }
 
-void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
+void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
 {
 	for (auto& sys : systems)
+	{
+		sys->PostDraw(registry, commandList_, device_);
+	}
+
+	for (auto& sys : renderPPSystems)
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
