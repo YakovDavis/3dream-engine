@@ -10,7 +10,7 @@
 
 void DuckGame::Update(float deltaTime)
 {
-	Game::Update(deltaTime);	
+	Game::Update(deltaTime);
 
 	if (fireCounter_ > 2)
 	{
@@ -18,18 +18,26 @@ void DuckGame::Update(float deltaTime)
 	}
 }
 
+void DuckGame::TimerHandler()
+{
+	D3E::Debug::LogMessage("Member function timer fired!");
+}
+
+static void Handler()
+{
+	D3E::Debug::LogMessage("Static function timer fired!");
+}
+
 void DuckGame::Init()
 {
 	Game::Init();
 
+	// Lambda example
 	D3E::TimerManager::GetInstance().SetTimer(
-		handle_,
-		[this]()
-		{
-			D3E::Debug::LogMessage("1 second not looping timer fired!");			
-		},
+		handle_, [this]() { D3E::Debug::LogMessage("1 second timer fired!"); },
 		1000);
 
+	// Looping timer example
 	D3E::TimerManager::GetInstance().SetTimer(
 		handle2_,
 		[this]()
@@ -38,13 +46,16 @@ void DuckGame::Init()
 			++fireCounter_;
 		},
 		3000, true);
-	D3E::TimerManager::GetInstance().SetTimer(
-		handle3_,
-		[this]()
-		{
-			D3E::Debug::LogMessage("5 seconds not looping timer fired!");
-		},
-		5000);
+
+	// Member function delegate example
+	D3E::TimerManager::GetInstance().SetTimer(handle3_, this,
+	                                          &DuckGame::TimerHandler, 10000);
+	// Static function delegate example
+	D3E::TimerManager::GetInstance().SetTimer(handle4_, &Handler, 11000);
+
+	// Timer for next tick example
+	handle5_ = D3E::TimerManager::GetInstance().SetTimerForNextTick(
+		[]() { D3E::Debug::LogMessage("Next tick timer fired!"); });
 
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};

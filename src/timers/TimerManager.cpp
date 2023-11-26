@@ -50,9 +50,9 @@ void TimerManager::SetTimer(TimerHandle& handle, FunctionDelegate delegate,
 	SetTimerInternal(handle, delegate, rate, looping, firstDelay);
 }
 
-void TimerManager::SetTimerForNextTick()
+TimerHandle TimerManager::SetTimerForNextTick(FunctionDelegate delegate)
 {
-	SetTimerForNextTickInternal();
+	return SetTimerForNextTickInternal(delegate);
 }
 
 void TimerManager::ClearTimer(TimerHandle& handle)
@@ -291,9 +291,19 @@ void TimerManager::SetTimerInternal(TimerHandle& handle,
 	handle = newTimerHandle;
 }
 
-void TimerManager::SetTimerForNextTickInternal()
+TimerHandle TimerManager::SetTimerForNextTickInternal(TimerDelegate&& delegate)
 {
-	// TODO(Denis): Implement SetTimerForNextTickInternal
+	Timer timer;
+	timer.rate_ = 0.f;
+	timer.looping_ = false;
+	timer.delegate_ = std::move(delegate);
+	timer.expireTime_ = managerTime_;
+	timer.state_ = TimerState::Active;
+
+	TimerHandle newTimerHandle = AddTimer(timer);
+	activeTimers_.insert(newTimerHandle);
+
+	return newTimerHandle;
 }
 
 Timer* TimerManager::FindTimer(const TimerHandle& handle)
@@ -397,7 +407,8 @@ void TimerManager::ProcessActiveTimersInternal()
 
 			int callCount =
 				timer->looping_
-					? int((managerTime_ - timer->expireTime_) / timer->rate_) + 1
+					? int((managerTime_ - timer->expireTime_) / timer->rate_) +
+						  1
 					: 1;
 
 			for (int i = 0; i < callCount; ++i)

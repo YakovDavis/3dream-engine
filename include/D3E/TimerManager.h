@@ -29,12 +29,19 @@ namespace D3E
 		void SetTimer(TimerHandle& handle, T* object, void (T::*delegate)(),
 		              float rate, bool looping = false, float firstDelay = -.1f)
 		{
-			SetTimerInternal(handle, TimerDelegate(), rate, looping,
-			                 firstDelay); // TODO(Denis): Find a way to store member delegate in TimerDelegate
+			SetTimerInternal(handle, TimerDelegate(std::bind(delegate, object)),
+			                 rate, looping, firstDelay);
 		};
 
-		// TODO(Denis): implement SetTimerForNextTick
-		void SetTimerForNextTick();
+		TimerHandle SetTimerForNextTick(FunctionDelegate delegate);
+		template<typename T>
+		TimerHandle SetTimerForNextTick(TimerHandle& handle, T* object,
+		                                void (T::*delegate)(), float rate,
+		                                bool looping = false,
+		                                float firstDelay = -1.f)
+		{
+			return SetTimerForNextTickInternal(std::bind(delegate, object));
+		};
 
 		void ClearTimer(TimerHandle& handle);
 		void PauseTimer(TimerHandle& handle);
@@ -62,7 +69,7 @@ namespace D3E
 
 		void SetTimerInternal(TimerHandle& handle, TimerDelegate&& delegate,
 		                      float rate, bool looping, float firstDelay);
-		void SetTimerForNextTickInternal();
+		TimerHandle SetTimerForNextTickInternal(TimerDelegate&& delegate);
 		Timer* FindTimer(const TimerHandle& handle);
 		Timer const* FindTimer(const TimerHandle& handle) const;
 		void RemoveTimer(const TimerHandle& handle);
