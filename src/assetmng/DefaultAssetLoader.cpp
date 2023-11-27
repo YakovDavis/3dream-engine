@@ -188,18 +188,26 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	gbufferPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
 	ShaderFactory::AddGraphicsPipeline("GBuffer", gbufferPipelineDesc, gBuffFb);
 
+	nvrhi::DepthStencilState nullDepthStencilState = {};
+	nullDepthStencilState.setDepthTestEnable(false);
+	nullDepthStencilState.setDepthWriteEnable(false);
+	nullDepthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Always);
+	nullDepthStencilState.setStencilEnable(false);
+
 	nvrhi::GraphicsPipelineDesc lightpassPipelineDesc = {};
 	lightpassPipelineDesc.setInputLayout(nullptr);
 	lightpassPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("LightPass"));
 	lightpassPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("LightPass"));
 	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassV"));
 	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassP"));
+	renderState.depthStencilState = nullDepthStencilState;
 	lightpassPipelineDesc.setRenderState(renderState);
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
 
 	rasterState.fillMode = nvrhi::RasterFillMode::Wireframe;
 	renderState.rasterState = rasterState;
+	renderState.depthStencilState = depthStencilState;
 	pipelineDesc.renderState = renderState;
 	ShaderFactory::AddGraphicsPipeline("WireFrame", pipelineDesc, fb);
 }
@@ -207,5 +215,9 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 {
 	auto samplerDesc = nvrhi::SamplerDesc();
+	samplerDesc.minFilter = true;
+	samplerDesc.magFilter = true;
+	samplerDesc.mipFilter = true;
+	samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
 	TextureFactory::AddSampler("Base", device, samplerDesc);
 }

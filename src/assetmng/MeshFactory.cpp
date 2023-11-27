@@ -134,6 +134,8 @@ void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, bool firstLoa
 {
 	meshData_.insert({ metaData.uuid.c_str(), MeshData() });
 
+	Debug::LogMessage("[MeshFactory] Loading mesh file " + eastl::string(metaData.filename.c_str()));
+
 	Assimp::Importer importer;
 
 	const aiScene* pScene = importer.ReadFile(metaData.filename.c_str(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);

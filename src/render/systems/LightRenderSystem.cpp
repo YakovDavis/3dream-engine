@@ -39,6 +39,7 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 
 				  constBufferData.gEyePosition = Vector4(origin.x, origin.y, origin.z, 1.0f);
 				  constBufferData.gLightDir = Vector4(lc.direction.x, lc.direction.y, lc.direction.z, 0.0f);
+				  constBufferData.gLightDir.Normalize();
 				  constBufferData.gLightColor = Vector4(lc.color.x, lc.color.y, lc.color.z, 1.0f);
 
 				  commandList->writeBuffer(lc.lightCBuffer, &constBufferData, sizeof(constBufferData));

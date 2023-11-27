@@ -96,9 +96,12 @@ void D3E::Game::Init()
 	gameRender_->Init(systems_);
 
 	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("wood", "textures/wood.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("duck", "textures/duck.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateMesh("duck", "models/duck.obj");
+	//AssetManager::Get().CreateTexture("white", "textures/white.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_A", "textures/cerberus_A.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_M", "textures/cerberus_M.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_R", "textures/cerberus_R.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_N", "textures/cerberus_N.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx", gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
 	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
