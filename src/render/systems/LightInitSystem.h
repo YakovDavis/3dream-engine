@@ -4,7 +4,7 @@
 
 namespace D3E
 {
-	class StaticMeshInitSystem : public GameSystem
+	class LightInitSystem : public GameSystem
 	{
 	public:
 		static bool IsDirty;

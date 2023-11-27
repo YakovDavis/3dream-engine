@@ -18,6 +18,8 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/systems/LightInitSystem.h"
+#include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
@@ -98,13 +100,13 @@ void D3E::Game::Init()
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init(systems_);
 
-	// AssetManager::Get().CreateTexture("default-grid",
-	// "textures/default-grid.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList()); AssetManager::Get().CreateTexture("wood",
-	// "textures/wood.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("duck", "textures/duck.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateMesh("duck", "models/duck.obj");
+	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("white", "textures/white.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_A", "textures/cerberus_A.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_M", "textures/cerberus_M.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_R", "textures/cerberus_R.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("cerberus_N", "textures/cerberus_N.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx", gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true,
 	                                       gameRender_->GetDevice(),
@@ -117,6 +119,9 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+
+	renderPPsystems_.push_back(new LightInitSystem);
+	renderPPsystems_.push_back(new LightRenderSystem);
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
@@ -142,9 +147,9 @@ void D3E::Game::Update(const float deltaTime)
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_, systems_);
-	gameRender_->Draw(registry_, systems_);
-	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->PrepareDraw(registry_, systems_, renderPPsystems_);
+	gameRender_->Draw(registry_, systems_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, systems_, renderPPsystems_);
 
 	gameRender_->Present();
 

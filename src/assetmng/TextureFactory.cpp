@@ -10,6 +10,7 @@
 
 bool D3E::TextureFactory::isInitialized_ = false;
 D3E::Game* D3E::TextureFactory::activeGame_;
+D3E::GBuffer* D3E::TextureFactory::gbuffer_;
 eastl::unordered_map<D3E::String, D3E::Texture> D3E::TextureFactory::textures_ {};
 eastl::unordered_map<D3E::String, nvrhi::SamplerHandle> D3E::TextureFactory::samplers_ {};
 
