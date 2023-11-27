@@ -138,7 +138,19 @@ void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, bool firstLoa
 
 	Assimp::Importer importer;
 
-	const aiScene* pScene = importer.ReadFile(metaData.filename.c_str(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+	const unsigned int ImportFlags =
+		aiProcess_CalcTangentSpace |
+		aiProcess_Triangulate |
+		aiProcess_SortByPType |
+		aiProcess_PreTransformVertices |
+		aiProcess_GenNormals |
+		aiProcess_GenUVCoords |
+		aiProcess_OptimizeMeshes |
+		aiProcess_Debone |
+		aiProcess_ValidateDataStructure |
+		aiProcess_ConvertToLeftHanded;
+
+	const aiScene* pScene = importer.ReadFile(metaData.filename.c_str(), ImportFlags);
 
 	ProcessNode(metaData, pScene->mRootNode, pScene);
 
@@ -181,6 +193,20 @@ void D3E::MeshFactory::ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* me
 		point.normal.y = mesh->mNormals[i].y;
 		point.normal.z = mesh->mNormals[i].z;
 		point.normal.w = 0.0f;
+
+		if (mesh->mTangents)
+		{
+			point.tangentU.x = mesh->mTangents[i].x;
+			point.tangentU.y = mesh->mTangents[i].y;
+			point.tangentU.z = mesh->mTangents[i].z;
+			point.tangentU.w = 0.0f;
+		}
+		else
+		{
+			Debug::LogError("[MeshFactory] Tangents missing");
+		}
+
+		//point.GenerateBitangent();
 
 		meshData_[metaData.uuid.c_str()].points.push_back(point);
 	}

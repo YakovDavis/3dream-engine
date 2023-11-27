@@ -21,7 +21,6 @@ void DuckGame::Init()
 	D3E::CreationSystems::CreateDefaultPlayer(GetRegistry(), tc);
 
 	tc.position = Vector3(0, 0, 50);
-	tc.rotation = Quaternion::CreateFromAxisAngle(Vector3(1, 0, 0), 3.14f / 2);
 	tc.scale = Vector3(0.2f, 0.2f, 0.2f);
 	info.name = "Cerberus";
 

@@ -151,20 +151,21 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 
 float4 PSMain(PS_IN input) : SV_Target
 {
-	/*float3 norm = NormalBuffer.Load(int3(input.pos.xy, 0));
+	// FIXME: hack before i add skybox
+	float3 norm = NormalBuffer.Load(int3(input.pos.xy, 0));
 	[branch]
 	if (abs(norm.x) + abs(norm.y) + abs(norm.z) < 0.5f)
 	{
-		return float4(0.0f, 0.0f, 0.0f, 0.0f);
+		return float4(0.2f, 0.2f, 0.2f, 1.0f);
 	}
-	norm = normalize(norm);*/
+	norm = normalize(norm);
 
     // Load input textures to get shading model params.
 	float3 albedo = AlbedoBuffer.Load(int3(input.pos.xy, 0)).rgb;
 	float metalness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).r;
 	float roughness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).g;
 	float3 worldPos = PositionBuffer.Load(int3(input.pos.xy, 0)).xyz;
-	float3 norm = normalize(NormalBuffer.Load(int3(input.pos.xy, 0)));
+	//float3 norm = normalize(NormalBuffer.Load(int3(input.pos.xy, 0)));
 
 	// Outgoing light direction (vector from world-space fragment position to the "eye").
 	float3 Lo = float3(0.0f, 0.0f, -1.0f); //normalize(gEyePosition.xyz - worldPos);

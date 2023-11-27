@@ -76,6 +76,11 @@ void D3E::DefaultAssetLoader::LoadDefaultInputLayouts()
 			.setOffset(offsetof(Vertex, tangentU))
 			.setElementStride(sizeof(Vertex)),
 		nvrhi::VertexAttributeDesc()
+			.setName("BITANGENT")
+			.setFormat(nvrhi::Format::RGBA32_FLOAT)
+			.setOffset(offsetof(Vertex, bitangent))
+			.setElementStride(sizeof(Vertex)),
+		nvrhi::VertexAttributeDesc()
 			.setName("TEXCOORD")
 			.setFormat(nvrhi::Format::RGBA32_FLOAT)
 			.setOffset(offsetof(Vertex, tex))
@@ -84,7 +89,7 @@ void D3E::DefaultAssetLoader::LoadDefaultInputLayouts()
 
 	for (const auto& vShaderName : loadedVertexShaders)
 	{
-		ShaderFactory::AddInputLayout(vShaderName, attributes, 4,
+		ShaderFactory::AddInputLayout(vShaderName, attributes, 5,
 		                              ShaderFactory::GetVertexShader(vShaderName));
 	}
 }
