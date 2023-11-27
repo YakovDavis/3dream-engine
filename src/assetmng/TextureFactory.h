@@ -4,6 +4,7 @@
 #include "EASTL/unordered_map.h"
 #include "Texture2DMetaData.h"
 #include "nvrhi/nvrhi.h"
+#include "render/GBuffer.h"
 
 #include <d3d12.h>
 
@@ -24,12 +25,16 @@ namespace D3E
 		static Game* activeGame_;
 		static eastl::unordered_map<String, Texture> textures_;
 		static eastl::unordered_map<String, nvrhi::SamplerHandle> samplers_;
+		static GBuffer* gbuffer_;
 
 	public:
 		TextureFactory() = delete;
 		static void Initialize(Game* game);
 		static bool IsInitialized() { return isInitialized_; }
 		static void DestroyResources();
+
+		static void RegisterGBuffer(GBuffer* gbuffer) { gbuffer_ = gbuffer; }
+		static GBuffer* GetGBuffer() { return gbuffer_; }
 
 		static nvrhi::TextureHandle GetTextureHandle(const String& name);
 		static void LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);

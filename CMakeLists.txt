@@ -135,12 +135,26 @@ add_library(D3Engine SHARED
         src/assetmng/MeshMetaData.cpp
         src/assetmng/MeshMetaData.h
         src/assetmng/MeshMetaData.h
+        include/D3E/render/Material.h
+        include/D3E/render/Material.h
+        src/render/GBuffer.h
+        src/render/GBuffer.cpp
+        src/render/LightPass.cpp
+        src/render/LightPass.h
+        include/D3E/Components/render/LightComponent.h
+        src/render/systems/LightRenderSystem.cpp
+        src/render/systems/LightRenderSystem.h
+        src/render/LightConstBuffer.h
+        src/render/systems/LightInitSystem.cpp
+        src/render/systems/LightInitSystem.h
+        src/render/CsmConstBuffer.h
         include/D3E/Timer.h
         src/timers/Timer.cpp 
         include/D3E/TimerManager.h
         src/timers/TimerManager.cpp
         include/D3E/TimerHandle.h 
-        src/timers/TimerHandle.cpp)
+        src/timers/TimerHandle.cpp
+)
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)

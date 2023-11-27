@@ -4,7 +4,7 @@ namespace D3E
 {
 	struct FPSControllerComponent
 	{
-		float yaw = 0.0f;
+		float yaw = 3.14f;
 		float pitch = 0.0f;
 		float speed = 0.02f;
 		float sensitivityX = 0.01f;
