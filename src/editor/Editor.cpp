@@ -107,6 +107,8 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display
 
 	ImGui_ImplWin32_Init(displayWin32->hWnd);
 	imGuiNvrhi_.init(device);
+
+	editorConsole_ = new EditorConsole();
 }
 
 void D3E::Editor::SetStyle()
@@ -140,17 +142,17 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer)
 	bool show;
 	ShowExampleAppDockSpace(&show);
 
+	//DrawViewport(currentFramebuffer);
 	DrawHeader();
 	DrawPlay();
 	DrawHierarchy();
 	DrawInspector();
 	DrawContentBrowser();
-	DrawConsole();
+	editorConsole_->Draw();
 
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
 
-	// not sure if it's necessary
 	if(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		ImGui::UpdatePlatformWindows();
@@ -165,6 +167,14 @@ void D3E::Editor::Release()
 		ImGui::DestroyContext();
 		ImGui_ImplWin32_Shutdown();
 	}
+}
+
+void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* currentFramebuffer)
+{
+	ImGui::Begin("Viewport");
+	auto texture = currentFramebuffer->getDesc().colorAttachments[0].texture;
+	ImGui::Image(texture, ImVec2{1280, 720}, ImVec2{0, 1}, ImVec2{1, 0});
+	ImGui::End();
 }
 void D3E::Editor::DrawHeader()
 {
@@ -196,11 +206,5 @@ void D3E::Editor::DrawContentBrowser()
 {
 	ImGui::Begin("Content Browser");
 	ImGui::Text("Here will be some useful information about files in the project directory");
-	ImGui::End();
-}
-void D3E::Editor::DrawConsole()
-{
-	ImGui::Begin("Console");
-	ImGui::Text("Here will be some useful information from console");
 	ImGui::End();
 }

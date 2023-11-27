@@ -132,6 +132,9 @@ add_library(D3Engine SHARED
         include/D3E/engine/ConsoleVariable.h
         include/D3E/engine/IntConsoleVariable.h
         include/D3E/engine/FloatConsoleVariable.h
+        src/editor/EditorConsole.cpp
+        src/editor/EditorConsole.h
+        src/editor/EditorConsole.cpp
 )
 
 target_include_directories(D3Engine PUBLIC include)
