@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 option(BUILD_SHARED_LIBS ON)
-option(ASSIMP_INSTALL ON)
+option(ASSIMP_INSTALL OFF)
 add_subdirectory(libs/assimp)
 
 # Workaround for DxTk compilation
@@ -148,6 +148,12 @@ add_library(D3Engine SHARED
         src/render/systems/LightInitSystem.cpp
         src/render/systems/LightInitSystem.h
         src/render/CsmConstBuffer.h
+        include/D3E/Timer.h
+        src/timers/Timer.cpp 
+        include/D3E/TimerManager.h
+        src/timers/TimerManager.cpp
+        include/D3E/TimerHandle.h 
+        src/timers/TimerHandle.cpp
 )
 
 target_include_directories(D3Engine PUBLIC include)
@@ -181,6 +187,8 @@ target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(D3Engine PRIVATE ${NVRHI_DEFINES})
 
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
+
+add_subdirectory(samples/Ducks)
 
 install(TARGETS D3Engine
         RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/

@@ -14,6 +14,7 @@ namespace D3E
 	class DisplayWin32;
 	class InputDevice;	
 	class SoundEngine;
+	class TimerManager;
 
 	class Game : public App
 	{
@@ -36,6 +37,8 @@ namespace D3E
 		[[nodiscard]] float GetDeltaTime() const;
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
+
+		size_t GetFrameCount();
 
 //		void LoadTexture(const String& name, const String& fileName);
 
@@ -72,6 +75,7 @@ namespace D3E
 		InputDevice* inputDevice_;
 
 		float deltaTime_;
+		size_t frameCount_;
 
 		SoundEngine* soundEngine_;
 
