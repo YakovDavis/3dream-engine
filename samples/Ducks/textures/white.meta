@@ -1,0 +1,13 @@
+{
+    "filename": "textures/white.png",
+    "format": {
+        "channels": "RGBA8",
+        "dimensions": [
+            1024,
+            1024
+        ]
+    },
+    "name": "white",
+    "type": "texture2d",
+    "uuid": "34b9a6f1-240f-4d40-b76d-ad38ce9e65ea"
+}

@@ -23,7 +23,7 @@ namespace D3E
 
 		void Init(eastl::vector<GameSystem*>& systems) override;
 		void OnResize() override;
-		void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems) override;
+		void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems) override;
 
 		void Present() override;
 

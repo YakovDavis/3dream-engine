@@ -55,6 +55,8 @@ namespace D3E
 
 		eastl::vector<GameSystem*> systems_;
 
+		eastl::vector<GameSystem*> renderPPsystems_;
+
 		virtual void Init();
 
 		virtual void Update(float deltaTime);
