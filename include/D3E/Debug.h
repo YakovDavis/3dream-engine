@@ -21,7 +21,6 @@ namespace D3E
 		static HANDLE console;
 	public:
 		static void LogMessage(const String& text);
-		static void LogMessage(const int& text);
 		static void LogWarning(const String& text);
 		static void LogError(const String& text);
 
