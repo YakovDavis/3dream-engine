@@ -135,6 +135,8 @@ add_library(D3Engine SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorConsole.h
         src/editor/EditorConsole.cpp
+        src/editor/EditorContentBrowser.cpp
+        src/editor/EditorContentBrowser.h
 )
 
 target_include_directories(D3Engine PUBLIC include)

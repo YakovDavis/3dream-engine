@@ -2,6 +2,7 @@
 
 #include "EASTL/shared_ptr.h"
 #include "EditorConsole.h"
+#include "EditorContentBrowser.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
 #include "imgui_impl_win32.h"
@@ -21,6 +22,7 @@ namespace D3E
 		eastl::shared_ptr<Display> display_;
 		float color_[4] = {0.f, 0.f, 0.f, 0.f};
 		EditorConsole *editorConsole_;
+		EditorContentBrowser *editorContentBrowser_;
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display);
 		void SetStyle();
@@ -30,7 +32,6 @@ namespace D3E
 		void DrawPlay();
 		void DrawHierarchy();
 		void DrawInspector();
-		void DrawContentBrowser();
 	public:
 		void BeginDraw(float deltaTime);
 		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer);

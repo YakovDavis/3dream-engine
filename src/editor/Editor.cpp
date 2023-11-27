@@ -109,6 +109,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display
 	imGuiNvrhi_.init(device);
 
 	editorConsole_ = new EditorConsole();
+	editorContentBrowser_ = new EditorContentBrowser();
 }
 
 void D3E::Editor::SetStyle()
@@ -147,8 +148,8 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer)
 	DrawPlay();
 	DrawHierarchy();
 	DrawInspector();
-	DrawContentBrowser();
 	editorConsole_->Draw();
+	editorContentBrowser_->Draw();
 
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
@@ -200,11 +201,5 @@ void D3E::Editor::DrawInspector()
 {
 	ImGui::Begin("Inspector");
 	ImGui::Text("Here will be some useful information about object");
-	ImGui::End();
-}
-void D3E::Editor::DrawContentBrowser()
-{
-	ImGui::Begin("Content Browser");
-	ImGui::Text("Here will be some useful information about files in the project directory");
 	ImGui::End();
 }
