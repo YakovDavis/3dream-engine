@@ -1,55 +1,13 @@
 cmake_minimum_required(VERSION 3.26)
 project(D3Engine)
 
-include(FetchContent)
-
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-option(BUILD_SHARED_LIBS ON)
-option(ASSIMP_INSTALL OFF)
-add_subdirectory(libs/assimp)
-
-# Workaround for DxTk compilation
-#find_program(DIRECTX_DXC_TOOL DXC.EXE
-#         REQUIRED HINTS ${DIRECTX_DXC_PATH})
-option(BUILD_XAUDIO_WIN10 OFF)
-add_subdirectory(libs/DirectXTK12)
-
-add_subdirectory(libs/imgui)
-
-option(NVRHI_BUILD_SHARED OFF)
-option(NVRHI_WITH_NVAPI OFF)
-option(NVRHI_WITH_RTXMU OFF)
-option(NVRHI_WITH_SHADER_COMPILER ON)
-add_subdirectory(libs/nvrhi)
-
-include_directories(libs/nvrhi/include)
-
-include_directories(libs/stb)
-
-add_subdirectory(libs/FMOD)
-
-include_directories(libs/DirectXTK12/Inc)
-include_directories(libs/DirectXTK12/Src)
-
-include_directories(libs/uuid_v4)
-include_directories(libs/nlohmann)
-
-#FetchContent_Declare(
-#        JoltPhysics
-#        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-#        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-#        SOURCE_SUBDIR "Build"
-#)
-#FetchContent_MakeAvailable(JoltPhysics)
-
-get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
-set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
-
-add_library(D3Engine SHARED
+add_library("${PROJECT_NAME}" SHARED
         include/D3E/CommonHeader.h
         include/D3E/EntryPoint.h
         include/D3E/App.h
@@ -156,40 +114,45 @@ add_library(D3Engine SHARED
         src/timers/TimerHandle.cpp
 )
 
-target_include_directories(D3Engine PUBLIC include)
-target_include_directories(D3Engine PRIVATE src)
-#target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+add_subdirectory(libs)
+
+target_include_directories("${PROJECT_NAME}" PRIVATE libs/stb libs/nlohmann)
+target_include_directories("${PROJECT_NAME}" PUBLIC libs/uuid_v4)
+
+target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Inc)
+target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Src)
+
+target_include_directories("${PROJECT_NAME}" PUBLIC include)
+target_include_directories("${PROJECT_NAME}" PRIVATE src)
 
 if(WIN32)
-    target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)
-    target_compile_definitions(D3Engine PUBLIC NOMINMAX _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_PLATFORM_WINDOWS=1)
+    target_compile_definitions("${PROJECT_NAME}" PUBLIC NOMINMAX _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_link_libraries(D3Engine PUBLIC
-        ${EASTL_LIBRARY}
+target_link_libraries("${PROJECT_NAME}" PUBLIC
         assimp
         nvrhi
+        nvrhi_d3d12
         imgui
         FmodCore
         FmodStudio
+        EASTL
         #Jolt        
 )
 
+
 set(NVRHI_DEFINES "")
+
 if (WIN32)
     set(NVRHI_DEFINES ${NVRHI_DEFINES} NOMINMAX VK_USE_PLATFORM_WIN32_KHR=1)
 endif()
 
-set(NVRHI_DEFINES ${NVRHI_DEFINES} USE_DX12=1)
-target_link_libraries( D3Engine PUBLIC nvrhi_d3d12 )
+#set(NVRHI_DEFINES ${NVRHI_DEFINES} USE_DX12=1)
+#target_link_libraries( "${PROJECT_NAME}" PUBLIC nvrhi_d3d12 )
 
 target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
-target_compile_definitions(D3Engine PRIVATE ${NVRHI_DEFINES})
-
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
+target_compile_definitions("${PROJECT_NAME}" PRIVATE ${NVRHI_DEFINES})
 
-add_subdirectory(samples/Ducks)
-
-install(TARGETS D3Engine
-        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/
-        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/)
+add_subdirectory(samples/ducks)
