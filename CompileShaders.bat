@@ -19,6 +19,6 @@ FOR /F "tokens=2*" %%A IN ('reg query "HKLM\SOFTWARE\WOW6432Node\Microsoft\Micro
 
 SET "WIN_SDK_BINARY_DIR=%WIN_SDK_PATH%bin\%WIN_SDK_VER%.0"
 
-%cd%\libs\ShaderMake\bin\Debug\ShaderMake.exe -p DXIL --binaryBlob -c "%cd%\shaders\list.config" -o "%cd%\build\Debug\Debug\Shaders" --compiler "%WIN_SDK_BINARY_DIR%\x86\dxc.exe"
+%cd%\libs\ShaderMake\bin\Debug\ShaderMake.exe -p DXIL --binaryBlob -c "%cd%\shaders\list.config" -o "%cd%\build\Debug\Shaders" --compiler "%WIN_SDK_BINARY_DIR%\x86\dxc.exe"
 
 PAUSE
