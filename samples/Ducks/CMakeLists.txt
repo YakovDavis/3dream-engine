@@ -4,8 +4,6 @@ project(Ducks)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 
-get_filename_component(D3E_ROOT_DIR "../../" ABSOLUTE)
-
 add_executable(${PROJECT_NAME} WIN32
         src/DuckGame.cpp
         src/DuckGame.h)
@@ -17,6 +15,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE D3Engine)
 
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMENT "Copying D3Engined.dll to build folder"
+
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${FMOD_CORE_BINARY_PATH_DEBUG}"
         "${CMAKE_CURRENT_BINARY_DIR}"
     COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
@@ -27,9 +30,14 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${D3E_ROOT_DIR}/textures"
+    "${CMAKE_BINARY_DIR}/Shaders"
+    "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
+    COMMENT "Copying${CMAKE_SOURCE_DIR}/textures to build folder"
+
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/textures"
     "${CMAKE_CURRENT_BINARY_DIR}/Textures"
-    COMMENT "Copying${D3E_ROOT_DIR}/textures to build folder"
+    COMMENT "Copying${CMAKE_SOURCE_DIR}/textures to build folder"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_CURRENT_SOURCE_DIR}/textures"
@@ -41,5 +49,3 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     "${CMAKE_CURRENT_BINARY_DIR}/Models"
     COMMENT "Copying /textures to build folder"
 )
-
-# TODO: Add shaders copying logic
