@@ -1,6 +1,7 @@
 # Assimp
 option(BUILD_SHARED_LIBS OFF)
 option(ASSIMP_INSTALL OFF)
+option(ASSIMP_NO_EXPORT ON)
 add_subdirectory(assimp)
 
 # DirectXTK
