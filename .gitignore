@@ -595,3 +595,4 @@ references/*
 !libs/EASTL/include/EASTL/internal/atomic/arch/x86/
 !*fmod*.dll
 !*fmod*.lib
+!/libs/JoltPhysics/Build
