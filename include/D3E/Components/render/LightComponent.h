@@ -18,7 +18,7 @@ namespace D3E
 	{
 		LightType lightType = LightType::Directional;
 		Vector3 offset = Vector3(0.f, 0.f, 0.f);
-		Vector3 direction = Vector3(1.f, -1.f, 1.f);
+		Vector3 direction = Vector3(2.f, -1.f, 1.f);
 		Vector3 color = Vector3(2.f, 2.f, 2.f);
 		float intensity = 1000.0f;
 		bool castsShadows = false;

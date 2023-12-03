@@ -18,20 +18,26 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 {
 	Vector3 origin = {0, 0, 0};
 
-	auto playerView = reg.view<const TransformComponent, const CameraComponent, const FPSControllerComponent>();
+	auto playerView = reg.view<const TransformComponent, const CameraComponent>();
 
-	CameraComponent cameraCopy; // TODO: this is terrible, redesign camerautils to avoid
+	const CameraComponent* camera = nullptr;
 
-	for(auto [entity, tc, cc, fpscc] : playerView.each())
+	for(auto [entity, tc, cc] : playerView.each())
 	{
 		origin = tc.position + cc.offset;
-		cameraCopy = cc;
+		camera = &cc;
 		break;
+	}
+
+	if (!camera)
+	{
+		Debug::LogWarning("[StaticMeshRenderSystem] Camera not found");
+		return;
 	}
 
 	auto view = reg.view<const ObjectInfoComponent, const TransformComponent, const StaticMeshComponent>();
 
-	view.each([commandList, fb, origin, cameraCopy](const auto& info, const auto& tc, const auto& smc)
+	view.each([commandList, fb, origin, camera](const auto& info, const auto& tc, const auto& smc)
 	          {
 				  if (!smc.initialized)
 				  {
@@ -43,10 +49,10 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 
 				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(tc.scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation) * DirectX::SimpleMath::Matrix::CreateTranslation(tc.position);
 
-				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraCopy);
+				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, *camera);
 				  constBufferData.gWorld = world;
-				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraCopy);
-				  constBufferData.gInvTrWorldView = (world * CameraUtils::GetView(origin, cameraCopy)).Invert().Transpose();
+				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, *camera);
+				  constBufferData.gInvTrWorldView = (world * CameraUtils::GetView(origin, *camera)).Invert().Transpose();
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 

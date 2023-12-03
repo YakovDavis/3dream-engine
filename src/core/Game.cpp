@@ -10,6 +10,7 @@
 #include "D3E/engine/ConsoleManager.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
+#include "assetmng/DefaultAssetLoader.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
@@ -18,6 +19,7 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/systems/EditorUtilsRenderSystem.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
@@ -105,13 +107,15 @@ void D3E::Game::Init()
 	//AssetManager::Get().CreateTexture("cerberus_A", "textures/cerberus_A.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
 	//AssetManager::Get().CreateTexture("cerberus_M", "textures/cerberus_M.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
 	//AssetManager::Get().CreateTexture("cerberus_R", "textures/cerberus_R.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_N", "textures/cerberus_N.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	//AssetManager::Get().CreateTexture("environment", "textures/environment.hdr", gameRender_->GetDevice(), gameRender_->GetCommandList());
 	//AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx", gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
 	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
+
+	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	inputDevice_ = new InputDevice(this);
 
@@ -122,9 +126,12 @@ void D3E::Game::Init()
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
+	renderPPsystems_.push_back(new EditorUtilsRenderSystem);
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
+
+	CreationSystems::CreateEditorDebugRender(registry_);
 }
 
 void D3E::Game::Update(const float deltaTime)
