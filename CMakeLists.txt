@@ -38,13 +38,13 @@ include_directories(libs/DirectXTK12/Src)
 include_directories(libs/uuid_v4)
 include_directories(libs/nlohmann)
 
-#FetchContent_Declare(
-#        JoltPhysics
-#        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-#        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-#        SOURCE_SUBDIR "Build"
-#)
-#FetchContent_MakeAvailable(JoltPhysics)
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+        SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
 
 get_filename_component(EASTL_ROOT_DIR "libs/EASTL" ABSOLUTE)
 set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
@@ -154,11 +154,19 @@ add_library(D3Engine SHARED
         src/timers/TimerManager.cpp
         include/D3E/TimerHandle.h 
         src/timers/TimerHandle.cpp
+        include/D3E/Components/PhysicsComponent.h
+        src/engine/systems/PhysicsInitSystem.h
+        src/engine/systems/PhysicsInitSystem.cpp
+        src/physics/ObjectLayers.h
+        src/engine/systems/PhysicsUpdateSystem.h
+        src/physics/PhysicsInfo.h
+        src/physics/PhysicsInfo.cpp
+        src/engine/systems/PhysicsUpdateSystem.cpp
 )
 
 target_include_directories(D3Engine PUBLIC include)
 target_include_directories(D3Engine PRIVATE src)
-#target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+target_include_directories(D3Engine PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
 
 if(WIN32)
     target_compile_definitions(D3Engine PUBLIC D3E_PLATFORM_WINDOWS=1)
@@ -172,7 +180,7 @@ target_link_libraries(D3Engine PUBLIC
         imgui
         FmodCore
         FmodStudio
-        #Jolt        
+        Jolt
 )
 
 set(NVRHI_DEFINES "")
