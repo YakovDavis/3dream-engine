@@ -114,6 +114,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/timers/TimerManager.cpp
         include/D3E/TimerHandle.h 
         src/timers/TimerHandle.cpp
+        src/render/components/GridComponent.h
+        src/render/systems/EditorUtilsRenderSystem.cpp
+        src/render/systems/EditorUtilsRenderSystem.h
 )
 
 add_subdirectory(libs)
