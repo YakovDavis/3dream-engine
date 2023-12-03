@@ -13,11 +13,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME} PRIVATE D3Engine)
 
-add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+add_custom_command(TARGET Ducks POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/D3Engine.dll"
         "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMENT "Copying D3Engined.dll to build folder"
+    COMMENT "Copying D3Engined.dll to build folder"    
 
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${FMOD_CORE_BINARY_PATH_DEBUG}"
@@ -49,3 +49,4 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     "${CMAKE_CURRENT_BINARY_DIR}/Models"
     COMMENT "Copying /textures to build folder"
 )
+

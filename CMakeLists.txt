@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
 project(D3Engine)
 
+include(CMakePrintHelpers)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
@@ -154,5 +156,12 @@ endif()
 target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions("${PROJECT_NAME}" PRIVATE ${NVRHI_DEFINES})
+
+set(SHADER_BULID_BATCH)
+file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/CompileShaders.bat" SHADER_BULID_BATCH)
+
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+    COMMAND "${SHADER_BULID_BATCH}" "${CMAKE_SOURCE_DIR}"
+)
 
 add_subdirectory(samples/ducks)
