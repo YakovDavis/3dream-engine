@@ -14,8 +14,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 {
 	static bool opt_fullscreen = true;
 	static bool opt_padding = false;
-	static ImGuiDockNodeFlags dockSpace_flags = ImGuiDockNodeFlags_None;
-	dockSpace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+	static ImGuiDockNodeFlags dockSpace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	if (opt_fullscreen)
@@ -154,6 +153,7 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer)
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
 
+	// not sure if it's necessary
 	if(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		ImGui::UpdatePlatformWindows();
@@ -166,7 +166,6 @@ void D3E::Editor::Release()
 	if(ImGui::GetCurrentContext())
 	{
 		ImGui::DestroyContext();
-		ImGui_ImplWin32_Shutdown();
 	}
 }
 
@@ -177,6 +176,7 @@ void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* currentFramebuffer)
 	ImGui::Image(texture, ImVec2{1280, 720}, ImVec2{0, 1}, ImVec2{1, 0});
 	ImGui::End();
 }
+
 void D3E::Editor::DrawHeader()
 {
 }

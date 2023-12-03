@@ -13,8 +13,6 @@
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
 
-#include <iostream>
-
 void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                          nvrhi::ICommandList* commandList, nvrhi::IDevice* device)
 {
@@ -48,7 +46,7 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, cameraCopy);
 				  constBufferData.gWorld = world;
 				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, cameraCopy);
-				  constBufferData.gInvTrWorldView = (DirectX::SimpleMath::Matrix::CreateScale(tc.scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation)).Invert().Transpose() * CameraUtils::GetViewProj(origin, cameraCopy);
+				  constBufferData.gInvTrWorldView = (world * CameraUtils::GetView(origin, cameraCopy)).Invert().Transpose();
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 
@@ -58,16 +56,16 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  auto graphicsState = nvrhi::GraphicsState()
 		                                   .setPipeline(renderModeCVar->getInt() == 0 ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName) : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
-		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720)))
-		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "V"))
-		                                   .addBindingSet(ShaderFactory::GetBindingSet(info.name + "P"))
-		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshName));
-				  graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding(smc.meshName));
+		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1920, 1080)))
+		                                   .addBindingSet(ShaderFactory::GetBindingSetV(info.id))
+		                                   .addBindingSet(ShaderFactory::GetBindingSetP(info.id))
+		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshUuid));
+				  graphicsState.setIndexBuffer(MeshFactory::GetIndexBufferBinding(smc.meshUuid));
 				  commandList->setGraphicsState(graphicsState);
 
 				  // Draw our geometry
 				  auto drawArguments = nvrhi::DrawArguments()
-		                                   .setVertexCount(MeshFactory::GetMeshData(smc.meshName).indices.size());
+		                                   .setVertexCount(MeshFactory::GetMeshData(smc.meshUuid).indices.size());
 				  commandList->drawIndexed(drawArguments);
 			  });
 }

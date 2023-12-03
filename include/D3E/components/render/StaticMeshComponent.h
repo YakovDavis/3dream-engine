@@ -8,7 +8,7 @@ namespace D3E
 {
 	struct StaticMeshComponent
 	{
-		String meshName;
+		String meshUuid;
 		String pipelineName;
 		nvrhi::BufferHandle constantBuffer;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;

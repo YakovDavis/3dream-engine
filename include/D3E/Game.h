@@ -14,6 +14,7 @@ namespace D3E
 	class DisplayWin32;
 	class InputDevice;	
 	class SoundEngine;
+	class TimerManager;
 
 	class Game : public App
 	{
@@ -37,6 +38,8 @@ namespace D3E
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
+		size_t GetFrameCount();
+
 //		void LoadTexture(const String& name, const String& fileName);
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
@@ -51,6 +54,8 @@ namespace D3E
 		entt::registry registry_;
 
 		eastl::vector<GameSystem*> systems_;
+
+		eastl::vector<GameSystem*> renderPPsystems_;
 
 		virtual void Init();
 
@@ -70,6 +75,7 @@ namespace D3E
 		InputDevice* inputDevice_;
 
 		float deltaTime_;
+		size_t frameCount_;
 
 		SoundEngine* soundEngine_;
 

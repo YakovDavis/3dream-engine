@@ -15,6 +15,8 @@ namespace D3E
 
 		void CreateTexture(const String& name, const String& filename, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
+		void CreateMesh(const String& name, const String& filename, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+
 	private:
 		AssetManager() = default;
 

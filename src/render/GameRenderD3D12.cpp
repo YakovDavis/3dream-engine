@@ -434,13 +434,13 @@ void D3E::GameRenderD3D12::Present()
 	mFrameCount++;
 }
 
-void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
+void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
 {
 	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForSingleObject(mFrameFenceEvents[bufferIndex], INFINITE);
 
-	GameRender::PrepareDraw(registry, systems);
+	GameRender::PrepareDraw(registry, systems, renderPPSystems);
 }
 
 UINT D3E::GameRenderD3D12::GetCurrentFrameBuffer()

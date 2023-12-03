@@ -6,6 +6,8 @@ namespace D3E
 {
 	class StaticMeshInitSystem : public GameSystem
 	{
+	public:
+		static bool IsDirty;
 		void PreDraw(entt::registry& reg, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) override;
 	};
 }
