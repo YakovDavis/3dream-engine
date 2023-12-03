@@ -26,7 +26,7 @@ void D3E::PhysicsUpdateSystem::Update(entt::registry& reg, Game* game, float dT)
 				{
 					const Body& body = lock.GetBody();
 					reg.patch<TransformComponent>(
-						entity, [&, game](auto& transformComponent)
+						entity, [&](auto& transformComponent)
 						{
 							transformComponent.position.x = body.GetPosition().GetX();
 							transformComponent.position.y = body.GetPosition().GetY();
