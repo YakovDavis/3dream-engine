@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
 project(D3Engine)
 
+set(CMAKE_DEBUG_POSTFIX d)
+
 include(CMakePrintHelpers)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -157,9 +159,6 @@ set(NVRHI_DEFINES "")
 if (WIN32)
     set(NVRHI_DEFINES ${NVRHI_DEFINES} NOMINMAX VK_USE_PLATFORM_WIN32_KHR=1)
 endif()
-
-#set(NVRHI_DEFINES ${NVRHI_DEFINES} USE_DX12=1)
-#target_link_libraries( "${PROJECT_NAME}" PUBLIC nvrhi_d3d12 )
 
 target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
