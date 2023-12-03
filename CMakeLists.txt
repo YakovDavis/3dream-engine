@@ -117,6 +117,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/render/components/GridComponent.h
         src/render/systems/EditorUtilsRenderSystem.cpp
         src/render/systems/EditorUtilsRenderSystem.h
+        src/editor/EditorConsole.cpp
+        src/editor/EditorConsole.h
+        src/editor/EditorConsole.cpp
+        src/editor/EditorContentBrowser.cpp
+        src/editor/EditorContentBrowser.h
 )
 
 add_subdirectory(libs)
