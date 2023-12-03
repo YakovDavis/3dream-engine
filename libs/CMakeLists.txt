@@ -23,4 +23,6 @@ add_subdirectory(fmod)
 add_subdirectory(eastl)
 
 # Jolt
-#add_subdirectory(JoltPhysics/Build)
+option(OVERRIDE_CXX_FLAGS OFF)
+option(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
+add_subdirectory(JoltPhysics/Build)

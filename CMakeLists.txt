@@ -4,7 +4,7 @@ project(D3Engine)
 include(CMakePrintHelpers)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED On)
+#set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -140,7 +140,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         FmodCore
         FmodStudio
         EASTL
-        #Jolt        
+        Jolt        
 )
 
 
