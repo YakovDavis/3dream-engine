@@ -4,10 +4,13 @@
 #include "MeshFactory.h"
 #include "TextureFactory.h"
 #include "render/GeometryGenerator.h"
+#include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
 #include "render/Vertex.h"
 
 eastl::vector<D3E::String> D3E::DefaultAssetLoader::loadedVertexShaders {};
+
+nvrhi::BufferHandle D3E::DefaultAssetLoader::gridCb = nullptr;
 
 void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 {
@@ -39,7 +42,7 @@ void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 	sm.points.clear();
 	sm.indices.clear();
 
-	GeometryGenerator::CreateGrid(sm, 1.0f, 1.0f, 64, 64);
+	GeometryGenerator::CreateGrid(sm, 128.0f, 128.0f, 128, 128);
 	MeshFactory::AddMeshFromData(kGridUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
@@ -210,6 +213,17 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
 
+	nvrhi::GraphicsPipelineDesc lineListPipelineDesc = {};
+	lineListPipelineDesc.setInputLayout(ShaderFactory::GetInputLayout("SimpleForward"));
+	lineListPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("SimpleForward"));
+	lineListPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("SimpleForward"));
+	lineListPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SimpleForwardV"));
+	lineListPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SimpleForwardP"));
+	renderState.depthStencilState = depthStencilState;
+	lineListPipelineDesc.setRenderState(renderState);
+	lineListPipelineDesc.primType = nvrhi::PrimitiveType::LineList;
+	ShaderFactory::AddGraphicsPipeline("LineList", lineListPipelineDesc, fb);
+
 	rasterState.fillMode = nvrhi::RasterFillMode::Wireframe;
 	renderState.rasterState = rasterState;
 	renderState.depthStencilState = depthStencilState;
@@ -225,4 +239,31 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 	samplerDesc.mipFilter = true;
 	samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
 	TextureFactory::AddSampler("Base", device, samplerDesc);
+}
+
+void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
+	nvrhi::DeviceHandle& device, nvrhi::CommandListHandle& commandList)
+{
+	auto constantBufferDesc = nvrhi::BufferDesc()
+	                              .setByteSize(sizeof(PerObjectConstBuffer))
+	                              .setIsConstantBuffer(true)
+	                              .setIsVolatile(false)
+	                              .setMaxVersions(16)
+	                              .setKeepInitialState(true);
+
+	gridCb = device->createBuffer(constantBufferDesc);
+
+	nvrhi::BindingSetDesc bindingSetDescV = {};
+	bindingSetDescV.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, gridCb));
+	ShaderFactory::AddBindingSetV(kDebugLineBindingSetUUID, bindingSetDescV, "SimpleForwardV");
+
+	nvrhi::BindingSetDesc bindingSetDescP = {};
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle(kWhiteTextureUUID)));
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+	ShaderFactory::AddBindingSetP(kDebugLineBindingSetUUID, bindingSetDescP, "SimpleForwardP");
+}
+
+nvrhi::IBuffer* D3E::DefaultAssetLoader::GetEditorGridCB()
+{
+	return gridCb;
 }
