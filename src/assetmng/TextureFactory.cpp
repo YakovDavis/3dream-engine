@@ -81,7 +81,7 @@ nvrhi::TextureHandle D3E::TextureFactory::GetTextureHandle(const String& name)
 {
 	if (textures_.find(name) == textures_.end())
 	{
-		Debug::LogError("[TextureFactory] Texture handle not found");
+		Debug::LogError("[TextureFactory] Texture handle not found: " + name);
 	}
 
 	//LoadTexture(name);

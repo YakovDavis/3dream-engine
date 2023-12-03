@@ -21,12 +21,9 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 
 	auto playerView = reg.view<const TransformComponent, const CameraComponent>();
 
-	CameraComponent cameraCopy; // TODO: this is terrible, redesign camerautils to avoid
-
 	for(auto [entity, tc, cc] : playerView.each())
 	{
 		origin = tc.position + cc.offset;
-		cameraCopy = cc;
 		break;
 	}
 

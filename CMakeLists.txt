@@ -154,6 +154,9 @@ add_library(D3Engine SHARED
         src/timers/TimerManager.cpp
         include/D3E/TimerHandle.h 
         src/timers/TimerHandle.cpp
+        src/render/components/GridComponent.h
+        src/render/systems/EditorUtilsRenderSystem.cpp
+        src/render/systems/EditorUtilsRenderSystem.h
 )
 
 target_include_directories(D3Engine PUBLIC include)
