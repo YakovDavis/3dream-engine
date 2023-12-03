@@ -223,7 +223,7 @@ D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent
 {
 	assert(parentApp != nullptr);
 	assert(hInstance != nullptr);
-	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1920, 1080, parent);
+	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1280, 720, parent);
 	messageCallback_ = new NvrhiMessageCallback();
 }
 

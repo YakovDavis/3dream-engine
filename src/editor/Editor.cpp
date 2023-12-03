@@ -28,6 +28,10 @@ void ShowExampleAppDockSpace(bool* p_open)
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	}
+	else
+	{
+		dockSpace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+	}
 
 	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
 	// and handle the pass-thru hole, so we ask Begin() to not render a background.
@@ -102,6 +106,9 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display
 
 	ImGui_ImplWin32_Init(displayWin32->hWnd);
 	imGuiNvrhi_.init(device);
+
+	editorConsole_ = new EditorConsole();
+	editorContentBrowser_ = new EditorContentBrowser();
 }
 
 void D3E::Editor::SetStyle()
@@ -135,12 +142,13 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer)
 	bool show;
 	ShowExampleAppDockSpace(&show);
 
+	//DrawViewport(currentFramebuffer);
 	DrawHeader();
 	DrawPlay();
 	DrawHierarchy();
 	DrawInspector();
-	DrawContentBrowser();
-	DrawConsole();
+	editorConsole_->Draw();
+	editorContentBrowser_->Draw();
 
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
@@ -158,9 +166,17 @@ void D3E::Editor::Release()
 	if(ImGui::GetCurrentContext())
 	{
 		ImGui::DestroyContext();
-		//ImGui_ImplWin32_Shutdown();
 	}
 }
+
+void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* currentFramebuffer)
+{
+	ImGui::Begin("Viewport");
+	auto texture = currentFramebuffer->getDesc().colorAttachments[0].texture;
+	ImGui::Image(texture, ImVec2{1280, 720}, ImVec2{0, 1}, ImVec2{1, 0});
+	ImGui::End();
+}
+
 void D3E::Editor::DrawHeader()
 {
 }
@@ -185,17 +201,5 @@ void D3E::Editor::DrawInspector()
 {
 	ImGui::Begin("Inspector");
 	ImGui::Text("Here will be some useful information about object");
-	ImGui::End();
-}
-void D3E::Editor::DrawContentBrowser()
-{
-	ImGui::Begin("Content Browser");
-	ImGui::Text("Here will be some useful information about files in the project directory");
-	ImGui::End();
-}
-void D3E::Editor::DrawConsole()
-{
-	ImGui::Begin("Console");
-	ImGui::Text("Here will be some useful information from console");
 	ImGui::End();
 }
