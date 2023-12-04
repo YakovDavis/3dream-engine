@@ -21,7 +21,7 @@
 
 namespace D3E
 {
-	class App;
+	class Game;
 
 	class DisplayWin32;
 
@@ -51,11 +51,11 @@ namespace D3E
 
 		void DestroyResources();
 
-		explicit GameRender(App* parent, HINSTANCE hInstance);
+		explicit GameRender(Game* parent, HINSTANCE hInstance);
 		virtual ~GameRender() = default;
 
 	protected:
-		App* parentApp;
+		Game* parentGame;
 
 		nvrhi::DeviceHandle device_;
 

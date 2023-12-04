@@ -16,7 +16,7 @@ namespace D3E
 			Yellow,
 			Red,
 		};
-		inline static const String filePath_ = R"(..\..\..\..\..\log.txt)";
+		inline static const String filePath_ = R"(..\..\..\..\log.txt)";
 		static std::fstream fileStream;
 		static HANDLE console;
 	public:

@@ -1,12 +1,15 @@
 #include "Editor.h"
 
+#include "D3E/Components/ObjectInfoComponent.h"
+#include "D3E/Components/TransformComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/Game.h"
+#include "editor/EditorUtils.h"
 #include "nvrhi/nvrhi.h"
 #include "render/DisplayWin32.h"
-#include "editor/EditorUtils.h"
 
-#include <sstream>
 #include <cstring>
+#include <sstream>
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -90,7 +93,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 	ImGui::End();
 }
 
-D3E::Editor::Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display) : display_{display}
+D3E::Editor::Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game) : display_{display}, game_{game}
 {
 	auto displayWin32 = dynamic_cast<DisplayWin32*>(display_.get());
 
@@ -119,11 +122,11 @@ void D3E::Editor::SetStyle()
 	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 }
 
-D3E::Editor* D3E::Editor::Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display)
+D3E::Editor* D3E::Editor::Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game)
 {
 	if(instance_ == nullptr)
 	{
-		instance_ = new Editor(device, display);
+		instance_ = new Editor(device, display, game);
 		Debug::LogMessage("[ImGUI] Init");
 	}
 
@@ -186,14 +189,17 @@ void D3E::Editor::DrawPlay()
 void D3E::Editor::DrawHierarchy()
 {
 	ImGui::Begin("Hierarchy");
-	auto objects = EditorUtils::ListActiveObjects();
-	for(int i = objects.size() - 1; i >= 0 ; i--)
+	auto entities = EditorUtils::ListActiveObjects();
+	for(int i = entities.size() - 1; i >= 0 ; i--)
 	{
-		if(i > 0 && strcmp(objects[i].name.c_str(), objects[i - 1].name.c_str()) == 0)
-		{
-			continue;
-		}
-		ImGui::Text(objects[i].name.c_str());
+		const auto& objectInfo = game_->GetRegistry().get<ObjectInfoComponent>(entities[i]);
+//		const auto& transform = game_->GetRegistry().get<TransformComponent>(entities[i]);
+//		if(i > 0 && strcmp(objectInfo.name.c_str(), objects[i - 1].name.c_str()) == 0)
+//		{
+//			continue;
+//		}
+
+		ImGui::Text(objectInfo.name.c_str());
 	}
 	ImGui::End();
 }
