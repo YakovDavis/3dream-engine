@@ -1,8 +1,10 @@
-#include "Common.h"
+#pragma once
+
+#include "App.h"
+#include "CommonHeader.h"
 
 #include <fstream>
 #include <iostream>
-#include "App.h"
 
 extern D3E::App* D3E::CreateApp();
 

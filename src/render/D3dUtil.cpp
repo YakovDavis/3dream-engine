@@ -1,5 +1,6 @@
-
 #include "D3dUtil.h"
+
+#include "D3E/CommonCpp.h"
 #include <comdef.h>
 #include <fstream>
 

@@ -1,4 +1,6 @@
 #include "InputDevice.h"
+
+#include "D3E/CommonCpp.h"
 #include <iostream>
 #include "D3E/Game.h"
 #include "render/DisplayWin32.h"
@@ -70,6 +72,7 @@ void D3E::InputDevice::OnMouseMove(RawMouseEventArgs args)
 	
 	MousePosition = Vector2(static_cast<float>(p.x), static_cast<float>(p.y));
 	MouseOffset = Vector2(static_cast<float>(args.X), static_cast<float>(args.Y));
+	MouseOffsetInTick = MouseOffset;
 	MouseWheelDelta = args.WheelDelta;
 
 	const MouseMoveEventArgs moveArgs = {MousePosition, MouseOffset, MouseWheelDelta};
@@ -93,4 +96,10 @@ void D3E::InputDevice::RemovePressedKey(Keys key)
 bool D3E::InputDevice::IsKeyDown(Keys key)
 {
 	return keys->count(key);
+}
+
+void D3E::InputDevice::EndTick()
+{
+	MouseOffsetInTick.x = 0;
+	MouseOffsetInTick.y = 0;
 }

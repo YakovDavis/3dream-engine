@@ -5,7 +5,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
@@ -38,7 +37,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
@@ -78,12 +76,12 @@ cmake-build-*
 **/[Dd]ebugPublic/
 **/[Rr]elease/
 **/[Rr]eleases/
-**/x64/
-**/x86/
+#**/x64/
+#**/x86/
 **/build/
 **/bld/
 **/[Bb]in/
-**/[Oo]bj/
+#**/[Oo]bj/
 
 # Roslyn cache directories
 *.ide/
@@ -105,7 +103,6 @@ dlldata.c
 *_p.c
 *_i.h
 *.ilk
-*.obj
 *.pch
 *.pdb
 *.pgc
@@ -269,8 +266,8 @@ UpgradeLog*.htm
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
+#x64/
+#x86/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -594,5 +591,8 @@ references/*
 
 *log.txt
 
-# Folders that should not be ignored despite bad name
+# Folders and files that should not be ignored despite bad name
 !libs/EASTL/include/EASTL/internal/atomic/arch/x86/
+!*fmod*.dll
+!*fmod*.lib
+!/libs/JoltPhysics/Build

@@ -1,5 +1,6 @@
-#include <iostream>
 #include "DisplayWin32.h"
+
+#include "D3E/CommonCpp.h"
 #include "D3E/App.h"
 #include "D3E/Debug.h"
 

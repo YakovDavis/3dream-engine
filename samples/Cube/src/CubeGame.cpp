@@ -1,18 +1,26 @@
-#include "D3E/EntryPoint.h"
-#include "D3E/Game.h"
+#include "CubeGame.h"
 
-class CubeGame : public D3E::Game
-{
-	void Update(float deltaTime) override;
-};
+#include "D3E/systems/CreationSystems.h"
+#include "D3E/engine/ConsoleManager.h"
 
 void CubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
-	//std::cout << "frame\n";
 }
 
-D3E::App* D3E::CreateApp()
+void CubeGame::Init()
 {
-	return new CubeGame();
+	Game::Init();
+
+	D3E::TransformComponent tc = {};
+	D3E::ObjectInfoComponent info = {};
+	info.name = "Cube";
+
+	tc.position = Vector3(0, 0, 10);
+
+	D3E::CreationSystems::CreateDefaultPlayer(GetRegistry(), tc);
+
+	tc.position = Vector3(0, 0, 0);
+
+	D3E::CreationSystems::CreateCubeSM(GetRegistry(), info, tc);
 }

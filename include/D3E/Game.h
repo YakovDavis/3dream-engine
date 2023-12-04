@@ -1,13 +1,20 @@
 #pragma once
 
 #include "App.h"
+#include "D3E/systems/GameSystem.h"
+#include "EASTL/vector.h"
+
 #include <entt/entt.hpp>
+#include <mutex>
 
 namespace D3E
 {
 	class GameRender;
 	class Display;
 	class DisplayWin32;
+	class InputDevice;	
+	class SoundEngine;
+	class TimerManager;
 
 	class Game : public App
 	{
@@ -23,8 +30,32 @@ namespace D3E
 
 		DisplayWin32* GetDisplayWin32();
 
+		entt::registry& GetRegistry();
+
+		InputDevice* GetInputDevice();
+
+		[[nodiscard]] float GetDeltaTime() const;
+
+		[[nodiscard]] const entt::registry& GetRegistry() const;
+
+		size_t GetFrameCount();
+
+//		void LoadTexture(const String& name, const String& fileName);
+
+		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+
+		std::mutex consoleCommandQueueMutex;
+
+		std::string consoleCommandQueue;
+
+		bool isQuitRequested_ = false;
+
 	protected:
-		//entt::registry registry_;
+		entt::registry registry_;
+
+		eastl::vector<GameSystem*> systems_;
+
+		eastl::vector<GameSystem*> renderPPsystems_;
 
 		virtual void Init();
 
@@ -34,13 +65,23 @@ namespace D3E
 
 		virtual void DestroyResources();
 
-		bool isQuitRequested_ = false;
+		void CheckConsoleInput();
 
-		void* prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
+		void*
+			prevCycleTimePoint_; // eastl::chrono::time_point<eastl::chrono::steady_clock>
 
 		GameRender* gameRender_;
+
+		InputDevice* inputDevice_;
+
+		float deltaTime_;
+		size_t frameCount_;
+
+		SoundEngine* soundEngine_;
+
+		double totalTime = 0.0;
 
 	private:
 		void HandleMessages();
 	};
-}
+} // namespace D3E

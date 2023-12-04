@@ -4,6 +4,8 @@
 #define NOMINMAX
 #endif // NOMINMAX
 
+#include "CommonHeader.h"
+
 #include <Windows.h>
 
 namespace D3E
@@ -21,8 +23,12 @@ namespace D3E
 
 		static LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam);
 
+		[[nodiscard]] String GetName() const { return appName; }
+
 	protected:
 		HINSTANCE mhAppInst;
+
+		String appName = "3dream App";
 	};
 
 	App* CreateApp();

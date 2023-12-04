@@ -1,13 +1,23 @@
 #pragma once
 
-#include "EASTL/shared_ptr.h"
-#include "Display.h"
-#include "nvrhi/nvrhi.h"
-#include "EASTL/vector.h"
+#include "D3E/CommonHeader.h"
 
+#include "GBuffer.h"
+#include "D3E/systems/GameSystem.h"
+#include "Display.h"
+#include "EASTL/shared_ptr.h"
+#include "EASTL/vector.h"
 #include "NvrhiMessageCallback.h"
+#include "nvrhi/nvrhi.h"
 
 #include <Windows.h>
+
+#define USE_IMGUI
+
+#ifdef USE_IMGUI
+#include "LightPass.h"
+#include "editor/Editor.h"
+#endif // USE_IMGUI
 
 namespace D3E
 {
@@ -19,7 +29,7 @@ namespace D3E
 	class GameRender
 	{
 	public:
-		virtual void Init();
+		virtual void Init(eastl::vector<GameSystem*>& systems);
 		virtual void OnResize();
 
 		Display* GetDisplay();
@@ -27,6 +37,17 @@ namespace D3E
 		nvrhi::CommandListHandle& GetCommandList();
 
 		void CalculateFrameStats();
+
+		virtual void UpdateAnimations(float dT);
+
+		virtual void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
+		virtual void Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
+		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
+
+		virtual void Present() = 0;
+		virtual UINT GetCurrentFrameBuffer() = 0;
+
+//		void LoadTexture(const String& name, const String& fileName);
 
 		void DestroyResources();
 
@@ -42,11 +63,21 @@ namespace D3E
 
 		eastl::shared_ptr<Display> display_;
 
-		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChainBuffer;
+		eastl::vector<nvrhi::TextureHandle> nvrhiSwapChain;
+
+		nvrhi::TextureHandle nvrhiDepthBuffer;
+
+		eastl::vector<nvrhi::FramebufferHandle> nvrhiFramebuffer;
+
+		nvrhi::FramebufferHandle frameGBuffer;
 
 		NvrhiMessageCallback* messageCallback_;
 
 		nvrhi::InputLayoutHandle inputLayout_;
+
+		D3E::Editor* editor_;
+
+		GBuffer gbuffer_;
 
 		friend class Game;
 	};
