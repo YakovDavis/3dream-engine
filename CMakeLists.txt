@@ -3,6 +3,7 @@ project(D3Engine)
 
 set(CMAKE_DEBUG_POSTFIX d)
 
+
 include(CMakePrintHelpers)
 
 set(CMAKE_CXX_STANDARD 20)

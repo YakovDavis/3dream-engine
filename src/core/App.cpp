@@ -2,7 +2,7 @@
 
 #include "D3E/CommonCpp.h"
 
-/*#include <Jolt/Jolt.h>
+#include <Jolt/Jolt.h>
 
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -13,7 +13,7 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Body/BodyActivationListener.h>*/
+#include <Jolt/Physics/Body/BodyActivationListener.h>
 
 void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
 {
