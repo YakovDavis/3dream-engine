@@ -36,12 +36,17 @@ void D3E::PhysicsUpdateSystem::Update(entt::registry& reg, Game* game, float dT)
 							transformComponent.rotation.z = body.GetRotation().GetZ();
 						});
 
+					reg.patch<PhysicsComponent>(
+						entity, [&](auto& physicsComponent)
+						{
+							physicsComponent.velocity_.x = body.GetLinearVelocity().GetX();
+							physicsComponent.velocity_.y = body.GetLinearVelocity().GetY();
+							physicsComponent.velocity_.z = body.GetLinearVelocity().GetZ();
+							physicsComponent.angularVelocity_.x = body.GetAngularVelocity().GetX();
+							physicsComponent.angularVelocity_.y = body.GetAngularVelocity().GetY();
+							physicsComponent.angularVelocity_.z = body.GetAngularVelocity().GetZ();
+						});
 				}
 			}
-			//reg.patch<PhysicsComponent>(
-			//	entity,
-			//	[&, game]() {  });
-
-
 		});
 }

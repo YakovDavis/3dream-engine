@@ -15,6 +15,7 @@ namespace D3E
 	class InputDevice;	
 	class SoundEngine;
 	class TimerManager;
+	class PhysicsInfo;
 
 	class Game : public App
 	{
@@ -78,6 +79,8 @@ namespace D3E
 		size_t frameCount_;
 
 		SoundEngine* soundEngine_;
+
+		PhysicsInfo* physicsInfo_;
 
 		double totalTime = 0.0;
 

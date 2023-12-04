@@ -53,6 +53,8 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 					{
 						body.SetRestitution(component.restitution_);
 					}
+					body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+					body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
 				}
 			}
 		}
@@ -132,6 +134,8 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		bodySettings.mRestitution = physicsComponent.restitution_;
 	}
+	bodySettings.mLinearVelocity = Vec3Arg(physicsComponent.velocity_.x, physicsComponent.velocity_.y, physicsComponent.velocity_.z);
+	bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
 
 	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 
