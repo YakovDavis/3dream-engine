@@ -39,7 +39,8 @@ namespace D3E
 		bool hasOffsetCenterOfMass_ = false;
 		DirectX::SimpleMath::Vector3 centerOfMassOffset_;
 		JPH::EMotionType motionType_;
-
+		DirectX::SimpleMath::Vector3 velocity_;
+		DirectX::SimpleMath::Vector3 angularVelocity_;
 	};
 }
 

@@ -18,6 +18,7 @@ namespace D3E
 		PhysicsInfo();
 		~PhysicsInfo();
 		void updatePhysics();
+		JPH::PhysicsSystem* getPhysicsSystem() { return physicsSystem_; }
 
 	private:
 		JPH::PhysicsSystem* physicsSystem_;
