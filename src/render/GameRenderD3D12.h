@@ -18,7 +18,7 @@ namespace D3E
 	class GameRenderD3D12 final : public GameRender
 	{
 	public:
-		explicit GameRenderD3D12(App* parent, HINSTANCE hInstance);
+		explicit GameRenderD3D12(Game* parent, HINSTANCE hInstance);
 		~GameRenderD3D12() override = default;
 
 		void Init(eastl::vector<GameSystem*>& systems) override;

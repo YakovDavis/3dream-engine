@@ -2,6 +2,7 @@
 #include "cstdlib"
 #include "cctype"
 #include "D3E/Debug.h"
+#include "D3E/engine/ConsoleManager.h"
 
 D3E::EditorConsole::EditorConsole()
 {
@@ -64,65 +65,73 @@ int D3E::EditorConsole::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 void D3E::EditorConsole::Draw()
 {
 	ImGui::Begin("Console", &open_);
-	if (ImGui::BeginPopupContextItem())
-	{
-		if (ImGui::MenuItem("Close Console"))
-			open_ = false;
-		ImGui::EndPopup();
-	}
+//	if (ImGui::BeginPopupContextItem())
+//	{
+//		if (ImGui::MenuItem("Close Console"))
+//			open_ = false;
+//		ImGui::EndPopup();
+//	}
+//
+//	// Options menu
+//	if (ImGui::BeginPopup("Options"))
+//	{
+//		ImGui::Checkbox("Auto-scroll", &autoScroll_);
+//		ImGui::EndPopup();
+//	}
+//
+//	// Options, Filter
+//	if (ImGui::Button("Options"))
+//		ImGui::OpenPopup("Options");
+//	ImGui::SameLine();
+//	filter_.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+//	ImGui::Separator();
 
-	// Options menu
-	if (ImGui::BeginPopup("Options"))
+	for (const char* item : items_)
 	{
-		ImGui::Checkbox("Auto-scroll", &autoScroll_);
-		ImGui::EndPopup();
+		std::string kek (item);
+		ImGui::Text(kek.c_str());
+		ImGui::TextUnformatted(kek.c_str());
 	}
-
-	// Options, Filter
-	if (ImGui::Button("Options"))
-		ImGui::OpenPopup("Options");
-	ImGui::SameLine();
-	filter_.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
 	ImGui::Separator();
 
-	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar))
-	{
-		//		if (ImGui::BeginPopupContextWindow())
-		//		{
-		//			if (ImGui::Selectable("Clear")) ClearLog();
-		//			ImGui::EndPopup();
-		//		}
-
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-		for (const char* item : items_)
-		{
-			if (!filter_.PassFilter(item))
-				continue;
-
-			// Normally you would store more information in your item than just a string.
-			// (e.g. make Items[] an array of structure, store color/type etc.)
-			ImVec4 color;
-			bool has_color = false;
-			if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
-			else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
-			if (has_color)
-				ImGui::PushStyleColor(ImGuiCol_Text, color);
-			ImGui::TextUnformatted(item);
-			if (has_color)
-				ImGui::PopStyleColor();
-		}
-
-		// Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
-		// Using a scrollbar or mouse-wheel will take away from the bottom edge.
-		if (scrollToBottom_ || (autoScroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
-			ImGui::SetScrollHereY(1.0f);
-		scrollToBottom_ = false;
-
-		ImGui::PopStyleVar();
-	}
-	ImGui::EndChild();
-	ImGui::Separator();
+//	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+//	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar))
+//	{
+//				if (ImGui::BeginPopupContextWindow())
+//				{
+//					if (ImGui::Selectable("Clear")) ClearLog();
+//					ImGui::EndPopup();
+//				}
+//
+//		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+//		for (const char* item : items_)
+//		{
+////			if (!filter_.PassFilter(item))
+////				continue;
+////
+////			// Normally you would store more information in your item than just a string.
+////			// (e.g. make Items[] an array of structure, store color/type etc.)
+////			ImVec4 color;
+//			bool has_color = false;
+////			if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
+////			else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+////			if (has_color)
+////				ImGui::PushStyleColor(ImGuiCol_Text, color);
+//			ImGui::TextUnformatted(item);
+//			if (has_color)
+//				ImGui::PopStyleColor();
+//		}
+//
+//		// Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
+//		// Using a scrollbar or mouse-wheel will take away from the bottom edge.
+//		if (scrollToBottom_ || (autoScroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+//			ImGui::SetScrollHereY(1.0f);
+//		scrollToBottom_ = false;
+//
+//		ImGui::PopStyleVar();
+//	}
+//	ImGui::EndChild();
+//	ImGui::Separator();
 
 	// Command-line
 	bool reclaim_focus = false;
@@ -130,12 +139,13 @@ void D3E::EditorConsole::Draw()
 	if (ImGui::InputText("Input", inputBuffer_, IM_ARRAYSIZE(inputBuffer_), input_text_flags, &TextEditCallbackStub, (void*)this))
 	{
 		char* s = inputBuffer_;
-		// do something with s
 		if (s[0])
 		{
 			Strtrim(s);
 			Debug::LogMessage(s);
+			ConsoleManager::getInstance()->handleConsoleInput(s);
 			strcpy(s, "");
+			items_.push_back(Strdup(s));
 		}
 
 		reclaim_focus = true;
