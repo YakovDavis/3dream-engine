@@ -6,12 +6,11 @@ namespace D3E
 {
 	struct Material
 	{
+		String uuid;
+
 		String albedoTextureUuid;
 		String normalTextureUuid;
 		String metalnessTextureUuid;
 		String roughnessTextureUuid;
-		String specularTextureUuid;
-		String irradianceTextureUuid;
-		String specularBrdfLutUuid;
 	};
 }

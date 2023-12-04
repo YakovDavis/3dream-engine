@@ -77,10 +77,101 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	for (auto& sys : systems)
 	{
-		sys->InitRender();
+		sys->InitRender(commandList_, device_);
 	}
 
 	ConsoleManager::getInstance()->registerConsoleVariable("renderingMode", 0);
+
+	/*
+
+	{
+		// Unfiltered environment cube map (temporary).
+		TextureFactory::GetTextureHandle("environment");
+
+
+		// Load & convert equirectangular environment map to a cubemap texture.
+		{
+			ComputeProgram equirectToCubeProgram = createComputeProgram(compileShader("shaders/hlsl/equirect2cube.hlsl", "main", "cs_5_0"));
+			Texture envTextureEquirect = createTexture(Image::fromFile("environment.hdr"), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
+
+			m_context->CSSetShaderResources(0, 1, envTextureEquirect.srv.GetAddressOf());
+			m_context->CSSetUnorderedAccessViews(0, 1, envTextureUnfiltered.uav.GetAddressOf(), nullptr);
+			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
+			m_context->CSSetShader(equirectToCubeProgram.computeShader.Get(), nullptr, 0);
+			m_context->Dispatch(envTextureUnfiltered.width/32, envTextureUnfiltered.height/32, 6);
+			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+		}
+
+		m_context->GenerateMips(envTextureUnfiltered.srv.Get());
+
+		// Compute pre-filtered specular environment map.
+		{
+			struct SpecularMapFilterSettingsCB
+			{
+				float roughness;
+				float padding[3];
+			};
+			ComputeProgram spmapProgram = createComputeProgram(compileShader("shaders/hlsl/spmap.hlsl", "main", "cs_5_0"));
+			ComPtr<ID3D11Buffer> spmapCB = createConstantBuffer<SpecularMapFilterSettingsCB>();
+
+			m_envTexture = createTextureCube(1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
+			// Copy 0th mipmap level into destination environment map.
+			for(int arraySlice=0; arraySlice<6; ++arraySlice) {
+				const UINT subresourceIndex = D3D11CalcSubresource(0, arraySlice, m_envTexture.levels);
+				m_context->CopySubresourceRegion(m_envTexture.texture.Get(), subresourceIndex, 0, 0, 0, envTextureUnfiltered.texture.Get(), subresourceIndex, nullptr);
+			}
+
+			m_context->CSSetShaderResources(0, 1, envTextureUnfiltered.srv.GetAddressOf());
+			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
+			m_context->CSSetShader(spmapProgram.computeShader.Get(), nullptr, 0);
+
+			// Pre-filter rest of the mip chain.
+			const float deltaRoughness = 1.0f / glm::max(float(m_envTexture.levels-1), 1.0f);
+			for(UINT level=1, size=512; level<m_envTexture.levels; ++level, size/=2) {
+				const UINT numGroups = glm::max<UINT>(1, size/32);
+				createTextureUAV(m_envTexture, level);
+
+				const SpecularMapFilterSettingsCB spmapConstants = { level * deltaRoughness };
+				m_context->UpdateSubresource(spmapCB.Get(), 0, nullptr, &spmapConstants, 0, 0);
+
+				m_context->CSSetConstantBuffers(0, 1, spmapCB.GetAddressOf());
+				m_context->CSSetUnorderedAccessViews(0, 1, m_envTexture.uav.GetAddressOf(), nullptr);
+				m_context->Dispatch(numGroups, numGroups, 6);
+			}
+			m_context->CSSetConstantBuffers(0, 1, nullBuffer);
+			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+		}
+	}
+
+	// Compute diffuse irradiance cubemap.
+	{
+		ComputeProgram irmapProgram = createComputeProgram(compileShader("shaders/hlsl/irmap.hlsl", "main", "cs_5_0"));
+
+		m_irmapTexture = createTextureCube(32, 32, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
+		createTextureUAV(m_irmapTexture, 0);
+
+		m_context->CSSetShaderResources(0, 1, m_envTexture.srv.GetAddressOf());
+		m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
+		m_context->CSSetUnorderedAccessViews(0, 1, m_irmapTexture.uav.GetAddressOf(), nullptr);
+		m_context->CSSetShader(irmapProgram.computeShader.Get(), nullptr, 0);
+		m_context->Dispatch(m_irmapTexture.width/32, m_irmapTexture.height/32, 6);
+		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	}
+
+	// Compute Cook-Torrance BRDF 2D LUT for split-sum approximation.
+	{
+		ComputeProgram spBRDFProgram = createComputeProgram(compileShader("shaders/hlsl/spbrdf.hlsl", "main", "cs_5_0"));
+
+		m_spBRDF_LUT = createTexture(256, 256, DXGI_FORMAT_R16G16_FLOAT, 1);
+		m_spBRDF_Sampler = createSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+		createTextureUAV(m_spBRDF_LUT, 0);
+
+		m_context->CSSetUnorderedAccessViews(0, 1, m_spBRDF_LUT.uav.GetAddressOf(), nullptr);
+		m_context->CSSetShader(spBRDFProgram.computeShader.Get(), nullptr, 0);
+		m_context->Dispatch(m_spBRDF_LUT.width/32, m_spBRDF_LUT.height/32, 1);
+		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	}*/
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -132,7 +223,7 @@ D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent
 {
 	assert(parentApp != nullptr);
 	assert(hInstance != nullptr);
-	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1920, 1080, parent);
+	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1280, 720, parent);
 	messageCallback_ = new NvrhiMessageCallback();
 }
 

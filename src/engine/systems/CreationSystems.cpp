@@ -8,6 +8,7 @@
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
+#include "render/components/GridComponent.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
 
@@ -53,6 +54,7 @@ D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
 
 	ObjectInfoComponent info;
 	info.name = "Player";
+	info.id = UuidGenerator::NewGuidString();
 
 	TransformComponent transform(tc);
 
@@ -121,6 +123,19 @@ entt::entity D3E::CreationSystems::CreateLight(
 
 	return e;
 }
+
+entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent info;
+	info.name = "EditorDebugRenderObject";
+	info.id = UuidGenerator::NewGuidString();
+
+	GridComponent grid;
+
+	registry.emplace<ObjectInfoComponent>(e, info);
+	registry.emplace<GridComponent>(e, grid);
 
 entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info,
                                                              const TransformComponent& tc, const PhysicsComponent& physc)
