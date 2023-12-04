@@ -1,6 +1,7 @@
 #include "D3E/Debug.h"
 #include <chrono>
 #include <iostream>
+#include "editor/Editor.h"
 
 std::fstream D3E::Debug::fileStream;
 HANDLE D3E::Debug::console = GetStdHandle(STD_OUTPUT_HANDLE);;
@@ -11,6 +12,7 @@ void D3E::Debug::LogMessage(const String& text)
 	const String message = time + " " + text;
 	PrintColoredText(Color::White, message);
 	LogText(message);
+	Editor::PrintConsoleMessage(message);
 }
 
 void D3E::Debug::LogWarning(const String& text)
@@ -19,6 +21,7 @@ void D3E::Debug::LogWarning(const String& text)
 	const String warning = time + " " + text;
 	PrintColoredText(Color::Yellow, warning);
 	LogText("WARNING: " + warning);
+	Editor::PrintConsoleMessage(warning);
 }
 
 void D3E::Debug::LogError(const String& text)
@@ -27,6 +30,7 @@ void D3E::Debug::LogError(const String& text)
 	const String error = time + " " + text;
 	PrintColoredText(Color::Red, error);
 	LogText("ERROR!!!: " + error);
+	Editor::PrintConsoleMessage(error);
 }
 
 void D3E::Debug::Assert(bool condition, const String& text)

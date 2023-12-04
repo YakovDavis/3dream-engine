@@ -7,6 +7,7 @@
 #include "imgui_backend/imgui_nvrhi.h"
 #include "imgui_impl_win32.h"
 #include "render/Display.h"
+#include "EASTL/string.h"
 
 namespace D3E
 {
@@ -18,6 +19,7 @@ namespace D3E
 		static Editor* instance_;
 	public:
 		static Editor* Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
+		static void PrintConsoleMessage(const eastl::string& str);
 
 	private:
 		Game *game_;
@@ -26,9 +28,11 @@ namespace D3E
 		float color_[4] = {0.f, 0.f, 0.f, 0.f};
 		EditorConsole *editorConsole_;
 		EditorContentBrowser *editorContentBrowser_;
+
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
 		void SetStyle();
+		void PrintConsoleMessageInternal(const eastl::string& str);
 
 		void DrawViewport(nvrhi::IFramebuffer* currentFramebuffer);
 		void DrawHeader();
