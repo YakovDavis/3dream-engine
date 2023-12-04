@@ -121,3 +121,37 @@ entt::entity D3E::CreationSystems::CreateLight(
 
 	return e;
 }
+
+entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info,
+                                                             const TransformComponent& tc, const PhysicsComponent& physc)
+{
+	const auto e = registry.create();
+	StaticMeshComponent sm;
+	sm.meshUuid = kCubeUUID;
+	sm.pipelineName = "SimpleForward";
+
+	ObjectInfoComponent infoComponent;
+	infoComponent.name = info.name;
+	infoComponent.id = UuidGenerator::NewGuidString();
+
+	TransformComponent transform(tc);
+	transform.position = tc.position;
+	transform.rotation = tc.rotation;
+	transform.scale = tc.scale;
+
+	SoundComponent sound;
+	sound.fileName = "sfx.mp3";
+	sound.is3D = true;
+	sound.isLooping = true;
+	sound.isStreaming = false;
+	sound.location = transform.position;
+
+	registry.emplace<ObjectInfoComponent>(e, info);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<StaticMeshComponent>(e, sm);
+	registry.emplace<PhysicsComponent>(e, physc);
+	StaticMeshInitSystem::IsDirty = true;
+	registry.emplace<SoundComponent>(e, sound);
+
+	return e;
+}

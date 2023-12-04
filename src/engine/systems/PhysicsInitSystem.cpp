@@ -139,8 +139,6 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 
 	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 
-
-	physicsComponent.systemRef_ = physicsSystem_;
 	physicsComponent.isInitialized_ = true;
 }
 
