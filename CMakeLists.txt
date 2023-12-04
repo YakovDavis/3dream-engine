@@ -124,6 +124,14 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
+        include/D3E/Components/PhysicsComponent.h
+        src/engine/systems/PhysicsInitSystem.h
+        src/engine/systems/PhysicsInitSystem.cpp
+        src/physics/ObjectLayers.h
+        src/engine/systems/PhysicsUpdateSystem.h
+        src/physics/PhysicsInfo.h
+        src/physics/PhysicsInfo.cpp
+        src/engine/systems/PhysicsUpdateSystem.cpp
 )
 
 add_subdirectory(libs)

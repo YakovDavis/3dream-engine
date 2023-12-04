@@ -25,6 +25,9 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
+#include "physics/PhysicsInfo.h"
+#include "engine/systems/PhysicsInitSystem.h"
+#include "engine/systems/PhysicsUpdateSystem.h"
 
 #include <filesystem>
 #include <thread>
@@ -73,6 +76,8 @@ void D3E::Game::Run()
 			                 .count();
 		}
 
+		physicsInfo_->updatePhysics();
+
 		Update(deltaTime_);
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
@@ -119,10 +124,14 @@ void D3E::Game::Init()
 
 	inputDevice_ = new InputDevice(this);
 
+	physicsInfo_ = new PhysicsInfo();
+
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
