@@ -218,8 +218,7 @@ float4 PSMain(PS_IN input) : SV_Target
 	float3 ambientLighting;
 	{
 		// Sample diffuse irradiance at normal direction.
-		//float3 irradiance = IrradianceTexture.Sample(DefaultSampler, norm).rgb;
-		float3 irradiance = float3(0.5f, 0.5f, 0.5f);
+		float3 irradiance = IrradianceTexture.Sample(DefaultSampler, norm).rgb;
 
 		// Calculate Fresnel term for ambient lighting.
 		// Since we use pre-filtered cubemap(s) and irradiance is coming from many directions
@@ -234,8 +233,8 @@ float4 PSMain(PS_IN input) : SV_Target
 		float3 diffuseIBL = kd * albedo * irradiance;
 
 		// Sample pre-filtered specular reflection environment at correct mipmap level.
-		uint specularTextureLevels = querySpecularTextureLevels();
-		float3 specularIrradiance = SpecularTexture.SampleLevel(DefaultSampler, Lr, roughness * specularTextureLevels).rgb;
+		//uint specularTextureLevels = querySpecularTextureLevels();
+		float3 specularIrradiance = float3(0.03f, 0.03f, 0.03f);//SpecularTexture.SampleLevel(DefaultSampler, Lr, roughness * specularTextureLevels).rgb;
 
 		// Split-sum approximation factors for Cook-Torrance specular BRDF.
 		float2 specularBRDF = SpecularBRDF_LUT.Sample(spBRDF_Sampler, float2(cosLo, roughness)).rg;

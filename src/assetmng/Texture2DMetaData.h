@@ -13,6 +13,11 @@ namespace D3E
 	{
 		RGBA8
 	};
+	enum TextureType
+	{
+		Texture2D,
+		TextureCube
+	};
 
 	struct Texture2DMetaData
 	{
@@ -22,6 +27,7 @@ namespace D3E
 		struct Texture2DFormat
 		{
 			TextureChannels channels = TextureChannels::RGBA8;
+			TextureType type = TextureType::Texture2D;
 			eastl::fixed_vector<uint32_t, 2> dimensions = {1024, 1024};
 		};
 		Texture2DFormat format;

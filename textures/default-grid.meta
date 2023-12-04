@@ -2,6 +2,7 @@
     "filename": "textures/default-grid.png",
     "format": {
         "channels": "RGBA8",
+        "type": "Texture2D",
         "dimensions": [
             2048,
             2048

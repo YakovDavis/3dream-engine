@@ -12,6 +12,7 @@ namespace D3E
 		         {"filename", t.filename},
 		         {"format", {
 								{"channels", magic_enum::enum_name(t.format.channels)},
+								{"type", magic_enum::enum_name(t.format.type)},
 								{"dimensions", std::vector({t.format.dimensions[0], t.format.dimensions[1]})}
 							}
 		         }
@@ -21,11 +22,13 @@ namespace D3E
 	void from_json(const json& j, Texture2DMetaData& t)
 	{
 		std::string channels;
+		std::string type;
 
 		j.at("uuid").get_to(t.uuid);
 		j.at("name").get_to(t.name);
 		j.at("filename").get_to(t.filename);
 		j.at("format").at("channels").get_to(channels);
+		j.at("format").at("type").get_to(type);
 		j.at("format").at("dimensions")[0].get_to(t.format.dimensions[0]);
 		j.at("format").at("dimensions")[1].get_to(t.format.dimensions[1]);
 
@@ -37,6 +40,16 @@ namespace D3E
 		else
 		{
 			t.format.channels = TextureChannels::RGBA8;
+		}
+
+		auto t1 = magic_enum::enum_cast<TextureType>(type);
+		if (t1.has_value())
+		{
+			t.format.type = t1.value();
+		}
+		else
+		{
+			t.format.type = TextureType::Texture2D;
 		}
 	}
 }
