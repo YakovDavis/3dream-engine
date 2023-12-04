@@ -8,9 +8,6 @@
 #include "nvrhi/nvrhi.h"
 #include "render/DisplayWin32.h"
 
-#include <cstring>
-#include <sstream>
-
 D3E::Editor* D3E::Editor::instance_;
 
 void ShowExampleAppDockSpace(bool* p_open)
@@ -170,6 +167,19 @@ void D3E::Editor::Release()
 	{
 		ImGui::DestroyContext();
 	}
+}
+
+void D3E::Editor::PrintConsoleMessage(const eastl::string& str)
+{
+	if(instance_)
+	{
+		instance_->PrintConsoleMessageInternal(str);
+	}
+}
+
+void D3E::Editor::PrintConsoleMessageInternal(const eastl::string& str)
+{
+	editorConsole_->PrintMessage(str);
 }
 
 void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* currentFramebuffer)

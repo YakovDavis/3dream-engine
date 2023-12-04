@@ -1,6 +1,8 @@
 #pragma once
 
 #include "imgui.h"
+#include "EASTL/vector.h"
+#include "EASTL/string.h"
 
 namespace D3E
 {
@@ -9,7 +11,7 @@ namespace D3E
 	private:
 		bool open_;
 		char inputBuffer_[256];
-		ImVector<char*> items_;
+		eastl::vector<eastl::string> items_;
 		ImVector<char*> history_;
 		int historyPos_;
 		ImGuiTextFilter filter_;
@@ -21,6 +23,7 @@ namespace D3E
 	public:
 		EditorConsole();
 		void Draw();
+		void PrintMessage(const eastl::string& str);
 		void ClearLog();
 	};
 }
