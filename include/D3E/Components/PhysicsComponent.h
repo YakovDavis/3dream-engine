@@ -27,7 +27,6 @@ namespace D3E
 	struct PhysicsComponent
 	{
 		bool isInitialized_ = false;
-		JPH::PhysicsSystem* systemRef_;
 
 		JPH::BodyID bodyID_;
 		JPH::Ref<JPH::Shape> collider_ = nullptr;

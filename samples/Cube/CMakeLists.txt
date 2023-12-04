@@ -1,7 +1,18 @@
 cmake_minimum_required(VERSION 3.26)
 project(Cube)
 
+include(FetchContent)
+
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
+
+FetchContent_Declare(
+        JoltPhysics
+        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
+        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
+        SOURCE_SUBDIR "Build"
+)
+FetchContent_MakeAvailable(JoltPhysics)
 
 get_filename_component(D3E_ROOT_DIR "../../" ABSOLUTE)
 
@@ -13,6 +24,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${D3E_ROOT_DIR}/include" "${D3E_ROOT_DIR}/libs/uuid_v4")
+target_include_directories(${PROJECT_NAME} PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
 
 add_library(D3E_LIB SHARED IMPORTED)
 set_target_properties(D3E_LIB PROPERTIES
@@ -25,6 +37,7 @@ set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized 
 
 target_link_libraries(${PROJECT_NAME} D3E_LIB)
 target_link_libraries(${PROJECT_NAME} ${EASTL_LIBRARY})
+target_link_libraries(${PROJECT_NAME} Jolt)
 
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/D3Engined.dll)
 file(COPY ${D3E_ROOT_DIR}/build/Debug/Debug/D3Engined.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
