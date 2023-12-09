@@ -1,5 +1,6 @@
 #include "DuckGame.h"
 
+#include "D3E/Components/UserScript.h"
 #include "D3E/Debug.h"
 #include "D3E/TimerHandle.h"
 #include "D3E/TimerManager.h"
@@ -12,6 +13,8 @@
 void DuckGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
+
+	us_.Update(deltaTime);
 
 	if (fireCounter_ > 2)
 	{
@@ -33,11 +36,10 @@ void DuckGame::Init()
 {
 	Game::Init();
 
-	lua_.set_function("print", [] { D3E::Debug::LogMessage("Hello from Lua"); });	
+	lua_.open_libraries(sol::lib::base);
 
-	D3E::TimerManager::GetInstance().SetTimer(
-		handle_, [this]() { lua_.script("print()"); },
-		1000);	
+	auto script = lua_.load_file("Scripts/myobject.lua");
+	auto r = script();
 
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};

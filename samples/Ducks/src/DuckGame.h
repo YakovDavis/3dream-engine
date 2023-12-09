@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/Components/UserScript.h"
 #include "D3E/EntryPoint.h"
 #include "D3E/Game.h"
 #include "D3E/TimerHandle.h"
@@ -19,6 +20,7 @@ class DuckGame : public D3E::Game
 	D3E::TimerHandle handle6_;
 	int fireCounter_ = 0;
 	sol::state lua_;
+	D3E::UserScript us_;
 };
 
 D3E::App* D3E::CreateApp()

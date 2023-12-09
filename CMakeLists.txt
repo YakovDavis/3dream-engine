@@ -124,7 +124,7 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
-)
+        include/D3E/Components/UserScript.h)
 
 add_subdirectory(libs)
 
