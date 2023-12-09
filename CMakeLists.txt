@@ -128,6 +128,7 @@ add_library("${PROJECT_NAME}" SHARED
 
 add_subdirectory(libs)
 
+target_include_directories("${PROJECT_NAME}" PUBLIC libs/sol)
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/stb libs/nlohmann)
 target_include_directories("${PROJECT_NAME}" PUBLIC libs/uuid_v4)
 
@@ -151,6 +152,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         FmodStudio
         EASTL
         Jolt        
+        lua_static
 )
 
 
