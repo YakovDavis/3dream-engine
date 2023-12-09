@@ -5,6 +5,7 @@
 #include "D3E/TimerManager.h"
 #include "D3E/engine/ConsoleManager.h"
 #include "D3E/systems/CreationSystems.h"
+#include "sol/sol.hpp"
 
 #include <format>
 
@@ -32,30 +33,11 @@ void DuckGame::Init()
 {
 	Game::Init();
 
-	// Lambda example
+	lua_.set_function("print", [] { D3E::Debug::LogMessage("Hello from Lua"); });	
+
 	D3E::TimerManager::GetInstance().SetTimer(
-		handle_, [this]() { D3E::Debug::LogMessage("1 second timer fired!"); },
-		1000);
-
-	// Looping timer example
-	D3E::TimerManager::GetInstance().SetTimer(
-		handle2_,
-		[this]()
-		{
-			D3E::Debug::LogMessage("3 seconds looping timer fired!");
-			++fireCounter_;
-		},
-		3000, true);
-
-	// Member function delegate example
-	D3E::TimerManager::GetInstance().SetTimer(handle3_, this,
-	                                          &DuckGame::TimerHandler, 10000);
-	// Static function delegate example
-	D3E::TimerManager::GetInstance().SetTimer(handle4_, &Handler, 11000);
-
-	// Timer for next tick example
-	handle5_ = D3E::TimerManager::GetInstance().SetTimerForNextTick(
-		[]() { D3E::Debug::LogMessage("Next tick timer fired!"); });
+		handle_, [this]() { lua_.script("print()"); },
+		1000);	
 
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};
@@ -69,7 +51,8 @@ void DuckGame::Init()
 	tc.scale = Vector3(0.2f, 0.2f, 0.2f);
 	info.name = "Cerberus";
 
-	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d");
+	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc,
+	                               "60481bf4-cab2-4ad9-8d0d-95556bd20f7d");
 
 	info.name = "DirectionalLight";
 
