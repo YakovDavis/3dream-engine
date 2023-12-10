@@ -19,7 +19,9 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/systems/EditorPickingSystem.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
+#include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
@@ -60,6 +62,8 @@ void D3E::Game::Run()
 
 	std::thread inputCheckingThread(PollConsoleInput, this);
 
+	bool lmbPressedLastTick = false; // temp
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -74,6 +78,12 @@ void D3E::Game::Run()
 		}
 
 		Update(deltaTime_);
+
+		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
+		{
+			pickingSystem->RunOnce(registry_, this, deltaTime_);
+		}
+		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
@@ -122,6 +132,9 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new InputSyncSystem);
+	pickingSystem = new EditorPickingSystem;
+	systems_.push_back(pickingSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 
 	renderPPsystems_.push_back(new LightInitSystem);

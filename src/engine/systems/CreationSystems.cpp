@@ -2,6 +2,7 @@
 
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
+#include "D3E/Components/MouseComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
@@ -134,8 +135,11 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 
 	GridComponent grid;
 
+	MouseComponent mouse;
+
 	registry.emplace<ObjectInfoComponent>(e, info);
 	registry.emplace<GridComponent>(e, grid);
+	registry.emplace<MouseComponent>(e, mouse);
 
 	return e;
 }

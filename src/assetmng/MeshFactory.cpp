@@ -44,6 +44,20 @@ void D3E::MeshFactory::FillMeshBuffers(const String& uuid,
                                        nvrhi::IDevice* device,
                                        nvrhi::ICommandList* commandList)
 {
+	using namespace DirectX::SimpleMath;
+
+	Vector3 vMin(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+	Vector3 vMax(+FLT_MAX, +FLT_MAX, +FLT_MAX);
+
+	for (auto v : meshData_[uuid].points)
+	{
+		vMin = XMVectorMin(vMin, v.pos);
+		vMax = XMVectorMin(vMax, v.pos);
+	}
+
+	meshData_[uuid].boundingBox.Center = 0.5f * (vMin + vMax);
+	meshData_[uuid].boundingBox.Extents = 0.5f * (vMax - vMin);
+
 	auto vertexBufferDesc = nvrhi::BufferDesc()
 	                            .setByteSize(meshData_[uuid].points.size() * sizeof(Vertex))
 	                            .setIsVertexBuffer(true)

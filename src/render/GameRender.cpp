@@ -81,6 +81,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	}
 
 	ConsoleManager::getInstance()->registerConsoleVariable("renderingMode", 0);
+	ConsoleManager::getInstance()->registerConsoleVariable("displayGrid", 1);
+	ConsoleManager::getInstance()->registerConsoleVariable("visualizeBounds", 1);
 
 	/*
 
