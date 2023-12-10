@@ -125,10 +125,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
         include/D3E/Components/MouseComponent.h
-        src/render/systems/EditorPickingSystem.cpp
-        src/render/systems/EditorPickingSystem.h
         src/render/systems/InputSyncSystem.cpp
         src/render/systems/InputSyncSystem.h
+        src/editor/EditorIdManager.cpp
+        src/editor/EditorIdManager.h
+        src/render/PickConstBuffer.h
 )
 
 add_subdirectory(libs)

@@ -9,6 +9,7 @@
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
+#include "editor/EditorIdManager.h"
 #include "render/components/GridComponent.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
@@ -25,6 +26,7 @@ entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry,
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
+	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
 	TransformComponent transform(tc);
 	transform.position = tc.position;
@@ -86,6 +88,7 @@ entt::entity D3E::CreationSystems::CreateSM(
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
+	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
 	TransformComponent transform(tc);
 	transform.position = tc.position;
@@ -109,6 +112,7 @@ entt::entity D3E::CreationSystems::CreateLight(
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
+	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
 	TransformComponent transform(tc);
 	transform.position = tc.position;
@@ -132,6 +136,7 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	ObjectInfoComponent info;
 	info.name = "EditorDebugRenderObject";
 	info.id = UuidGenerator::NewGuidString();
+	info.editorId = EditorIdManager::Get()->RegisterUuid(info.id);
 
 	GridComponent grid;
 

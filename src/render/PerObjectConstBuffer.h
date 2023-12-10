@@ -10,5 +10,6 @@ namespace D3E
 		DirectX::SimpleMath::Matrix gWorld;
 		DirectX::SimpleMath::Matrix gWorldView;
 		DirectX::SimpleMath::Matrix gInvTrWorldView;
+		uint32_t gEditorId;
 	};
 }

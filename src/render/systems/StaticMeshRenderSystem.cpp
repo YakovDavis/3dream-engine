@@ -53,6 +53,7 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  constBufferData.gWorld = world;
 				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, *camera);
 				  constBufferData.gInvTrWorldView = (world * CameraUtils::GetView(origin, *camera)).Invert().Transpose();
+				  constBufferData.gEditorId = info.editorId;
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 

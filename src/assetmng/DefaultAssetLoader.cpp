@@ -112,6 +112,8 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("LightPass", "LightPass.hlsl", "PSMain");
 
+	ShaderFactory::AddComputeShader("Pick", "Pick.hlsl", "CSMain");
+
 	nvrhi::BindingLayoutDesc layoutDescVDefault = {};
 	layoutDescVDefault.setVisibility(nvrhi::ShaderType::Vertex);
 	layoutDescVDefault.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
@@ -156,6 +158,13 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(1));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(2));
 	ShaderFactory::AddBindingLayout("LightPassP", layoutDescLight);
+
+	nvrhi::BindingLayoutDesc pickLayoutDesc = {};
+	pickLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_UAV(0));
+	ShaderFactory::AddBindingLayout("PickC", pickLayoutDesc);
 
 	nvrhi::DepthStencilState depthStencilState = {};
 	depthStencilState.setDepthTestEnable(true);
@@ -229,6 +238,11 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	renderState.depthStencilState = depthStencilState;
 	pipelineDesc.renderState = renderState;
 	ShaderFactory::AddGraphicsPipeline("WireFrame", pipelineDesc, fb);
+
+	nvrhi::ComputePipelineDesc pickingPipelineDesc = {};
+	pickingPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("Pick"));
+	pickingPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("PickC"));
+	ShaderFactory::AddComputePipeline("Pick", pickingPipelineDesc);
 }
 
 void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)

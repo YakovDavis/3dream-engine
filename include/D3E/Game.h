@@ -15,7 +15,6 @@ namespace D3E
 	class InputDevice;	
 	class SoundEngine;
 	class TimerManager;
-	class EditorPickingSystem;
 
 	class Game : public App
 	{
@@ -57,8 +56,6 @@ namespace D3E
 		eastl::vector<GameSystem*> systems_;
 
 		eastl::vector<GameSystem*> renderPPsystems_;
-
-		EditorPickingSystem* pickingSystem;
 
 		virtual void Init();
 

@@ -19,7 +19,6 @@
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
-#include "render/systems/EditorPickingSystem.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
 #include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
@@ -81,7 +80,7 @@ void D3E::Game::Run()
 
 		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
-			pickingSystem->RunOnce(registry_, this, deltaTime_);
+			std::cout << gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
 		}
 		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
@@ -133,8 +132,6 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
 	systems_.push_back(new InputSyncSystem);
-	pickingSystem = new EditorPickingSystem;
-	systems_.push_back(pickingSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 
 	renderPPsystems_.push_back(new LightInitSystem);
