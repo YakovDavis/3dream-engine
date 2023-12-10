@@ -10,7 +10,7 @@ namespace D3E
 		String parentId = EmptyIdString;
 		String name;
 		String id;
-		UINT64 editor_id;
+		unsigned long long editor_id;
 		bool visible = true; // TODO: implement
 	};
 } // namespace D3E

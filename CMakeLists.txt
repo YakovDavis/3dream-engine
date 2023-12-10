@@ -176,4 +176,11 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     COMMAND "${SHADER_BULID_BATCH}" "${CMAKE_SOURCE_DIR}"
 )
 
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/Ducks"
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+)
+
 add_subdirectory(samples/ducks)
