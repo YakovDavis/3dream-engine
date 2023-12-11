@@ -57,11 +57,13 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 
 				  commandList->writeBuffer(smc.constantBuffer, &constBufferData, sizeof(constBufferData));
 
+				  const auto& defaultPSO = smc.editorHighlighted ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName + "Highlight") : ShaderFactory::GetGraphicsPipeline(smc.pipelineName);
+
 				  auto renderModeCVar = ConsoleManager::getInstance()->findConsoleVariable("renderingMode");
 
 				  // Set the graphics state: pipeline, framebuffer, viewport, bindings.
 				  auto graphicsState = nvrhi::GraphicsState()
-		                                   .setPipeline(renderModeCVar->getInt() == 0 ? ShaderFactory::GetGraphicsPipeline(smc.pipelineName) : ShaderFactory::GetGraphicsPipeline("WireFrame"))
+		                                   .setPipeline(renderModeCVar->getInt() == 0 ? defaultPSO : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
 		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720)))
 		                                   .addBindingSet(ShaderFactory::GetBindingSetV(info.id))

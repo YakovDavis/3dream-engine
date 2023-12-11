@@ -215,6 +215,10 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
 
+	nvrhi::BindingSetDesc nullBindingSetDesc = {};
+	ShaderFactory::AddBindingSetV("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassV");
+	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
+
 	Debug::LogMessage("[GameRender] Init finished");
 }
 

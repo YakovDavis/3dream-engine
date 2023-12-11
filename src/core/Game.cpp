@@ -11,6 +11,7 @@
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
@@ -80,7 +81,17 @@ void D3E::Game::Run()
 
 		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
-			std::cout << gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+			auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+			if (editorPickedId == 0)
+			{
+				selectedUuids.clear();
+			}
+			else
+			{
+				selectedUuids.clear(); // TODO: check shift key here
+				selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+			}
+			EditorUtilsRenderSystem::isSelectionDirty = true;
 		}
 		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
@@ -153,6 +164,11 @@ void D3E::Game::Update(const float deltaTime)
 	TimerManager::GetInstance().Update(deltaTime);
 
 	for (auto& sys : systems_)
+	{
+		sys->Update(registry_, this, deltaTime);
+	}
+
+	for (auto& sys : renderPPsystems_)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
@@ -318,4 +334,9 @@ void D3E::Game::CheckConsoleInput()
 		// std::cout << consoleCommandQueue << '\n';
 		consoleCommandQueue = std::string();
 	}
+}
+
+bool D3E::Game::IsUuidEditorSelected(const D3E::String& uuid)
+{
+	return selectedUuids.find(uuid) != selectedUuids.end();
 }

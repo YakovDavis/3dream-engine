@@ -14,6 +14,9 @@
 #include "render/components/GridComponent.h"
 #include "render/ShaderFactory.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "D3E/Game.h"
+
+bool D3E::EditorUtilsRenderSystem::isSelectionDirty = false;
 
 void D3E::EditorUtilsRenderSystem::InitRender(nvrhi::ICommandList* commandList, nvrhi::IDevice* device)
 {
@@ -25,6 +28,17 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
                                         nvrhi::ICommandList* commandList,
                                         nvrhi::IDevice* device)
 {
+	nvrhi::GraphicsState graphicsState = {};
+	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("EditorHighlightPass"));
+	graphicsState.setFramebuffer(fb);
+	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720))); // TODO: un-hardcode
+	graphicsState.addBindingSet(ShaderFactory::GetBindingSetV("EditorHighlightPass"));
+	graphicsState.addBindingSet(ShaderFactory::GetBindingSetP("EditorHighlightPass"));
+	commandList->setGraphicsState(graphicsState);
+	auto drawArguments = nvrhi::DrawArguments()
+	                         .setVertexCount(4);
+	commandList->draw(drawArguments);
+
 	Vector3 origin = {0, 0, 0};
 
 	auto playerView = reg.view<const TransformComponent, const CameraComponent>();
@@ -148,5 +162,20 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 					MeshFactory::GetMeshData(kCubeUUID).indices.size());
 				commandList->drawIndexed(drawArguments);
 			});
+	}
+}
+
+void D3E::EditorUtilsRenderSystem::Update(entt::registry& reg, D3E::Game* game,
+                                          float dT)
+{
+	if (isSelectionDirty)
+	{
+		auto view = reg.view<const ObjectInfoComponent, const TransformComponent, StaticMeshComponent>();
+
+		view.each([game](const auto& info, const auto& tc, auto& smc)
+		          {
+					  smc.editorHighlighted = game->IsUuidEditorSelected(info.id);
+				  });
+		isSelectionDirty = false;
 	}
 }
