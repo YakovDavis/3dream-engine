@@ -20,7 +20,11 @@ eastl::vector<D3E::ObjectInfo> D3E::EditorUtils::ListActiveObjects()
 	auto view = activeGame_->GetRegistry().view<ObjectInfoComponent>();
 	eastl::vector<ObjectInfo> result;
 	view.each([&result](const auto &info) {
-				  result.push_back({info.name});
+				  if (info.name == "EditorDebugRenderObject")
+				  {
+					  return;
+				  }
+				  result.push_back({info.name, activeGame_->IsUuidEditorSelected(info.id)});
 	});
 	return result;
 }

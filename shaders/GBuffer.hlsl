@@ -16,6 +16,7 @@ struct PS_IN
     float3x3 tangentBasis : TBASIS;
     float4 tex : TEXCOORD;
 	float4 worldPos : WORLDPOS;
+	int EditorId : EDITORID;
 };
 
 struct GBuffer
@@ -24,6 +25,7 @@ struct GBuffer
 	float3 WorldPos : SV_Target1;
 	float3 Normal : SV_Target2;
 	float3 MetalRoughnessSpecular : SV_Target3;
+	int EditorIds : SV_Target4;
 };
 
 cbuffer cbPerObject : register(b0)
@@ -32,6 +34,7 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorld;
 	float4x4 gWorldView;
 	float4x4 gInvTrWorldView;
+	int EditorId;
 };
 
 Texture2D AlbedoMap : register(t0);
@@ -60,6 +63,8 @@ PS_IN VSMain(VS_IN input)
 	output.tangentBasis = mul((float3x3)gInvTrWorldView, transpose(TBN));
 
 	output.worldPos = mul(float4(input.pos.xyz, 1.0f), gWorld);
+
+	output.EditorId = EditorId;
 	
 	return output;
 }
@@ -76,6 +81,7 @@ GBuffer PSMain(PS_IN input)// : SV_Target
 	result.MetalRoughnessSpecular.y = RoughnessMap.SampleLevel(DefaultSampler, input.tex.xy, 0).r;
 	result.MetalRoughnessSpecular.z = 0.5f; // spec
 	result.WorldPos = input.worldPos.xyz;
+	result.EditorIds = input.EditorId;
 
 	float3 N = normalize(2.0 * NormalMap.SampleLevel(DefaultSampler, input.tex.xy, 0).rgb - 1.0);
 	result.Normal = normalize(mul(input.tangentBasis, N));

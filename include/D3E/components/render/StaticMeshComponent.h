@@ -12,6 +12,7 @@ namespace D3E
 		String pipelineName;
 		nvrhi::BufferHandle constantBuffer;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
+		bool editorHighlighted = false;
 
 		bool initialized = false;
 	};

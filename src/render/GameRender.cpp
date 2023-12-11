@@ -1,7 +1,7 @@
 #include "GameRender.h"
 
-#include "D3E/CommonCpp.h"
 #include "CameraUtils.h"
+#include "D3E/CommonCpp.h"
 #include "D3E/CommonHeader.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
@@ -9,14 +9,16 @@
 #include "D3E/engine/ConsoleManager.h"
 #include "DisplayWin32.h"
 #include "PerObjectConstBuffer.h"
+#include "PickConstBuffer.h"
 #include "ShaderFactory.h"
 #include "Vertex.h"
+#include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/MeshFactory.h"
 #include "assetmng/TextureFactory.h"
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
-#include "assetmng/DefaultAssetLoader.h"
+
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
 void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
@@ -60,6 +62,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	frameGBufferDesc.addColorAttachment(gbuffer_.positionBuffer);
 	frameGBufferDesc.addColorAttachment(gbuffer_.normalBuffer);
 	frameGBufferDesc.addColorAttachment(gbuffer_.metalRoughnessBuffer);
+	frameGBufferDesc.addColorAttachment(gbuffer_.editorIdsBuffer);
 	frameGBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
 	frameGBuffer = device_->createFramebuffer(frameGBufferDesc);
 
@@ -81,6 +84,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	}
 
 	ConsoleManager::getInstance()->registerConsoleVariable("renderingMode", 0);
+	ConsoleManager::getInstance()->registerConsoleVariable("displayGrid", 1);
+	ConsoleManager::getInstance()->registerConsoleVariable("visualizeBounds", 0);
 
 	/*
 
@@ -173,6 +178,47 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
 	}*/
 
+	auto pickingCBDesc = nvrhi::BufferDesc()
+	                         .setByteSize(sizeof(PickConstBuffer))
+	                         .setIsConstantBuffer(true)
+	                         .setIsVolatile(false)
+	                         .setMaxVersions(16)
+	                         .setKeepInitialState(true);
+
+	pickCb = device_->createBuffer(pickingCBDesc);
+
+	auto pickedIdDesc = nvrhi::BufferDesc()
+	                         .setByteSize(sizeof(uint32_t))
+	                         .setFormat(nvrhi::Format::R32_UINT)
+	                         .setInitialState(nvrhi::ResourceStates::CopySource)
+	                         .setCanHaveUAVs(true)
+	                         .setStructStride(sizeof(uint32_t))
+	                         .setKeepInitialState(true);
+
+	pickedIdBuffer_ = device_->createBuffer(pickedIdDesc);
+
+	auto pickedIdCpuDesc = nvrhi::BufferDesc()
+	                           .setByteSize(sizeof(uint32_t))
+	                           .setFormat(nvrhi::Format::R32_UINT)
+	                           .setInitialState(nvrhi::ResourceStates::CopySource)
+	                           .setCanHaveUAVs(false)
+	                           .setCpuAccess(nvrhi::CpuAccessMode::Read)
+	                           .setStructStride(sizeof(uint32_t))
+	                           .setKeepInitialState(true);
+
+	pickedIdBufferCpu_ = device_->createBuffer(pickedIdCpuDesc);
+
+	nvrhi::BindingSetDesc pickingBSC = {};
+	pickingBSC.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, pickCb));
+	pickingBSC.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gbuffer_.editorIdsBuffer));
+	pickingBSC.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pickedIdBuffer_));
+
+	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
+
+	nvrhi::BindingSetDesc nullBindingSetDesc = {};
+	ShaderFactory::AddBindingSetV("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassV");
+	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
+
 	Debug::LogMessage("[GameRender] Init finished");
 }
 
@@ -256,6 +302,7 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 	commandList_->clearTextureFloat(gbuffer_.positionBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.normalBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.metalRoughnessBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
+	commandList_->clearTextureUInt(gbuffer_.editorIdsBuffer, nvrhi::AllSubresources, 0);
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, true, 0U);
 
 	for (auto& sys : systems)
@@ -313,4 +360,33 @@ void D3E::GameRender::UpdateAnimations(float dT)
 #ifdef USE_IMGUI
 	editor_->BeginDraw(dT);
 #endif // USE_IMGUI
+}
+
+uint32_t D3E::GameRender::EditorPick(int x, int y)
+{
+	commandList_->open();
+
+	PickConstBuffer constants = {};
+	constants.mouseX = x;
+	constants.mouseY = y;
+	commandList_->writeBuffer(pickCb, &constants, sizeof(constants));
+
+	nvrhi::ComputeState state;
+	state.pipeline = ShaderFactory::GetComputePipeline("Pick");
+	state.bindings = { ShaderFactory::GetBindingSetC("Pick") };
+	commandList_->setComputeState(state);
+	commandList_->dispatch(1, 1, 1);
+
+	commandList_->copyBuffer(pickedIdBufferCpu_, 0, pickedIdBuffer_, 0, pickedIdBufferCpu_->getDesc().byteSize);
+
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+
+	void* pData = device_->mapBuffer(pickedIdBufferCpu_, nvrhi::CpuAccessMode::Read);
+	assert(pData);
+
+	uint32_t value = *static_cast<uint32_t*>(pData);
+
+	device_->unmapBuffer(pickedIdBufferCpu_);
+	return value;
 }

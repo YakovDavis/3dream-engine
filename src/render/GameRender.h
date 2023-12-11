@@ -38,6 +38,8 @@ namespace D3E
 
 		void CalculateFrameStats();
 
+		uint32_t EditorPick(int x, int y);
+
 		virtual void UpdateAnimations(float dT);
 
 		virtual void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
@@ -78,6 +80,11 @@ namespace D3E
 		D3E::Editor* editor_;
 
 		GBuffer gbuffer_;
+
+		nvrhi::BufferHandle pickedIdBuffer_;
+		nvrhi::BufferHandle pickedIdBufferCpu_;
+
+		nvrhi::BufferHandle pickCb;
 
 		friend class Game;
 	};
