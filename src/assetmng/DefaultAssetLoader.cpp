@@ -243,20 +243,21 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
 
+	auto ppDepthStencilState = depthStencilState;
 	nvrhi::GraphicsPipelineDesc editorHighlightPipelineDesc = {};
 	editorHighlightPipelineDesc.setInputLayout(nullptr);
 	editorHighlightPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("EditorHighlightPass"));
 	editorHighlightPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("EditorHighlightPass"));
 	editorHighlightPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("EditorHighlightPassV"));
 	editorHighlightPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("EditorHighlightPassP"));
-	depthStencilState.setStencilRefValue(0x01);
-	depthStencilState.setStencilReadMask(0xFF);
-	depthStencilState.setStencilWriteMask(0x00);
+	ppDepthStencilState.setStencilRefValue(0x01);
+	ppDepthStencilState.setStencilReadMask(0xFF);
+	ppDepthStencilState.setStencilWriteMask(0x00);
 	nvrhi::DepthStencilState::StencilOpDesc highlightPassStencilOpDesc = {};
 	highlightPassStencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::Equal;
-	depthStencilState.setBackFaceStencil(highlightPassStencilOpDesc);
-	depthStencilState.setFrontFaceStencil(highlightPassStencilOpDesc);
-	renderState.depthStencilState = depthStencilState;
+	ppDepthStencilState.setBackFaceStencil(highlightPassStencilOpDesc);
+	ppDepthStencilState.setFrontFaceStencil(highlightPassStencilOpDesc);
+	renderState.depthStencilState = ppDepthStencilState;
 	editorHighlightPipelineDesc.setRenderState(renderState);
 	editorHighlightPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("EditorHighlightPass", editorHighlightPipelineDesc, fb);

@@ -64,6 +64,8 @@ namespace D3E
 
 		virtual void Update(float deltaTime);
 
+		void Pick();
+
 		virtual void Draw();
 
 		virtual void DestroyResources();

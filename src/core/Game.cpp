@@ -81,17 +81,7 @@ void D3E::Game::Run()
 
 		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
-			auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
-			if (editorPickedId == 0)
-			{
-				selectedUuids.clear();
-			}
-			else
-			{
-				selectedUuids.clear(); // TODO: check shift key here
-				selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
-			}
-			EditorUtilsRenderSystem::isSelectionDirty = true;
+			Pick();
 		}
 		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
@@ -339,4 +329,22 @@ void D3E::Game::CheckConsoleInput()
 bool D3E::Game::IsUuidEditorSelected(const D3E::String& uuid)
 {
 	return selectedUuids.find(uuid) != selectedUuids.end();
+}
+
+void D3E::Game::Pick()
+{
+	auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+	if (editorPickedId == 0)
+	{
+		selectedUuids.clear();
+	}
+	else
+	{
+		if (!(inputDevice_->IsKeyDown(Keys::LeftControl) || inputDevice_->IsKeyDown(Keys::LeftShift)))
+		{
+			selectedUuids.clear();
+		}
+		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+	}
+	EditorUtilsRenderSystem::isSelectionDirty = true;
 }
