@@ -193,7 +193,9 @@ void D3E::Editor::DrawHierarchy()
 		{
 			continue;
 		}
+		ImGui::PushStyleColor(ImGuiCol_Text, objects[i].selected ? ImVec4(ImColor(255, 255, 255, 255)) : ImVec4(ImColor(127, 127, 127, 255)));
 		ImGui::Text(objects[i].name.c_str());
+		ImGui::PopStyleColor();
 	}
 	ImGui::End();
 }

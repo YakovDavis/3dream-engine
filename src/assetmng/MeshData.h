@@ -8,5 +8,6 @@ namespace D3E
 	{
 		std::vector<Vertex> points;
 		std::vector<std::uint32_t> indices;
+		DirectX::BoundingBox boundingBox;
 	};
 }

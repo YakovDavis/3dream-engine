@@ -57,4 +57,17 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 	metalRoughnessDesc.setKeepInitialState(true);
 	metalRoughnessDesc.setDebugName("MetalRoughness Texture");
 	metalRoughnessBuffer = device->createTexture(metalRoughnessDesc);
+
+	nvrhi::TextureDesc editorIdsDesc = {};
+	editorIdsDesc.format = nvrhi::Format::R32_UINT;
+	editorIdsDesc.setWidth(display->ClientWidth);
+	editorIdsDesc.setHeight(display->ClientHeight);
+	editorIdsDesc.isRenderTarget = true;
+	editorIdsDesc.sampleCount = 1;
+	editorIdsDesc.sampleQuality = 0;
+	editorIdsDesc.dimension = nvrhi::TextureDimension::Texture2D;
+	editorIdsDesc.initialState = nvrhi::ResourceStates::RenderTarget;
+	editorIdsDesc.setKeepInitialState(true);
+	editorIdsDesc.setDebugName("EditorIds Texture");
+	editorIdsBuffer = device->createTexture(editorIdsDesc);
 }

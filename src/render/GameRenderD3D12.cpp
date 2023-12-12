@@ -20,18 +20,11 @@ void D3E::GameRenderD3D12::CreateCommandQueues()
 	queueDesc.NodeMask = 1;
 	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
 
-	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mComputeCommandQueue)));
 
-	ThrowIfFailed(md3dDevice->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		mDirectCmdListAlloc.Get(),
-		nullptr,
-		IID_PPV_ARGS(mCommandList.GetAddressOf())));
-
-	//mCommandList->Close();
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mComputeCommandQueue)));
 }
 
 void D3E::GameRenderD3D12::CreateNativeSwapChain()
@@ -178,6 +171,7 @@ void D3E::GameRenderD3D12::InitD3D()
 	deviceDesc.errorCB = messageCallback_;
 	deviceDesc.pDevice = md3dDevice;
 	deviceDesc.pGraphicsCommandQueue = mCommandQueue;
+	deviceDesc.pComputeCommandQueue = mComputeCommandQueue;
 	device_ = nvrhi::d3d12::createDevice(deviceDesc);
 
 	if (true) {

@@ -67,8 +67,16 @@ void DuckGame::Init()
 
 	tc.position = Vector3(0, 0, 50);
 	tc.scale = Vector3(0.2f, 0.2f, 0.2f);
-	info.name = "Cerberus";
+	info.name = "Cerberus1";
 
+	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d");
+
+	info.name = "Cerberus2";
+	tc.position = Vector3(50, 0, 0);
+	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d");
+
+	info.name = "Cerberus3";
+	tc.position = Vector3(-50, 0, 0);
 	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d");
 
 	info.name = "DirectionalLight";

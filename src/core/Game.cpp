@@ -11,6 +11,7 @@
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
@@ -20,6 +21,7 @@
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
+#include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
@@ -63,6 +65,8 @@ void D3E::Game::Run()
 
 	std::thread inputCheckingThread(PollConsoleInput, this);
 
+	bool lmbPressedLastTick = false; // temp
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -79,6 +83,12 @@ void D3E::Game::Run()
 		physicsInfo_->updatePhysics();
 
 		Update(deltaTime_);
+
+		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
+		{
+			Pick();
+		}
+		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
@@ -129,6 +139,7 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
@@ -152,6 +163,11 @@ void D3E::Game::Update(const float deltaTime)
 	TimerManager::GetInstance().Update(deltaTime);
 
 	for (auto& sys : systems_)
+	{
+		sys->Update(registry_, this, deltaTime);
+	}
+
+	for (auto& sys : renderPPsystems_)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
@@ -317,4 +333,27 @@ void D3E::Game::CheckConsoleInput()
 		// std::cout << consoleCommandQueue << '\n';
 		consoleCommandQueue = std::string();
 	}
+}
+
+bool D3E::Game::IsUuidEditorSelected(const D3E::String& uuid)
+{
+	return selectedUuids.find(uuid) != selectedUuids.end();
+}
+
+void D3E::Game::Pick()
+{
+	auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+	if (editorPickedId == 0)
+	{
+		selectedUuids.clear();
+	}
+	else
+	{
+		if (!(inputDevice_->IsKeyDown(Keys::LeftControl) || inputDevice_->IsKeyDown(Keys::LeftShift)))
+		{
+			selectedUuids.clear();
+		}
+		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+	}
+	EditorUtilsRenderSystem::isSelectionDirty = true;
 }

@@ -72,7 +72,7 @@ void D3E::InputDevice::OnMouseMove(RawMouseEventArgs args)
 	
 	MousePosition = Vector2(static_cast<float>(p.x), static_cast<float>(p.y));
 	MouseOffset = Vector2(static_cast<float>(args.X), static_cast<float>(args.Y));
-	MouseOffsetInTick = MouseOffset;
+	MouseOffsetInTick += MouseOffset;
 	MouseWheelDelta = args.WheelDelta;
 
 	const MouseMoveEventArgs moveArgs = {MousePosition, MouseOffset, MouseWheelDelta};

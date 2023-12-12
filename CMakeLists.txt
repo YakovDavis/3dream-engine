@@ -132,6 +132,12 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/PhysicsInfo.h
         src/physics/PhysicsInfo.cpp
         src/engine/systems/PhysicsUpdateSystem.cpp
+        include/D3E/Components/MouseComponent.h
+        src/render/systems/InputSyncSystem.cpp
+        src/render/systems/InputSyncSystem.h
+        src/editor/EditorIdManager.cpp
+        src/editor/EditorIdManager.h
+        src/render/PickConstBuffer.h
 )
 
 add_subdirectory(libs)
