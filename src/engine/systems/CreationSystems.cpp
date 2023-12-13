@@ -149,13 +149,16 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	return e;
 }
 
+	return e;
+}
+
 entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info,
                                                              const TransformComponent& tc, const PhysicsComponent& physc)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
 	sm.meshUuid = kCubeUUID;
-	sm.pipelineName = "SimpleForward";
+	sm.pipelineName = "GBuffer";
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
@@ -173,7 +176,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	sound.isStreaming = false;
 	sound.location = transform.position;
 
-	registry.emplace<ObjectInfoComponent>(e, info);
+	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<TransformComponent>(e, tc);
 	registry.emplace<StaticMeshComponent>(e, sm);
 	registry.emplace<PhysicsComponent>(e, physc);

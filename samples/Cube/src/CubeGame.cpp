@@ -20,7 +20,7 @@ void CubeGame::Init()
     D3E::PhysicsComponent physComponent = {};
 
     physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
-    physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(0.5f, 0.5f, 0.0f, 0.0f);
+    physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(0.5f, 0.5f, 0.5f, 0.0f);
     physComponent.mass_ = 1.0f;
     physComponent.motionType_ = JPH::EMotionType::Dynamic;
     physComponent.velocity_ = DirectX::SimpleMath::Vector3(0.1f, 0.0f, 0.0f);

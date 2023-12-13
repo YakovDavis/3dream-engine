@@ -13,6 +13,7 @@ using namespace JPH;
 
 D3E::PhysicsInfo::PhysicsInfo()
 {
+	RegisterDefaultAllocator();
 	Factory::sInstance = new Factory();
 	RegisterTypes();
 	tempAllocator_ = new TempAllocatorImpl (TEMP_ALLOCATOR_SIZE);
