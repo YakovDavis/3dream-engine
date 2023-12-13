@@ -8,7 +8,7 @@
 
 #include <format>
 
-void DuckGame::Update(float deltaTime)
+void NewCubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
 
@@ -18,7 +18,7 @@ void DuckGame::Update(float deltaTime)
 	}
 }
 
-void DuckGame::TimerHandler()
+void NewCubeGame::TimerHandler()
 {
 	D3E::Debug::LogMessage("Member function timer fired!");
 }
@@ -28,7 +28,7 @@ static void Handler()
 	D3E::Debug::LogMessage("Static function timer fired!");
 }
 
-void DuckGame::Init()
+void NewCubeGame::Init()
 {
 	Game::Init();
 
@@ -49,7 +49,7 @@ void DuckGame::Init()
 
 	// Member function delegate example
 	D3E::TimerManager::GetInstance().SetTimer(handle3_, this,
-	                                          &DuckGame::TimerHandler, 10000);
+	                                          &NewCubeGame::TimerHandler, 10000);
 	// Static function delegate example
 	D3E::TimerManager::GetInstance().SetTimer(handle4_, &Handler, 11000);
 

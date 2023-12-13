@@ -1,20 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(Cube)
 
-include(FetchContent)
-
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
-
-FetchContent_Declare(
-        JoltPhysics
-        GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
-        GIT_TAG "0436c32dfd83d26f7559e260378d7fa1d7962841"
-        SOURCE_SUBDIR "Build"
-)
-FetchContent_MakeAvailable(JoltPhysics)
-
-get_filename_component(D3E_ROOT_DIR "../../" ABSOLUTE)
 
 add_executable(${PROJECT_NAME} WIN32
         src/CubeGame.cpp
@@ -23,30 +10,41 @@ add_executable(${PROJECT_NAME} WIN32
 set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE)
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${D3E_ROOT_DIR}/include" "${D3E_ROOT_DIR}/libs/uuid_v4")
-target_include_directories(${PROJECT_NAME} PUBLIC ${JoltPhysics_SOURCE_DIR}/..)
+target_link_libraries(${PROJECT_NAME} PRIVATE D3Engine)
 
-add_library(D3E_LIB SHARED IMPORTED)
-set_target_properties(D3E_LIB PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${D3E_ROOT_DIR}/include"
-  IMPORTED_LOCATION "${D3E_ROOT_DIR}/build/Debug/Debug/D3Engined.dll"
-  IMPORTED_IMPLIB "${D3E_ROOT_DIR}/build/Debug/Debug/D3Engined.lib")
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 
-get_filename_component(EASTL_ROOT_DIR "${D3E_ROOT_DIR}/libs/EASTL" ABSOLUTE)
-set(EASTL_LIBRARY debug ${EASTL_ROOT_DIR}/build/Debug/Debug/EASTL.lib optimized ${EASTL_ROOT_DIR}/build/Release/EASTL.lib)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${FMOD_CORE_BINARY_PATH_DEBUG}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 
-target_link_libraries(${PROJECT_NAME} D3E_LIB)
-target_link_libraries(${PROJECT_NAME} ${EASTL_LIBRARY})
-target_link_libraries(${PROJECT_NAME} Jolt)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${FMOD_STUDIO_BINARY_PATH_DEBUG}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
-file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/D3Engined.dll)
-file(COPY ${D3E_ROOT_DIR}/build/Debug/Debug/D3Engined.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/textures"
+        "${CMAKE_CURRENT_BINARY_DIR}/Textures"
+        COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
-file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/Shaders/)
-file(COPY ${D3E_ROOT_DIR}/build/Debug/Debug/Shaders/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug/Shaders/)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/textures"
+        "${CMAKE_CURRENT_BINARY_DIR}/Textures"
+        COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
-file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/Textures/)
-file(COPY ${D3E_ROOT_DIR}/textures/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug/Textures/)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/models"
+        "${CMAKE_CURRENT_BINARY_DIR}/Models"
+        COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
-file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/Debug/Textures/)
-file(COPY textures/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug/Textures/)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_BINARY_DIR}/Shaders"
+        "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
+        COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
+)
