@@ -124,6 +124,14 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
+        include/D3E/Components/PhysicsComponent.h
+        src/engine/systems/PhysicsInitSystem.h
+        src/engine/systems/PhysicsInitSystem.cpp
+        src/physics/ObjectLayers.h
+        src/engine/systems/PhysicsUpdateSystem.h
+        src/physics/PhysicsInfo.h
+        src/physics/PhysicsInfo.cpp
+        src/engine/systems/PhysicsUpdateSystem.cpp
         include/D3E/Components/MouseComponent.h
         src/render/systems/InputSyncSystem.cpp
         src/render/systems/InputSyncSystem.h
@@ -184,4 +192,12 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 )
 
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/NewCube"
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+)
+
 add_subdirectory(samples/ducks)
+add_subdirectory(samples/NewCube)

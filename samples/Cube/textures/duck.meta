@@ -1,0 +1,14 @@
+{
+    "filename": "textures/duck.png",
+    "format": {
+        "channels": "RGBA8",
+        "type": "Texture2D",
+        "dimensions": [
+            1024,
+            1024
+        ]
+    },
+    "name": "duck",
+    "type": "texture2d",
+    "uuid": "f850d4c5-3e3c-4cb2-8df2-1e88edfe456d"
+}
