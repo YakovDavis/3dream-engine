@@ -2,7 +2,6 @@
 
 #include "D3E/CommonHeader.h"
 #include "EASTL/fixed_vector.h"
-#include "EASTL/string.h"
 #include "json.hpp"
 
 using json = nlohmann::json;

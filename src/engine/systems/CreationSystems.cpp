@@ -78,12 +78,13 @@ D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
 
 entt::entity D3E::CreationSystems::CreateSM(
 	entt::registry& registry, const D3E::ObjectInfoComponent& info,
-	const D3E::TransformComponent& tc, D3E::String meshUuid)
+	const D3E::TransformComponent& tc, const D3E::String& meshUuid, const D3E::String& materialUuid)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
 	sm.meshUuid = meshUuid;
 	sm.pipelineName = "GBuffer";
+	sm.materialUuid = materialUuid;
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;

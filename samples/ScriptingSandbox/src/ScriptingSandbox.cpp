@@ -22,7 +22,7 @@ void ScriptingSandbox::Init()
 	info.name = "Duck";
 
 	auto duckId = D3E::CreationSystems::CreateSM(
-		GetRegistry(), info, tc, "5bfb3a8a-46c0-4125-83cb-e031a263e91a");
+		GetRegistry(), info, tc, "5bfb3a8a-46c0-4125-83cb-e031a263e91a", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 
 	auto scriptComponent = D3E::ScriptComponent(duckId);
 
