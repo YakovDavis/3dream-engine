@@ -2,6 +2,8 @@
 
 #include "D3E/CommonCpp.h"
 #include "D3E/Debug.h"
+#include "D3E/render/Material.h"
+#include "MaterialFactory.h"
 #include "MeshFactory.h"
 #include "MeshMetaData.h"
 #include "ScriptFactory.h"
@@ -81,6 +83,15 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				continue;
 			}
 
+			if (metadata.at("type") == "material")
+			{
+				Material asset;
+				metadata.get_to(asset);
+				MaterialFactory::AddMaterial(asset);
+
+				continue;
+			}
+
 			Debug::LogError(
 				std::format(
 					"[AssetManager] LoadAssetsInFolder() Type of asset:\n"
@@ -135,5 +146,17 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 		dir = filename.substr(0, last_slash_idx).c_str();
 	}
 	std::ofstream o(dir + "/" + asset.name + ".meta");
+	o << std::setw(4) << j << std::endl;
+}
+
+void D3E::AssetManager::CreateMaterial(D3E::Material& material,
+                                       const std::string& folder)
+{
+	material.uuid = uuidGenerator.getUUID().str().c_str();
+
+	MaterialFactory::AddMaterial(material);
+
+	json j(material);
+	std::ofstream o(folder + "/" + std::string(material.name.c_str()) + ".meta");
 	o << std::setw(4) << j << std::endl;
 }

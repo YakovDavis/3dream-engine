@@ -1,5 +1,5 @@
 {
-    "filename": "textures/white.png",
+    "filename": "textures/normals-default.png",
     "format": {
         "channels": "RGBA8",
         "type": "Texture2D",
@@ -8,7 +8,7 @@
             1
         ]
     },
-    "name": "white",
+    "name": "normals-default",
     "type": "texture2d",
-    "uuid": "34b9a6f1-240f-4d40-b76d-ad38ce9e65ea"
+    "uuid": "c2346e38-a332-4c9f-bb91-f22591ce5f52"
 }

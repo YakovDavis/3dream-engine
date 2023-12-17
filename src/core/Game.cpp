@@ -148,6 +148,10 @@ void D3E::Game::Init()
 
 	AssetManager::Get().LoadAssetsInFolder("scripts/", true, nullptr, nullptr);
 
+	AssetManager::Get().LoadAssetsInFolder("materials/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
+
 	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
 	                                          gameRender_->GetCommandList());
 

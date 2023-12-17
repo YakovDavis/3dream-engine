@@ -77,6 +77,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
 	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0], frameGBuffer);
 	DefaultAssetLoader::LoadDefaultSamplers(device_);
+	DefaultAssetLoader::LoadDefaultMaterials();
 
 	for (auto& sys : systems)
 	{

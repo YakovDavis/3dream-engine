@@ -153,6 +153,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorIdManager.cpp
         src/editor/EditorIdManager.h
         src/render/PickConstBuffer.h
+        src/assetmng/MaterialFactory.cpp
+        src/assetmng/MaterialFactory.h
+        src/assetmng/Material.cpp
 )
 
 add_subdirectory(libs)
