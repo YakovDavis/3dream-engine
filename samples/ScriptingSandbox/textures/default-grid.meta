@@ -1,0 +1,14 @@
+{
+    "filename": "textures/default-grid.png",
+    "format": {
+        "channels": "RGBA8",
+        "type": "Texture2D",
+        "dimensions": [
+            2048,
+            2048
+        ]
+    },
+    "name": "default-grid",
+    "type": "texture2d",
+    "uuid": "24c71f11-0d38-4594-ae18-c8eedca9b896"
+}

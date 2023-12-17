@@ -27,3 +27,9 @@ add_subdirectory(eastl)
 option(OVERRIDE_CXX_FLAGS OFF)
 option(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
 add_subdirectory(JoltPhysics/Build)
+
+# lua
+option(LUA_BUILD_AS_CXX ON)
+option(LUA_ENABLE_SHARED OFF)
+option(LUA_ENABLE_TESTING OFF)
+add_subdirectory(lua)

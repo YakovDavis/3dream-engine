@@ -8,13 +8,17 @@
 #include "D3E/Debug.h"
 #include "D3E/TimerManager.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/ScriptInitSystem.h"
+#include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
@@ -107,8 +111,6 @@ void D3E::Game::Init()
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 
-	TimerManager::GetInstance().Init(this);	
-
 	for (auto& sys : systems_)
 	{
 		sys->Init();
@@ -117,20 +119,40 @@ void D3E::Game::Init()
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init(systems_);
 
-	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("white", "textures/white.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_A", "textures/cerberus_A.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_M", "textures/cerberus_M.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_R", "textures/cerberus_R.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("environment", "textures/environment.hdr", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("default-grid",
+	// "textures/default-grid.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("white", "textures/white.png",
+	// gameRender_->GetDevice(), gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_A",
+	// "textures/cerberus_A.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_M",
+	// "textures/cerberus_M.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_R",
+	// "textures/cerberus_R.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("environment",
+	// "textures/environment.hdr", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx",
+	// gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
-	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("models/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
 
-	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("scripts/", true, nullptr, nullptr);
+
+	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
+	                                          gameRender_->GetCommandList());
+
+	ScriptingEngine::GetInstance().Init();
+	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
 
@@ -139,6 +161,8 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ScriptInitSystem(registry_));
+	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));

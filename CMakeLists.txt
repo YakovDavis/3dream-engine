@@ -6,7 +6,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 include(CMakePrintHelpers)
 
 set(CMAKE_CXX_STANDARD 20)
-#set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -124,6 +124,21 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
+        include/D3E/Components/ScriptComponent.h
+        samples/ScriptingSandbox/src/ScriptingSandbox.h
+        samples/ScriptingSandbox/src/ScriptingSandbox.cpp
+        src/assetmng/ScriptMetaData.h
+        src/assetmng/ScriptMetaData.cpp 
+        src/assetmng/ScriptFactory.h
+        src/assetmng/ScriptFactory.cpp
+        src/assetmng/ScriptData.h
+        include/D3E/scripting/ScriptingEngine.h
+        src/scripting/ScriptingEngine.cpp
+        src/scripting/EngineTypeBindings.h
+        src/engine/systems/ScriptUpdateSystem.h
+        src/engine/systems/ScriptUpdateSystem.cpp
+        src/engine/systems/ScriptInitSystem.h
+        src/engine/systems/ScriptInitSystem.cpp
         include/D3E/Components/PhysicsComponent.h
         src/engine/systems/PhysicsInitSystem.h
         src/engine/systems/PhysicsInitSystem.cpp
@@ -142,8 +157,10 @@ add_library("${PROJECT_NAME}" SHARED
 
 add_subdirectory(libs)
 
+target_include_directories("${PROJECT_NAME}" PUBLIC libs/sol)
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/stb libs/nlohmann)
 target_include_directories("${PROJECT_NAME}" PUBLIC libs/uuid_v4)
+
 
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Inc)
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Src)
@@ -165,6 +182,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         FmodStudio
         EASTL
         Jolt        
+        lua_static
 )
 
 
@@ -195,9 +213,17 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/scriptingsandbox"
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+)
+
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"        
         "${CMAKE_BINARY_DIR}/samples/NewCube"
         COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 )
 
 add_subdirectory(samples/ducks)
+add_subdirectory(samples/scriptingsandbox)
 add_subdirectory(samples/NewCube)
