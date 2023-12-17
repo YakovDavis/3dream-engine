@@ -149,9 +149,6 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	return e;
 }
 
-	return e;
-}
-
 entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info,
                                                              const TransformComponent& tc, const PhysicsComponent& physc)
 {
@@ -182,4 +179,6 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	registry.emplace<PhysicsComponent>(e, physc);
 	StaticMeshInitSystem::IsDirty = true;
 	registry.emplace<SoundComponent>(e, sound);
+
+	return e;
 }
