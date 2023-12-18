@@ -3,6 +3,7 @@
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/PhysicsCharacterComponent.h"
 #include "entt/entt.hpp"
 
 namespace D3E
@@ -16,5 +17,7 @@ namespace D3E
 		static entt::entity CreateLight(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc);
 		static entt::entity CreateDefaultPlayer(entt::registry& registry, const TransformComponent& tc);
 		static entt::entity CreateEditorDebugRender(entt::registry& registry);
+		static entt::entity CreatePhysicalCharacter(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc, const PhysicsCharacterComponent& character);
+		static entt::entity CreatePurelyPhysicalObject(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
 	};
 }

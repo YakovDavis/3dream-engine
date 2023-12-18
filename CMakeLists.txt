@@ -138,6 +138,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorIdManager.cpp
         src/editor/EditorIdManager.h
         src/render/PickConstBuffer.h
+        include/D3E/Components/PhysicsCharacterComponent.h
+        src/engine/systems/CharacterInitSystem.h
+        src/engine/systems/CharacterInitSystem.cpp
 )
 
 add_subdirectory(libs)
@@ -199,5 +202,13 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 )
 
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/Character"
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+)
+
 add_subdirectory(samples/ducks)
 add_subdirectory(samples/NewCube)
+add_subdirectory(samples/Character)

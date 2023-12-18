@@ -40,6 +40,8 @@ namespace D3E
 		JPH::EMotionType motionType_;
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
+		float* heightMap_ = nullptr; //temporary; will be a texture
+		int heightMapSize_; //also temporary
 	};
 }
 

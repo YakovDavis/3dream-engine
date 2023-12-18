@@ -22,6 +22,8 @@ namespace D3E
 		virtual void PreDraw(entt::registry& reg, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) {}
 		virtual void Draw(entt::registry& reg, nvrhi::IFramebuffer* fb, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) {}
 		virtual void PostDraw(entt::registry& reg, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) {}
+		virtual void PrePhysicsUpdate(entt::registry& reg, Game* game, float dT) {}
+		virtual void PostPhysicsUpdate(entt::registry& reg) {}
 		virtual void Update(entt::registry& reg, Game* game, float dT) {}
 		virtual void RenderOnce(entt::registry& reg, nvrhi::IFramebuffer* fb, nvrhi::ICommandList* commandList, nvrhi::IDevice* device) {}
 		virtual void RunOnce(entt::registry& reg, Game* game, float dT) {}

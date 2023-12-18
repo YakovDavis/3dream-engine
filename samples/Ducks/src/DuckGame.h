@@ -4,7 +4,7 @@
 #include "D3E/Game.h"
 #include "D3E/TimerHandle.h"
 
-class NewCubeGame : public D3E::Game
+class CharacterGame : public D3E::Game
 {
 	void Init() override;
 	void Update(float deltaTime) override;
@@ -20,5 +20,5 @@ class NewCubeGame : public D3E::Game
 
 D3E::App* D3E::CreateApp()
 {
-	return new NewCubeGame();
+	return new CharacterGame();
 }
