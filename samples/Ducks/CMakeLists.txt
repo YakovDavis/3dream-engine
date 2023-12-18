@@ -47,4 +47,9 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         "${CMAKE_BINARY_DIR}/Shaders"
         "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
     COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
+
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/materials"
+        "${CMAKE_CURRENT_BINARY_DIR}/materials"
+    COMMENT "Copying materials to build folder"
 )
