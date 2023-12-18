@@ -156,6 +156,10 @@ add_library("${PROJECT_NAME}" SHARED
         src/assetmng/MaterialFactory.cpp
         src/assetmng/MaterialFactory.h
         src/assetmng/Material.cpp
+        src/render/DebugRenderer.cpp
+        src/render/DebugRenderer.h
+        src/physics/JoltDebugRenderer.cpp
+        src/physics/JoltDebugRenderer.h
 )
 
 add_subdirectory(libs)

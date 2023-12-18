@@ -84,6 +84,8 @@ void D3E::Game::Run()
 			                 .count();
 		}
 
+		gameRender_->PrimitiveBatchStart();
+
 		physicsInfo_->updatePhysics();
 
 		Update(deltaTime_);
