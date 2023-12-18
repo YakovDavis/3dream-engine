@@ -160,6 +160,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/render/DebugRenderer.h
         src/physics/JoltDebugRenderer.cpp
         src/physics/JoltDebugRenderer.h
+        src/assetmng/SoundMetaData.cpp
+        src/assetmng/SoundMetaData.h
 )
 
 add_subdirectory(libs)

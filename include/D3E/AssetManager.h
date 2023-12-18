@@ -20,6 +20,8 @@ namespace D3E
 
 		void CreateMaterial(Material& material, const std::string& folder);
 
+		void CreateSound(const String& name, const String& filename, bool is3d = false, bool isLooping = false, bool stream = false);
+
 	private:
 		AssetManager() = default;
 

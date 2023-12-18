@@ -8,9 +8,11 @@
 #include "MeshMetaData.h"
 #include "ScriptFactory.h"
 #include "ScriptMetaData.h"
+#include "SoundMetaData.h"
 #include "Texture2DMetaData.h"
 #include "TextureFactory.h"
 #include "json.hpp"
+#include "sound_engine/SoundEngine.h"
 #include "uuid_v4.h"
 
 #include <filesystem>
@@ -92,6 +94,15 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				continue;
 			}
 
+			if (metadata.at("type") == "sound")
+			{
+				SoundMetaData asset;
+				metadata.get_to(asset);
+				SoundEngine::GetInstance().LoadSound(asset.filename.c_str(), asset.is3d, asset.isLooping, asset.stream);
+
+				continue;
+			}
+
 			Debug::LogError(
 				std::format(
 					"[AssetManager] LoadAssetsInFolder() Type of asset:\n"
@@ -158,5 +169,27 @@ void D3E::AssetManager::CreateMaterial(D3E::Material& material,
 
 	json j(material);
 	std::ofstream o(folder + "/" + std::string(material.name.c_str()) + ".meta");
+	o << std::setw(4) << j << std::endl;
+}
+
+void D3E::AssetManager::CreateSound(const D3E::String& name,
+                                    const D3E::String& filename, bool is3d,
+                                    bool isLooping, bool stream)
+{
+	SoundMetaData asset;
+	asset.uuid = uuidGenerator.getUUID().str();
+	asset.filename = filename.c_str();
+	asset.name = name.c_str();
+
+	SoundEngine::GetInstance().LoadSound(filename, is3d, isLooping, stream);
+
+	json j(asset);
+	const size_t last_slash_idx = filename.rfind('/');
+	std::string dir = "";
+	if (std::string::npos != last_slash_idx)
+	{
+		dir = filename.substr(0, last_slash_idx).c_str();
+	}
+	std::ofstream o(dir + "/" + asset.name + ".meta");
 	o << std::setw(4) << j << std::endl;
 }
