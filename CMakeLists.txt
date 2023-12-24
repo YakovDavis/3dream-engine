@@ -187,6 +187,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         nvrhi
         nvrhi_d3d12
         imgui
+        imguizmo
         FmodCore
         FmodStudio
         EASTL
