@@ -18,6 +18,7 @@
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
+#include "DebugRenderer.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -77,6 +78,9 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
 	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0], frameGBuffer);
 	DefaultAssetLoader::LoadDefaultSamplers(device_);
+	DefaultAssetLoader::LoadDefaultMaterials();
+
+	debugRenderer_ = new DebugRenderer(device_, dynamic_cast<Game*>(parentApp));
 
 	for (auto& sys : systems)
 	{
@@ -406,6 +410,10 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
 
+	debugRenderer_->Begin(commandList_, currentFramebuffer);
+	debugRenderer_->ProcessQueue();
+	debugRenderer_->End();
+
 	// Close and execute the command list
 	commandList_->close();
 	device_->executeCommandList(commandList_);
@@ -480,4 +488,9 @@ uint32_t D3E::GameRender::EditorPick(int x, int y)
 
 	device_->unmapBuffer(pickedIdBufferCpu_);
 	return value;
+}
+
+D3E::DebugRenderer* D3E::GameRender::GetDebugRenderer()
+{
+	return debugRenderer_;
 }

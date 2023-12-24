@@ -59,6 +59,7 @@ namespace D3E
 
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mCommandQueue;
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mComputeCommandQueue;
+		nvrhi::RefCountPtr<ID3D12CommandQueue> mCopyCommandQueue;
 
 		eastl::vector<HANDLE> mFrameFenceEvents;
 

@@ -8,12 +8,12 @@
 
 #include <format>
 
-void CharacterGame::Update(float deltaTime)
+void NewCubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
 }
 
-void CharacterGame::Init()
+void NewCubeGame::Init()
 {
 	Game::Init();
 

@@ -2,8 +2,12 @@
 
 #include "D3E/CommonCpp.h"
 #include "D3E/Debug.h"
+#include "D3E/render/Material.h"
+#include "MaterialFactory.h"
 #include "MeshFactory.h"
 #include "MeshMetaData.h"
+#include "ScriptFactory.h"
+#include "ScriptMetaData.h"
 #include "Texture2DMetaData.h"
 #include "TextureFactory.h"
 #include "json.hpp"
@@ -23,12 +27,19 @@ D3E::AssetManager& D3E::AssetManager::Get()
 	return instance_;
 }
 
-void D3E::AssetManager::LoadAssetsInFolder(const String& folder,
-                                           bool recursive,
+void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
                                            nvrhi::IDevice* device,
                                            nvrhi::ICommandList* commandList)
 {
-	for (const auto & entry : std::filesystem::directory_iterator(folder.c_str()))
+	if (!std::filesystem::exists(folder.c_str()))
+	{
+		Debug::LogError(
+			std::format("Path: {} does not exist!", folder.c_str()).c_str());
+		return;
+	}
+
+	for (const auto& entry :
+	     std::filesystem::directory_iterator(folder.c_str()))
 	{
 		if (entry.is_directory() && recursive)
 		{
@@ -44,18 +55,50 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder,
 		{
 			std::ifstream f(entry.path());
 			json metadata = json::parse(f);
+
 			if (metadata.at("type") == "texture2d")
 			{
 				Texture2DMetaData asset;
 				metadata.get_to(asset);
 				TextureFactory::LoadTexture(asset, false, device, commandList);
+
+				continue;
 			}
+
 			if (metadata.at("type") == "mesh")
 			{
 				MeshMetaData asset;
 				metadata.get_to(asset);
 				MeshFactory::LoadMesh(asset, false, device, commandList);
+
+				continue;
 			}
+
+			if (metadata.at("type") == "script")
+			{
+				ScriptMetaData asset;
+				metadata.get_to(asset);
+				ScriptFactory::LoadScript(asset);
+
+				continue;
+			}
+
+			if (metadata.at("type") == "material")
+			{
+				Material asset;
+				metadata.get_to(asset);
+				MaterialFactory::AddMaterial(asset);
+
+				continue;
+			}
+
+			Debug::LogError(
+				std::format(
+					"[AssetManager] LoadAssetsInFolder() Type of asset:\n"
+					"{}\n is not recognized by any factory. File "
+					"path: {}",
+					metadata.dump(4), entry.path().string())
+					.c_str());
 		}
 	}
 }
@@ -103,5 +146,17 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 		dir = filename.substr(0, last_slash_idx).c_str();
 	}
 	std::ofstream o(dir + "/" + asset.name + ".meta");
+	o << std::setw(4) << j << std::endl;
+}
+
+void D3E::AssetManager::CreateMaterial(D3E::Material& material,
+                                       const std::string& folder)
+{
+	material.uuid = uuidGenerator.getUUID().str().c_str();
+
+	MaterialFactory::AddMaterial(material);
+
+	json j(material);
+	std::ofstream o(folder + "/" + std::string(material.name.c_str()) + ".meta");
 	o << std::setw(4) << j << std::endl;
 }

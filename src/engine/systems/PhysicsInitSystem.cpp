@@ -56,8 +56,11 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 					{
 						body.SetRestitution(component.restitution_);
 					}
-					body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
-					body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+					if (component.motionType_ != JPH::EMotionType::Static)
+					{
+						body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+						body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+					}
 				}
 			}
 		}
@@ -105,7 +108,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 			auto& meshComponent = registry.get<StaticMeshComponent>(entity);
 			ConvexHullShapeSettings shapeSettings(meshComponent.)
 		}*/
-		case HeightFieldCollider:
+		/*case HeightFieldCollider:
 		{
 			if (physicsComponent.heightMap_)
 			{
@@ -114,7 +117,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 				ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 				physicsComponent.collider_ = new HeightFieldShape(shapeSettings, shapeResult);
 			}
-		}
+		}*/
 	}
 	//ShapeSettings::ShapeResult shapeResult = physicsComponent.collider_->Create();
 	//ShapeRefC colliderRef = shapeResult.Get();
@@ -153,8 +156,11 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		bodySettings.mRestitution = physicsComponent.restitution_;
 	}
-	bodySettings.mLinearVelocity = Vec3Arg(physicsComponent.velocity_.x, physicsComponent.velocity_.y, physicsComponent.velocity_.z);
-	bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
+	if (physicsComponent.motionType_ != JPH::EMotionType::Static)
+	{
+		bodySettings.mLinearVelocity = Vec3Arg(physicsComponent.velocity_.x, physicsComponent.velocity_.y, physicsComponent.velocity_.z);
+		bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
+	}
 
 	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 

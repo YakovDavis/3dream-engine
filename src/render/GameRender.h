@@ -25,6 +25,8 @@ namespace D3E
 
 	class DisplayWin32;
 
+	class DebugRenderer;
+
 	// Internal class for managing render devices, swap chains etc.
 	class GameRender
 	{
@@ -32,7 +34,10 @@ namespace D3E
 		virtual void Init(eastl::vector<GameSystem*>& systems);
 		virtual void OnResize();
 
+		virtual void PrimitiveBatchStart() {}
+
 		Display* GetDisplay();
+		DebugRenderer* GetDebugRenderer();
 		nvrhi::DeviceHandle& GetDevice();
 		nvrhi::CommandListHandle& GetCommandList();
 
@@ -85,6 +90,8 @@ namespace D3E
 		nvrhi::BufferHandle pickedIdBufferCpu_;
 
 		nvrhi::BufferHandle pickCb;
+
+		DebugRenderer* debugRenderer_;
 
 		friend class Game;
 	};

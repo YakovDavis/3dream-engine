@@ -8,13 +8,17 @@
 #include "D3E/Debug.h"
 #include "D3E/TimerManager.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/ScriptInitSystem.h"
+#include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
@@ -81,6 +85,8 @@ void D3E::Game::Run()
 			                 .count();
 		}
 
+		gameRender_->PrimitiveBatchStart();
+
 		for (auto& sys : systems_)
 		{
 			sys->PrePhysicsUpdate(registry_, this, deltaTime_);
@@ -139,9 +145,21 @@ void D3E::Game::Init()
 	AssetManager::Get().LoadAssetsInFolder("textures/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
-	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
+		AssetManager::Get().LoadAssetsInFolder("models/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
 
-	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("scripts/", true, nullptr, nullptr);
+
+	AssetManager::Get().LoadAssetsInFolder("materials/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
+
+	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
+	                                          gameRender_->GetCommandList());
+
+	ScriptingEngine::GetInstance().Init();
+	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
 
@@ -150,6 +168,8 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	//systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ScriptInitSystem(registry_));
+	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));

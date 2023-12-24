@@ -29,7 +29,7 @@ namespace D3E
 		bool isInitialized_ = false;
 
 		JPH::BodyID bodyID_;
-		JPH::Ref<JPH::Shape> collider_ = nullptr;
+		JPH::Ref<JPH::Shape> collider_;
 		ColliderType colliderType_;
 		DirectX::SimpleMath::Vector4 colliderParams_;
 		float mass_;
@@ -40,8 +40,6 @@ namespace D3E
 		JPH::EMotionType motionType_;
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
-		float* heightMap_ = nullptr; //temporary; will be a texture
-		int heightMapSize_; //also temporary
 	};
 }
 

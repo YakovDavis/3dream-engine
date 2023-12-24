@@ -13,13 +13,15 @@
 #include "physics/ObjectLayers.h"
 #include "SimpleMath.h"
 
+#include <iostream>
+
 using namespace JPH;
 
 D3E::CharacterInitSystem::CharacterInitSystem(entt::registry& registry, JPH::PhysicsSystem* physicsSystem) :
 	  updateObserver_{registry, entt::collector.update<PhysicsCharacterComponent>().where<PhysicsComponent>()},
 	  physicsSystem_(physicsSystem)
 {
-	registry.on_construct<PhysicsComponent>()
+	registry.on_construct<PhysicsCharacterComponent>()
 		.connect<&CharacterInitSystem::ComponentCreatedHandler>(
 			this);
 }
@@ -29,7 +31,10 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 	auto view =
 		reg.view<TransformComponent, CameraComponent, PhysicsCharacterComponent>();
 	if (view.begin() == view.end())
+	{
 		Debug::LogError("Character controller entity not found");
+		return;
+	}
 	auto characterController = view.front();
 
 	auto [transform, camera, character] = view.get<TransformComponent, CameraComponent, PhysicsCharacterComponent>(characterController);
@@ -71,6 +76,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 	cam_fwd = cam_fwd.NormalizedOr(Vec3::sAxisX());
 	Quat rotation = Quat::sFromTo(Vec3::sAxisX(), cam_fwd);
 	control_input = rotation * control_input;
+	//std::cout << control_input << "\n";
 
 	// Check actions
 	bool jump = false;
@@ -96,8 +102,10 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		// Update velocity
 		Vec3 current_velocity = character.character_->GetLinearVelocity();
 		Vec3 desired_velocity = character.speed_ * control_input;
+		//std::cout << current_velocity << " " << desired_velocity << "\n";
 		desired_velocity.SetY(current_velocity.GetY());
 		Vec3 new_velocity = 0.75f * current_velocity + 0.25f * desired_velocity;
+		std::cout << new_velocity << "\n";
 
 		// Jump
 		if (jump && ground_state == Character::EGroundState::OnGround)
@@ -109,6 +117,8 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		transform.position.x += control_input.GetX() * new_velocity.GetX() * dT;
 		transform.position.y += control_input.GetY() * new_velocity.GetY() * dT;
 		transform.position.z += control_input.GetZ() * new_velocity.GetZ() * dT;
+
+		camera.offset = transform.position;
 
 		transform.rotation.x = rotation.GetX();
 		transform.rotation.y = rotation.GetY();
@@ -122,7 +132,10 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	auto view =
 		reg.view<PhysicsCharacterComponent>();
 	if (view.begin() == view.end())
+	{
 		Debug::LogError("Character controller entity not found");
+		return;
+	}
 	auto characterController = view.front();
 
 	auto character = view.get<PhysicsCharacterComponent>(characterController);
@@ -134,7 +147,6 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
                                                      entt::entity entity)
 {
 	auto& characterComponent = registry.get<PhysicsCharacterComponent>(entity);
-	const auto& physicsComponent = registry.get<PhysicsComponent>(entity);
 	const auto& transformComponent = registry.get<TransformComponent>(entity);
 	/*switch (physicsComponent.colliderType_)
 	{
@@ -156,10 +168,12 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	Ref<CharacterSettings> settings = new CharacterSettings();
 	settings->mMaxSlopeAngle = characterComponent.maxSlopeAngle_;
 	settings->mLayer = Layers::MOVING;
-	settings->mShape = physicsComponent.collider_; //???
-	settings->mFriction = physicsComponent.friction_;
+	settings->mShape = characterComponent.collider_; //???
+	settings->mFriction = characterComponent.friction_;
 	settings->mSupportingVolume = characterComponent.supportingVolume_;
 	characterComponent.character_ = new Character(settings, RVec3(transformComponent.position.x, transformComponent.position.y, transformComponent.position.z),
 	                           Quat(transformComponent.rotation.x, transformComponent.rotation.y, transformComponent.rotation.z, transformComponent.rotation.w), 0, physicsSystem_);
+	//characterComponent.character_ = new Character(settings, RVec3::sZero(), Quat::sIdentity(), 0, physicsSystem_);
 	characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
+	characterComponent.bodyID_ = characterComponent.character_->GetBodyID();
 }

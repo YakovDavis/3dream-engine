@@ -21,30 +21,24 @@ void CharacterGame::Init()
 	D3E::PhysicsComponent physComponent = {};
 	D3E::PhysicsCharacterComponent character = {};
 
-	physComponent.colliderType_ = D3E::ColliderType::CapsuleCollider;
-	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(1.0f, 1.0f, 0.0f, 0.0f);
-	physComponent.mass_ = 1.0f;
-	physComponent.motionType_ = JPH::EMotionType::Dynamic;
-	physComponent.friction_ = 0.2f;
-	physComponent.restitution_ = 0.0f;
+	character.colliderType_ = D3E::ColliderType::CapsuleCollider;
+	character.colliderParams_ = DirectX::SimpleMath::Vector4(1.0f, 1.0f, 0.0f, 0.0f);
+	character.mass_ = 1.0f;
+	character.friction_ = 0.2f;
+	character.restitution_ = 0.0f;
 
 	info.name = "Player";
 
 	tc.position = Vector3(0.0f, 1.0f, 0.0f);
 
-	D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info, tc, physComponent, character);
+	D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info, tc, character);
 
 	tc.position = Vector3(0, 0, 0);
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);
+	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
 	info.name = "Floor";
 
-	physComponent.heightMapSize_ = 4;
-	physComponent.heightMap_ = new float[physComponent.heightMapSize_];
-	physComponent.heightMap_[0] = 20.0f;
-	physComponent.heightMap_[1] = 0.0f;
-	physComponent.heightMap_[2] = 0.0f;
-	physComponent.heightMap_[3] = 20.0f;
-	physComponent.colliderType_ = D3E::ColliderType::HeightFieldCollider;
+	physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
 	physComponent.motionType_ = JPH::EMotionType::Static;
 
 	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc, physComponent);

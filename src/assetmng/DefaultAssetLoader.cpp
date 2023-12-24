@@ -1,6 +1,8 @@
 #include "DefaultAssetLoader.h"
 
 #include "D3E/CommonCpp.h"
+#include "D3E/render/Material.h"
+#include "MaterialFactory.h"
 #include "MeshFactory.h"
 #include "TextureFactory.h"
 #include "render/GeometryGenerator.h"
@@ -108,11 +110,13 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 
 	ShaderFactory::AddVertexShader("LightPass", "LightPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "VSMain");
+	ShaderFactory::AddVertexShader("DebugDraw", "DebugDraw.hlsl", "VSMain");
 
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("LightPass", "LightPass.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("DebugDraw", "DebugDraw.hlsl", "PSMain");
 
 	ShaderFactory::AddComputeShader("Pick", "Pick.hlsl", "CSMain");
 
@@ -283,6 +287,41 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	pickingPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("Pick"));
 	pickingPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("PickC"));
 	ShaderFactory::AddComputePipeline("Pick", pickingPipelineDesc);
+
+	nvrhi::BindingLayoutDesc layoutDescVDebugDraw = {};
+	layoutDescVDebugDraw.setVisibility(nvrhi::ShaderType::Vertex);
+	layoutDescVDebugDraw.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	layoutDescVDebugDraw.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(1));
+	ShaderFactory::AddBindingLayout("DebugDrawV", layoutDescVDebugDraw);
+
+	nvrhi::BindingLayoutDesc layoutDescPDebugDraw = {};
+	layoutDescPDebugDraw.setVisibility(nvrhi::ShaderType::Pixel);
+	ShaderFactory::AddBindingLayout("DebugDrawP", layoutDescPDebugDraw);
+
+	nvrhi::GraphicsPipelineDesc debugDrawPipelineDesc = {};
+	debugDrawPipelineDesc.setInputLayout(nullptr);
+	debugDrawPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("DebugDraw"));
+	debugDrawPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("DebugDraw"));
+	debugDrawPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("DebugDrawV"));
+	debugDrawPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("DebugDrawP"));
+	nvrhi::DepthStencilState ddDepthStencilState = {};
+	ddDepthStencilState.setDepthTestEnable(true);
+	ddDepthStencilState.setDepthWriteEnable(true);
+	ddDepthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Less);
+	ddDepthStencilState.setStencilEnable(false);
+	nvrhi::RasterState ddRasterState = {};
+	ddRasterState.fillMode = nvrhi::RasterFillMode::Solid;
+	ddRasterState.frontCounterClockwise = false;
+	ddRasterState.setCullNone();
+	nvrhi::BlendState ddBlendState = {};
+	ddBlendState.targets[0] = {};
+	nvrhi::RenderState ddRenderState = {};
+	ddRenderState.depthStencilState = ddDepthStencilState;
+	ddRenderState.rasterState = ddRasterState;
+	ddRenderState.blendState = ddBlendState;
+	debugDrawPipelineDesc.renderState = ddRenderState;
+	debugDrawPipelineDesc.primType = nvrhi::PrimitiveType::LineList;
+	ShaderFactory::AddGraphicsPipeline("DebugDraw", debugDrawPipelineDesc, fb);
 }
 
 void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
@@ -320,4 +359,17 @@ void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
 nvrhi::IBuffer* D3E::DefaultAssetLoader::GetEditorGridCB()
 {
 	return gridCb;
+}
+
+void D3E::DefaultAssetLoader::LoadDefaultMaterials()
+{
+	Material defaultGrid = {};
+	defaultGrid.name = "DefaultGrid";
+	defaultGrid.uuid = kDefaultGridMaterialUUID;
+	defaultGrid.type = MaterialType::Lit;
+	defaultGrid.albedoTextureUuid = "24c71f11-0d38-4594-ae18-c8eedca9b896";
+	defaultGrid.normalTextureUuid = "c2346e38-a332-4c9f-bb91-f22591ce5f52";
+	defaultGrid.metalnessTextureUuid = "eb93c841-6911-411c-93cd-54b24861e6e7";
+	defaultGrid.roughnessTextureUuid = "eb93c841-6911-411c-93cd-54b24861e6e7";
+	MaterialFactory::AddMaterial(defaultGrid);
 }

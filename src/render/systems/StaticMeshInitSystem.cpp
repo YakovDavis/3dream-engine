@@ -5,6 +5,7 @@
 #include "D3E/Debug.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "assetmng/TextureFactory.h"
+#include "assetmng/MaterialFactory.h"
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
 
@@ -41,10 +42,11 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 					ShaderFactory::AddBindingSetV(info.id, bindingSetDescV, "GBufferV");
 
 					nvrhi::BindingSetDesc bindingSetDescP = {};
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle("6d62f28e-b715-419a-9eae-a6eff3fb1e3d")));
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(1, TextureFactory::GetTextureHandle("7b169846-f2a7-4ba3-b076-d1eb689c3e81")));
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(2, TextureFactory::GetTextureHandle("c8fc5c1c-3b82-4715-a738-bb5021cfad8f")));
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(3, TextureFactory::GetTextureHandle("078ab608-d1a0-4b7e-8a6b-517cfe1fceac")));
+					auto m = MaterialFactory::GetMaterial(smc.materialUuid);
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle(m.albedoTextureUuid)));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(1, TextureFactory::GetTextureHandle(m.normalTextureUuid)));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(2, TextureFactory::GetTextureHandle(m.metalnessTextureUuid)));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(3, TextureFactory::GetTextureHandle(m.roughnessTextureUuid)));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(4, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(5, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));

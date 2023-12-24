@@ -78,12 +78,13 @@ D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
 
 entt::entity D3E::CreationSystems::CreateSM(
 	entt::registry& registry, const D3E::ObjectInfoComponent& info,
-	const D3E::TransformComponent& tc, D3E::String meshUuid)
+	const D3E::TransformComponent& tc, const D3E::String& meshUuid, const D3E::String& materialUuid)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
 	sm.meshUuid = meshUuid;
 	sm.pipelineName = "GBuffer";
+		sm.materialUuid = materialUuid;
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
@@ -179,8 +180,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 }
 
 entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& registry, const D3E::ObjectInfoComponent& info,
-                                                           const D3E::TransformComponent& tc, const D3E::PhysicsComponent& physc,
-                                                           const D3E::PhysicsCharacterComponent& character)
+                                                           const D3E::TransformComponent& tc, const D3E::PhysicsCharacterComponent& character)
 {
 	const auto e = registry.create();
 
@@ -188,11 +188,13 @@ entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& regis
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	CameraComponent camera;
+	camera.offset = tc.position;
+	camera.forward = DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
+	camera.forward.y = 0;
 
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<CameraComponent>(e, camera);
 	registry.emplace<TransformComponent>(e, tc);
-	registry.emplace<PhysicsComponent>(e, physc);
 	registry.emplace<PhysicsCharacterComponent>(e, character);
 
 	return e;
