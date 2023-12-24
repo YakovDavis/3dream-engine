@@ -17,8 +17,8 @@ namespace D3E
 		bool controlMovementDuringJump_ = true;
 		float yaw_ = 3.14f;
 		float pitch_ = 0.0f;
-		float speed_ = 1.0f;
-		float jumpSpeed_ = 1.0f;
+		float speed_ = 0.02f;
+		float jumpSpeed_ = 0.02f;
 		float sensitivityX_ = 0.01f;
 		float sensitivityY_ = 0.01f;
 		bool isLMBActivated_ = true;

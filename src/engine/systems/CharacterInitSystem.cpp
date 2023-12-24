@@ -7,11 +7,23 @@
 #include "D3E/Game.h"
 #include "D3E/Debug.h"
 
+
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
+#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+
 #include "input/InputDevice.h"
 #include "input/Keys.h"
 
 #include "physics/ObjectLayers.h"
 #include "SimpleMath.h"
+
+#include "physics/JoltDebugRenderer.h"
 
 #include <iostream>
 
@@ -24,6 +36,7 @@ D3E::CharacterInitSystem::CharacterInitSystem(entt::registry& registry, JPH::Phy
 	registry.on_construct<PhysicsCharacterComponent>()
 		.connect<&CharacterInitSystem::ComponentCreatedHandler>(
 			this);
+
 }
 
 void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game, float dT)
@@ -70,6 +83,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 	if (game->GetInputDevice()->IsKeyDown(Keys::S))		control_input.SetX(-1);
 	if (control_input != Vec3::sZero())
 		control_input = control_input.Normalized();
+	//std::cout << control_input << "\n";
 
 	// Rotate controls to align with the camera
 	Vec3 cam_fwd = Vec3(camera.forward.x, 0.0f, camera.forward.z);
@@ -96,6 +110,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		if (dot < 0.0f)
 			control_input -= (dot * normal) / normal.LengthSq();
 	}
+	//std::cout << control_input << "\n";
 
 	if (character.controlMovementDuringJump_ || character.character_->IsSupported())
 	{
@@ -105,7 +120,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		//std::cout << current_velocity << " " << desired_velocity << "\n";
 		desired_velocity.SetY(current_velocity.GetY());
 		Vec3 new_velocity = 0.75f * current_velocity + 0.25f * desired_velocity;
-		std::cout << new_velocity << "\n";
+		//std::cout << new_velocity << "\n";
 
 		// Jump
 		if (jump && ground_state == Character::EGroundState::OnGround)
@@ -114,9 +129,9 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		// Update the velocity
 		character.character_->SetLinearVelocity(new_velocity);
 
-		transform.position.x += control_input.GetX() * new_velocity.GetX() * dT;
-		transform.position.y += control_input.GetY() * new_velocity.GetY() * dT;
-		transform.position.z += control_input.GetZ() * new_velocity.GetZ() * dT;
+		transform.position.x += new_velocity.GetX() * dT;
+		transform.position.y += new_velocity.GetY() * dT;
+		transform.position.z += new_velocity.GetZ() * dT;
 
 		camera.offset = transform.position;
 
@@ -130,7 +145,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 {
 	auto view =
-		reg.view<PhysicsCharacterComponent>();
+		reg.view<PhysicsCharacterComponent, CameraComponent, TransformComponent>();
 	if (view.begin() == view.end())
 	{
 		Debug::LogError("Character controller entity not found");
@@ -141,6 +156,12 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	auto character = view.get<PhysicsCharacterComponent>(characterController);
 
 	character.character_->PostSimulation(character.collisionTolerance_);
+
+	auto camera = view.get<CameraComponent>(characterController);
+	RVec3 characterPosition;
+	Quat characterRotation;
+	character.character_->GetPositionAndRotation(characterPosition, characterRotation);
+	//camera.offset =
 }
 
 void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
@@ -148,6 +169,63 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 {
 	auto& characterComponent = registry.get<PhysicsCharacterComponent>(entity);
 	const auto& transformComponent = registry.get<TransformComponent>(entity);
+	BodyInterface &body_interface = physicsSystem_->GetBodyInterface();
+	switch (characterComponent.colliderType_)
+	{
+		case SphereCollider:
+		{
+			characterComponent.collider_ = new SphereShape(characterComponent.colliderParams_.x);
+			break;
+		}
+		case BoxCollider:
+		{
+			characterComponent.collider_ = new BoxShape(Vec3Arg(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z));
+			break;
+		}
+		case CapsuleCollider:
+		{
+			characterComponent.collider_ = new CapsuleShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
+			break;
+		}
+		case TaperedCapsuleCollider:
+		{
+			TaperedCapsuleShapeSettings taperedCapsuleSettings(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z);
+			ShapeSettings::ShapeResult shapeResult = taperedCapsuleSettings.Create();
+			characterComponent.collider_ = new TaperedCapsuleShape(taperedCapsuleSettings, shapeResult);
+			break;
+		}
+		case CylinderCollider:
+		{
+			characterComponent.collider_ = new CylinderShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
+			break;
+		}
+			/*case ConvexHullCollider:
+			{
+			    auto& meshComponent = registry.get<StaticMeshComponent>(entity);
+			    ConvexHullShapeSettings shapeSettings(meshComponent.)
+			}*/
+			/*case HeightFieldCollider:
+			{
+			    if (physicsComponent.heightMap_)
+			    {
+			        HeightFieldShapeSettings shapeSettings(physicsComponent.heightMap_, Vec3Arg(transformComponent.position.x, transformComponent.position.y, transformComponent.position.z),
+			                                               Vec3Arg(transformComponent.scale.x, transformComponent.scale.y, transformComponent.scale.z), physicsComponent.heightMapSize_);
+			        ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+			        physicsComponent.collider_ = new HeightFieldShape(shapeSettings, shapeResult);
+			    }
+			}*/
+	}
+	//ShapeSettings::ShapeResult shapeResult = physicsComponent.collider_->Create();
+	//ShapeRefC colliderRef = shapeResult.Get();
+	//*(physicsComponent.collider_) =
+	if (characterComponent.hasOffsetCenterOfMass_)
+	{
+		OffsetCenterOfMassShapeSettings shapeSettings(Vec3Arg(characterComponent.centerOfMassOffset_.x, characterComponent.centerOfMassOffset_.y, characterComponent.centerOfMassOffset_.z), characterComponent.collider_);
+		ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+		characterComponent.collider_ = shapeResult.Get();
+	}
+
+	ObjectLayer currentLayer = Layers::MOVING;
 	/*switch (physicsComponent.colliderType_)
 	{
 		case CapsuleCollider:

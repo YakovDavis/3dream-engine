@@ -12,6 +12,8 @@ namespace JPH
 
 namespace D3E
 {
+	class JoltDebugRenderer;
+
 	class CharacterInitSystem : public GameSystem
 	{
 	public:
@@ -24,6 +26,7 @@ namespace D3E
 		                             entt::entity entity);
 		entt::observer updateObserver_;
 		JPH::PhysicsSystem* physicsSystem_;
+		JoltDebugRenderer* joltRenderer_;
 	};
 }
 
