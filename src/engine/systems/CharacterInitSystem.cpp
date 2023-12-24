@@ -23,8 +23,6 @@
 #include "physics/ObjectLayers.h"
 #include "SimpleMath.h"
 
-#include "physics/JoltDebugRenderer.h"
-
 #include <iostream>
 
 using namespace JPH;
@@ -160,8 +158,10 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	auto camera = view.get<CameraComponent>(characterController);
 	RVec3 characterPosition;
 	Quat characterRotation;
-	character.character_->GetPositionAndRotation(characterPosition, characterRotation);
-	//camera.offset =
+	character.character_->GetPositionAndRotation(characterPosition,characterRotation);
+	camera.offset = DirectX::SimpleMath::Vector3(characterPosition.GetX(), characterPosition.GetY(), characterPosition.GetZ());
+	auto transform = view.get<TransformComponent>(characterController);
+	transform.position = camera.offset;
 }
 
 void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
@@ -225,7 +225,6 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		characterComponent.collider_ = shapeResult.Get();
 	}
 
-	ObjectLayer currentLayer = Layers::MOVING;
 	/*switch (physicsComponent.colliderType_)
 	{
 		case CapsuleCollider:
