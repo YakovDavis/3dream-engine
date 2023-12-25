@@ -113,6 +113,8 @@ void D3E::Game::Init()
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 
+	RegisterDefaultComponents();
+
 	for (auto& sys : systems_)
 	{
 		sys->Init();
@@ -386,4 +388,24 @@ void D3E::Game::Pick()
 		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
 	}
 	EditorUtilsRenderSystem::isSelectionDirty = true;
+}
+
+void D3E::Game::RegisterDefaultComponents()
+{
+	using namespace entt::literals;
+
+	entt::meta<ObjectInfoComponent>().type("ObjectInfoComponent"_hs)
+		.data<&ObjectInfoComponent::parentId>("parentId"_hs)
+		.data<&ObjectInfoComponent::name>("name"_hs)
+		.data<&ObjectInfoComponent::id>("id"_hs)
+		.data<&ObjectInfoComponent::editorId>("editorId"_hs)
+		.data<&ObjectInfoComponent::visible>("visible"_hs);
+
+	entt::meta<TransformComponent>().type("TransformComponent"_hs)
+		.data<&TransformComponent::position>("position"_hs)
+		.data<&TransformComponent::rotation>("rotation"_hs)
+		.data<&TransformComponent::scale>("rotation"_hs)
+		.data<&TransformComponent::relativePosition>("relativePosition"_hs)
+		.data<&TransformComponent::relativeRotation>("relativeRotation"_hs)
+		.data<&TransformComponent::relativeScale>("relativeScale"_hs);
 }

@@ -162,6 +162,7 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/JoltDebugRenderer.h
         src/assetmng/SoundMetaData.cpp
         src/assetmng/SoundMetaData.h
+        src/engine/PrefabMetadata.h
 )
 
 add_subdirectory(libs)
