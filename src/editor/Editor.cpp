@@ -202,14 +202,13 @@ void D3E::Editor::DrawHierarchy()
 	auto entities = EditorUtils::ListActiveObjects();
 	for(int i = entities.size() - 1; i >= 0 ; i--)
 	{
-		const auto& objectInfo = game_->GetRegistry().get<ObjectInfoComponent>(entities[i]);
-//		const auto& transform = game_->GetRegistry().get<TransformComponent>(entities[i]);
-//		if(i > 0 && strcmp(objectInfo.name.c_str(), objects[i - 1].name.c_str()) == 0)
-//		{
-//			continue;
-//		}
-
-		ImGui::Text(objectInfo.name.c_str());
+		if(i > 0 && strcmp(objects[i].name.c_str(), objects[i - 1].name.c_str()) == 0)
+		{
+			continue;
+		}
+		ImGui::PushStyleColor(ImGuiCol_Text, objects[i].selected ? ImVec4(ImColor(255, 255, 255, 255)) : ImVec4(ImColor(127, 127, 127, 255)));
+		ImGui::Text(objects[i].name.c_str());
+		ImGui::PopStyleColor();
 	}
 	ImGui::End();
 }

@@ -12,6 +12,7 @@ namespace D3E
 		nvrhi::TextureHandle positionBuffer;
 		nvrhi::TextureHandle normalBuffer;
 		nvrhi::TextureHandle metalRoughnessBuffer;
+		nvrhi::TextureHandle editorIdsBuffer; // TODO: exclude from shipping builds
 
 		void Initialize(nvrhi::IDevice* device, nvrhi::ICommandList* commandList, Display* display);
 	};

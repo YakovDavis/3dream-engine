@@ -3,6 +3,7 @@
 #include "App.h"
 #include "D3E/systems/GameSystem.h"
 #include "EASTL/vector.h"
+#include "EASTL/hash_set.h"
 
 #include <entt/entt.hpp>
 #include <mutex>
@@ -15,6 +16,7 @@ namespace D3E
 	class InputDevice;	
 	class SoundEngine;
 	class TimerManager;
+	class PhysicsInfo;
 
 	class Game : public App
 	{
@@ -33,6 +35,8 @@ namespace D3E
 		entt::registry& GetRegistry();
 
 		InputDevice* GetInputDevice();
+
+		bool IsUuidEditorSelected(const String& uuid);
 
 		[[nodiscard]] float GetDeltaTime() const;
 
@@ -61,6 +65,8 @@ namespace D3E
 
 		virtual void Update(float deltaTime);
 
+		void Pick();
+
 		virtual void Draw();
 
 		virtual void DestroyResources();
@@ -79,9 +85,13 @@ namespace D3E
 
 		SoundEngine* soundEngine_;
 
+		PhysicsInfo* physicsInfo_;
+
 		double totalTime = 0.0;
 
 	private:
 		void HandleMessages();
+
+		eastl::hash_set<String> selectedUuids;
 	};
 } // namespace D3E

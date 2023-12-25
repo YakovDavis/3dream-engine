@@ -18,9 +18,13 @@ eastl::vector<entt::entity> D3E::EditorUtils::ListActiveObjects()
 {
 	Debug::Assert(initialized_, "Editor utils not initialized");
 	auto view = activeGame_->GetRegistry().view<ObjectInfoComponent>();
-	eastl::vector<entt::entity> result;
-	view.each([&result](const auto entity, const auto &info) {
-				  result.push_back({entity});
+	eastl::vector<ObjectInfo> result;
+	view.each([&result](const auto &info) {
+				  if (info.name == "EditorDebugRenderObject")
+				  {
+					  return;
+				  }
+				  result.push_back({info.name, activeGame_->IsUuidEditorSelected(info.id)});
 	});
 	return result;
 }

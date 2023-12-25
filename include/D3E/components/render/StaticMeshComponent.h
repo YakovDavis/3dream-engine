@@ -11,7 +11,9 @@ namespace D3E
 		String meshUuid;
 		String pipelineName;
 		nvrhi::BufferHandle constantBuffer;
+		String materialUuid;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
+		bool editorHighlighted = false;
 
 		bool initialized = false;
 	};

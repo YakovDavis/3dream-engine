@@ -11,6 +11,7 @@ namespace D3E
 	struct ObjectInfo
 	{
 		String name;
+		bool selected;
 	};
 
 	class EditorUtils

@@ -8,23 +8,32 @@
 #include "D3E/Debug.h"
 #include "D3E/TimerManager.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "assetmng/ScriptFactory.h"
+#include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/ScriptInitSystem.h"
+#include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
+#include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/LightRenderSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
+#include "physics/PhysicsInfo.h"
+#include "engine/systems/PhysicsInitSystem.h"
+#include "engine/systems/PhysicsUpdateSystem.h"
 
 #include <filesystem>
 #include <thread>
@@ -60,6 +69,8 @@ void D3E::Game::Run()
 
 	std::thread inputCheckingThread(PollConsoleInput, this);
 
+	bool lmbPressedLastTick = false; // temp
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -73,7 +84,17 @@ void D3E::Game::Run()
 			                 .count();
 		}
 
+		gameRender_->PrimitiveBatchStart();
+
+		physicsInfo_->updatePhysics();
+
 		Update(deltaTime_);
+
+		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
+		{
+			Pick();
+		}
+		lmbPressedLastTick = inputDevice_->IsKeyDown(Keys::LeftButton);
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
@@ -92,8 +113,6 @@ void D3E::Game::Init()
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 
-	TimerManager::GetInstance().Init(this);	
-
 	for (auto& sys : systems_)
 	{
 		sys->Init();
@@ -102,27 +121,58 @@ void D3E::Game::Init()
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	gameRender_->Init(systems_);
 
-	//AssetManager::Get().CreateTexture("default-grid", "textures/default-grid.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("white", "textures/white.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_A", "textures/cerberus_A.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_M", "textures/cerberus_M.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("cerberus_R", "textures/cerberus_R.png", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateTexture("environment", "textures/environment.hdr", gameRender_->GetDevice(), gameRender_->GetCommandList());
-	//AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx", gameRender_->GetDevice(), gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("default-grid",
+	// "textures/default-grid.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("white", "textures/white.png",
+	// gameRender_->GetDevice(), gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_A",
+	// "textures/cerberus_A.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_M",
+	// "textures/cerberus_M.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("cerberus_R",
+	// "textures/cerberus_R.png", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateTexture("environment",
+	// "textures/environment.hdr", gameRender_->GetDevice(),
+	// gameRender_->GetCommandList());
+	// AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx",
+	// gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("textures/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
-	AssetManager::Get().LoadAssetsInFolder("models/", true, gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("models/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
 
-	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(), gameRender_->GetCommandList());
+	AssetManager::Get().LoadAssetsInFolder("scripts/", true, nullptr, nullptr);
+
+	AssetManager::Get().LoadAssetsInFolder("materials/", true,
+	                                       gameRender_->GetDevice(),
+	                                       gameRender_->GetCommandList());
+
+	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
+	                                          gameRender_->GetCommandList());
+
+	ScriptingEngine::GetInstance().Init();
+	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
+
+	physicsInfo_ = new PhysicsInfo();
 
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new ScriptInitSystem(registry_));
+	systems_.push_back(new ScriptUpdateSystem);
+	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
@@ -143,6 +193,11 @@ void D3E::Game::Update(const float deltaTime)
 	TimerManager::GetInstance().Update(deltaTime);
 
 	for (auto& sys : systems_)
+	{
+		sys->Update(registry_, this, deltaTime);
+	}
+
+	for (auto& sys : renderPPsystems_)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
@@ -308,4 +363,27 @@ void D3E::Game::CheckConsoleInput()
 		// std::cout << consoleCommandQueue << '\n';
 		consoleCommandQueue = std::string();
 	}
+}
+
+bool D3E::Game::IsUuidEditorSelected(const D3E::String& uuid)
+{
+	return selectedUuids.find(uuid) != selectedUuids.end();
+}
+
+void D3E::Game::Pick()
+{
+	auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+	if (editorPickedId == 0)
+	{
+		selectedUuids.clear();
+	}
+	else
+	{
+		if (!(inputDevice_->IsKeyDown(Keys::LeftControl) || inputDevice_->IsKeyDown(Keys::LeftShift)))
+		{
+			selectedUuids.clear();
+		}
+		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+	}
+	EditorUtilsRenderSystem::isSelectionDirty = true;
 }

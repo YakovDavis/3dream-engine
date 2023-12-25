@@ -58,9 +58,8 @@ namespace D3E
 		UINT64 mFrameCount = 1;
 
 		nvrhi::RefCountPtr<ID3D12CommandQueue> mCommandQueue;
-
-		nvrhi::RefCountPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-		nvrhi::RefCountPtr<ID3D12CommandList> mCommandList;
+		nvrhi::RefCountPtr<ID3D12CommandQueue> mComputeCommandQueue;
+		nvrhi::RefCountPtr<ID3D12CommandQueue> mCopyCommandQueue;
 
 		eastl::vector<HANDLE> mFrameFenceEvents;
 

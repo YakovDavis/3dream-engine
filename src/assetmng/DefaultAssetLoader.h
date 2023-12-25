@@ -20,6 +20,7 @@ namespace D3E
 		static void LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IFramebuffer* gBuffFb);
 		static void LoadDefaultSamplers(nvrhi::DeviceHandle& device);
 		static void LoadEditorDebugAssets(nvrhi::DeviceHandle& device, nvrhi::CommandListHandle& commandList);
+		static void LoadDefaultMaterials();
 
 		static nvrhi::IBuffer* GetEditorGridCB();
 	};

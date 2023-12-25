@@ -13,7 +13,7 @@ namespace D3E
 		float orthographicWidth = 50.0f;
 		float orthographicHeight = 50.0f;
 		float fov = 0.785f;
-		float aspectRatio = 1920.0f / 1080.0f;
+		float aspectRatio = 1280.0f / 720.0f;
 		float nearPlane = 1.0f;
 		float farPlane = 1000.f;
 	};
