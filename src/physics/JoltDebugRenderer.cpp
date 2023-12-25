@@ -126,9 +126,9 @@ void D3E::JoltDebugRenderer::DrawGeometry(
 		auto p1 = DirectX::SimpleMath::Vector3::Transform(batch->triangles[i + 1], mat);
 		auto p2 = DirectX::SimpleMath::Vector3::Transform(batch->triangles[i + 2], mat);
 
-		game_->GetRender()->GetDebugRenderer()->DrawLine(p0, p1, batch->BatchColor);
-		game_->GetRender()->GetDebugRenderer()->DrawLine(p0, p2, batch->BatchColor);
-		game_->GetRender()->GetDebugRenderer()->DrawLine(p1, p2, batch->BatchColor);
+		game_->GetRender()->GetDebugRenderer()->QueueLine(p0, p1, batch->BatchColor);
+		game_->GetRender()->GetDebugRenderer()->QueueLine(p0, p2, batch->BatchColor);
+		game_->GetRender()->GetDebugRenderer()->QueueLine(p1, p2, batch->BatchColor);
 	}
 }
 
