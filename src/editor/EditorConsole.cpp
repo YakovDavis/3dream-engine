@@ -97,12 +97,28 @@ void D3E::EditorConsole::Draw()
 
 		for (const auto& item : items_)
 		{
-			ImVec4 color;
-			bool has_color = false;
-//			if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
-//			else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+			bool has_color = itemColors_.count(item);
 			if (has_color)
-				ImGui::PushStyleColor(ImGuiCol_Text, color);
+			{
+				switch (itemColors_.at(item))
+				{
+					case Debug::White:
+					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
+						break;
+					}
+					case Debug::Yellow:
+					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0, 1));
+						break;
+					}
+					case Debug::Red:
+					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+						break;
+					}
+				}
+			}
 			ImGui::TextUnformatted(item.c_str());
 			if (has_color)
 				ImGui::PopStyleColor();
@@ -139,9 +155,10 @@ void D3E::EditorConsole::Draw()
 
 	ImGui::End();
 }
-void D3E::EditorConsole::PrintMessage(const eastl::string& str)
+void D3E::EditorConsole::PrintMessage(const eastl::string& str, D3E::Debug::TextColor color)
 {
 	items_.push_back(str);
+	itemColors_.insert(eastl::pair(str, color));
 }
 void D3E::EditorConsole::ClearLog()
 {

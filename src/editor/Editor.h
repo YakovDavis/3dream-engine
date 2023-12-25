@@ -1,13 +1,14 @@
 #pragma once
 
+#include "D3E/Debug.h"
 #include "EASTL/shared_ptr.h"
+#include "EASTL/string.h"
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
 #include "imgui_impl_win32.h"
 #include "render/Display.h"
-#include "EASTL/string.h"
 
 namespace D3E
 {
@@ -19,7 +20,7 @@ namespace D3E
 		static Editor* instance_;
 	public:
 		static Editor* Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
-		static void PrintConsoleMessage(const eastl::string& str);
+		static void PrintConsoleMessage(const eastl::string& str, D3E::Debug::TextColor color);
 
 	private:
 		Game *game_;
@@ -32,7 +33,7 @@ namespace D3E
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
 		void SetStyle();
-		void PrintConsoleMessageInternal(const eastl::string& str);
+		void PrintConsoleMessageInternal(const eastl::string& str, D3E::Debug::TextColor color);
 
 		void DrawViewport(nvrhi::IFramebuffer* currentFramebuffer);
 		void DrawHeader();

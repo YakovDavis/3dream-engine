@@ -169,17 +169,17 @@ void D3E::Editor::Release()
 	}
 }
 
-void D3E::Editor::PrintConsoleMessage(const eastl::string& str)
+void D3E::Editor::PrintConsoleMessage(const eastl::string& str, D3E::Debug::TextColor color)
 {
 	if(instance_)
 	{
-		instance_->PrintConsoleMessageInternal(str);
+		instance_->PrintConsoleMessageInternal(str, color);
 	}
 }
 
-void D3E::Editor::PrintConsoleMessageInternal(const eastl::string& str)
+void D3E::Editor::PrintConsoleMessageInternal(const eastl::string& str, D3E::Debug::TextColor color)
 {
-	editorConsole_->PrintMessage(str);
+	editorConsole_->PrintMessage(str, color);
 }
 
 void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* currentFramebuffer)
