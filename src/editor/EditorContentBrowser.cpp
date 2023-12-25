@@ -38,10 +38,7 @@ void D3E::EditorContentBrowser::Draw()
 	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 	if (ImGui::BeginChild("Browser", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar))
 	{
-
-
 		ImGui::Columns(columnCount, 0 , false);
-
 
 		for (auto & directoryEntry : std::filesystem::directory_iterator(currentDirectory_))
 		{
@@ -93,7 +90,14 @@ void D3E::EditorContentBrowser::Draw()
 
 					ImGui::PopStyleColor();
 
-					ImGui::TextWrapped(RemovePath(metadata.at("filename")).c_str());
+					if(metadata.contains("filename"))
+					{
+						ImGui::TextWrapped(RemovePath(metadata.at("filename")).c_str());
+					}
+					else
+					{
+						ImGui::TextWrapped(RemovePath(metadata.at("name")).c_str());
+					}
 					ImGui::NextColumn();
 				}
 
