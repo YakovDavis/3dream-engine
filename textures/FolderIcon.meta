@@ -1,0 +1,14 @@
+{
+    "filename": "textures/FolderIcon.png",
+    "format": {
+        "channels": "RGBA8",
+        "dimensions": [
+            128,
+            128
+        ],
+        "type": "Texture2D"
+    },
+    "name": "FolderIcon",
+    "type": "texture2d",
+    "uuid": "2b7db204-d914-4d33-a4e4-dc7c7f9ff216"
+}

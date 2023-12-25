@@ -68,11 +68,11 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	frameGBuffer = device_->createFramebuffer(frameGBufferDesc);
 
 #ifdef USE_IMGUI
-	editor_ = D3E::Editor::Init(device_, display_);
+	editor_ = D3E::Editor::Init(device_, display_, parentGame);
 #endif
 
-	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
-	MeshFactory::Initialize(dynamic_cast<Game*>(parentApp));
+	ShaderFactory::Initialize(parentGame);
+	MeshFactory::Initialize(parentGame);
 
 	DefaultAssetLoader::LoadPrimitiveMeshes();
 	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
@@ -360,11 +360,11 @@ void D3E::GameRender::CalculateFrameStats()
 	*/
 }
 
-D3E::GameRender::GameRender(App* parent, HINSTANCE hInstance) : parentApp(parent)
+D3E::GameRender::GameRender(Game* parent, HINSTANCE hInstance) : parentGame(parent)
 {
-	assert(parentApp != nullptr);
+	assert(parentGame != nullptr);
 	assert(hInstance != nullptr);
-	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentApp->GetName().c_str()), hInstance, 1280, 720, parent);
+	display_ = eastl::make_shared<DisplayWin32>(reinterpret_cast<LPCWSTR>(parentGame->GetName().c_str()), hInstance, 1280, 720, parent);
 	messageCallback_ = new NvrhiMessageCallback();
 }
 

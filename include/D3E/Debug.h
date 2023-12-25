@@ -16,12 +16,11 @@ namespace D3E
 			Yellow,
 			Red,
 		};
-		inline static const String filePath_ = R"(..\..\..\..\..\log.txt)";
+		inline static const String filePath_ = R"(..\..\..\..\log.txt)";
 		static std::fstream fileStream;
 		static HANDLE console;
 	public:
 		static void LogMessage(const String& text);
-		static void LogMessage(const int& text);
 		static void LogWarning(const String& text);
 		static void LogError(const String& text);
 

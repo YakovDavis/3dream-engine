@@ -1,0 +1,14 @@
+{
+    "filename": "textures/AssetIcon.png",
+    "format": {
+        "channels": "RGBA8",
+        "dimensions": [
+            128,
+            128
+        ],
+        "type": "Texture2D"
+    },
+    "name": "AssetIcon",
+    "type": "texture2d",
+    "uuid": "e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"
+}

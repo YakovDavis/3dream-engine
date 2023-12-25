@@ -2,6 +2,7 @@
 
 #include "D3E/CommonHeader.h"
 #include "EASTL/vector.h"
+#include "entt/entt.hpp"
 
 namespace D3E
 {
@@ -16,7 +17,7 @@ namespace D3E
 	class EditorUtils
 	{
 	public:
-		static eastl::vector<ObjectInfo> ListActiveObjects();
+		static eastl::vector<entt::entity> ListActiveObjects();
 
 	private:
 		static void Initialize(Game* game);
