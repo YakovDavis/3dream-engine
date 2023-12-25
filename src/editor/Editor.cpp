@@ -199,8 +199,8 @@ void D3E::Editor::DrawPlay()
 void D3E::Editor::DrawHierarchy()
 {
 	ImGui::Begin("Hierarchy");
-	auto entities = EditorUtils::ListActiveObjects();
-	for(int i = entities.size() - 1; i >= 0 ; i--)
+	auto objects = EditorUtils::ListActiveObjects();
+	for(int i = objects.size() - 1; i >= 0 ; i--)
 	{
 		if(i > 0 && strcmp(objects[i].name.c_str(), objects[i - 1].name.c_str()) == 0)
 		{

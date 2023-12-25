@@ -14,7 +14,7 @@ void D3E::EditorUtils::Initialize(D3E::Game* game)
 	initialized_ = true;
 }
 
-eastl::vector<entt::entity> D3E::EditorUtils::ListActiveObjects()
+eastl::vector<D3E::ObjectInfo> D3E::EditorUtils::ListActiveObjects()
 {
 	Debug::Assert(initialized_, "Editor utils not initialized");
 	auto view = activeGame_->GetRegistry().view<ObjectInfoComponent>();
@@ -25,6 +25,6 @@ eastl::vector<entt::entity> D3E::EditorUtils::ListActiveObjects()
 					  return;
 				  }
 				  result.push_back({info.name, activeGame_->IsUuidEditorSelected(info.id)});
-	});
+			  });
 	return result;
 }

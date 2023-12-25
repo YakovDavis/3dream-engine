@@ -17,7 +17,7 @@ namespace D3E
 	class EditorUtils
 	{
 	public:
-		static eastl::vector<entt::entity> ListActiveObjects();
+		static eastl::vector<D3E::ObjectInfo> ListActiveObjects();
 
 	private:
 		static void Initialize(Game* game);

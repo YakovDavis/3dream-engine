@@ -80,7 +80,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	DefaultAssetLoader::LoadDefaultSamplers(device_);
 	DefaultAssetLoader::LoadDefaultMaterials();
 
-	debugRenderer_ = new DebugRenderer(device_, dynamic_cast<Game*>(parentApp));
+	debugRenderer_ = new DebugRenderer(device_, dynamic_cast<Game*>(parentGame));
 
 	for (auto& sys : systems)
 	{
