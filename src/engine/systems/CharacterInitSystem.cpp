@@ -21,6 +21,7 @@
 #include "input/Keys.h"
 
 #include "physics/ObjectLayers.h"
+
 #include "SimpleMath.h"
 
 #include <iostream>
@@ -131,7 +132,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		transform.position.y += new_velocity.GetY() * dT;
 		transform.position.z += new_velocity.GetZ() * dT;
 
-		camera.offset = transform.position;
+		//camera.offset = transform.position;
 
 		transform.rotation.x = rotation.GetX();
 		transform.rotation.y = rotation.GetY();

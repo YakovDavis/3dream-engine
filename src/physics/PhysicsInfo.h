@@ -12,10 +12,13 @@ namespace JPH
 
 namespace D3E
 {
+	class Game;
+	class JoltDebugRenderer;
+
 	class PhysicsInfo
 	{
 	public:
-		PhysicsInfo();
+		PhysicsInfo(Game* game);
 		~PhysicsInfo();
 		void updatePhysics();
 		JPH::PhysicsSystem* getPhysicsSystem() { return physicsSystem_; }
@@ -27,6 +30,7 @@ namespace D3E
 		BPLayerInterfaceImpl* bpLayerInterface_;
 		ObjectVsBroadPhaseLayerFilterImpl* objectVsBroadPhaseLayerFilter_;
 		ObjectLayerPairFilterImpl* objectLayerPairFilter_;
+		JoltDebugRenderer* joltRenderer_;
 		static constexpr int TEMP_ALLOCATOR_SIZE = 10 * 1024 * 1024;
 		static constexpr int MAX_BODIES = 65536;
 		static constexpr int NUM_BODY_MUTEXES = 0;

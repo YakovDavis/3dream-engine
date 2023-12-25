@@ -35,6 +35,7 @@ void CharacterGame::Init()
 
 	tc.position = Vector3(0, 0, 0);
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);
+	tc.position = Vector3(0.0f, 0.0f, 0.0f);
 	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
 	info.name = "Floor";
 

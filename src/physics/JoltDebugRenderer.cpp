@@ -21,6 +21,7 @@ public:
 
 D3E::JoltDebugRenderer::JoltDebugRenderer(Game* game) : game_(game)
 {
+	Initialize();
 }
 
 void D3E::JoltDebugRenderer::DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo,

@@ -204,6 +204,7 @@ endif()
 target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions("${PROJECT_NAME}" PRIVATE ${NVRHI_DEFINES})
+target_compile_definitions("${PROJECT_NAME}" PUBLIC "JPH_PROFILE_ENABLED" "JPH_DEBUG_RENDERER")
 
 set(SHADER_BULID_BATCH)
 file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/CompileShaders.bat" SHADER_BULID_BATCH)

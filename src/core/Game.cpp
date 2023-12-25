@@ -163,7 +163,7 @@ void D3E::Game::Init()
 
 	inputDevice_ = new InputDevice(this);
 
-	physicsInfo_ = new PhysicsInfo();
+	physicsInfo_ = new PhysicsInfo(this);
 
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
