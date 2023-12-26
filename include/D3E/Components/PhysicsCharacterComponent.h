@@ -11,14 +11,14 @@ namespace D3E
 	{
 		JPH::Ref<JPH::Character> character_;
 		float maxSlopeAngle_ = JPH::DegreesToRadians(50.0f);
-		JPH::Plane supportingVolume_ = JPH::Plane( JPH::Vec3::sAxisY(), -1.0e10f);
+		JPH::Plane supportingVolume_ = JPH::Plane( JPH::Vec3::sAxisY(), -0.3);
 		float collisionTolerance_ = 0.05f;
 		float time_ = 0.0f;
 		bool controlMovementDuringJump_ = true;
 		float yaw_ = 3.14f;
 		float pitch_ = 0.0f;
-		float speed_ = 0.02f;
-		float jumpSpeed_ = 0.02f;
+		float speed_ = 30.0f;
+		float jumpSpeed_ = 30.0f;
 		float sensitivityX_ = 0.01f;
 		float sensitivityY_ = 0.01f;
 		bool isLMBActivated_ = true;

@@ -127,6 +127,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 
 		// Update the velocity
 		character.character_->SetLinearVelocity(new_velocity);
+		//std::cout << new_velocity << "\n";
 
 		transform.position.x += new_velocity.GetX() * dT;
 		transform.position.y += new_velocity.GetY() * dT;
@@ -160,7 +161,7 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	RVec3 characterPosition;
 	Quat characterRotation;
 	character.character_->GetPositionAndRotation(characterPosition,characterRotation);
-	camera.offset = DirectX::SimpleMath::Vector3(characterPosition.GetX(), characterPosition.GetY(), characterPosition.GetZ());
+	//camera.offset = DirectX::SimpleMath::Vector3(characterPosition.GetX(), characterPosition.GetY(), characterPosition.GetZ());
 	auto transform = view.get<TransformComponent>(characterController);
 	transform.position = camera.offset;
 }

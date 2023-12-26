@@ -188,7 +188,8 @@ entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& regis
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	CameraComponent camera;
-	camera.offset = tc.position;
+	camera.offset.z = -5 * character.colliderParams_.x;
+	camera.offset.y = 2 * character.colliderParams_.x;
 	camera.forward = DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
 	camera.forward.y = 0;
 
@@ -212,6 +213,20 @@ entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& re
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<TransformComponent>(e, tc);
 	registry.emplace<PhysicsComponent>(e, physc);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateCharacterWithoutCamera(entt::registry& registry, const D3E::ObjectInfoComponent& info, const D3E::TransformComponent& tc, const D3E::PhysicsCharacterComponent& character)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent infoComponent;
+	infoComponent.name = info.name;
+	infoComponent.id = UuidGenerator::NewGuidString();
+	registry.emplace<ObjectInfoComponent>(e, infoComponent);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<PhysicsCharacterComponent>(e, character);
 
 	return e;
 }
