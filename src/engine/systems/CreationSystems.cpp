@@ -216,17 +216,3 @@ entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& re
 
 	return e;
 }
-
-entt::entity D3E::CreationSystems::CreateCharacterWithoutCamera(entt::registry& registry, const D3E::ObjectInfoComponent& info, const D3E::TransformComponent& tc, const D3E::PhysicsCharacterComponent& character)
-{
-	const auto e = registry.create();
-
-	ObjectInfoComponent infoComponent;
-	infoComponent.name = info.name;
-	infoComponent.id = UuidGenerator::NewGuidString();
-	registry.emplace<ObjectInfoComponent>(e, infoComponent);
-	registry.emplace<TransformComponent>(e, tc);
-	registry.emplace<PhysicsCharacterComponent>(e, character);
-
-	return e;
-}

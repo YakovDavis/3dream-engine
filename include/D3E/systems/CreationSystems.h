@@ -18,7 +18,6 @@ namespace D3E
 		static entt::entity CreateDefaultPlayer(entt::registry& registry, const TransformComponent& tc);
 		static entt::entity CreateEditorDebugRender(entt::registry& registry);
 		static entt::entity CreatePhysicalCharacter(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsCharacterComponent& character);
-		static entt::entity CreateCharacterWithoutCamera(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsCharacterComponent& character);
 		static entt::entity CreatePurelyPhysicalObject(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
 	};
 }
