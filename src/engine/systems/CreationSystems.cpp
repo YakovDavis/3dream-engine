@@ -188,10 +188,13 @@ entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& regis
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	CameraComponent camera;
-	camera.offset.z = -5 * character.colliderParams_.x;
+	camera.offset.z = 5 * character.colliderParams_.x;
 	camera.offset.y = 2 * character.colliderParams_.x;
+	camera.initialOffset = camera.offset;
 	camera.forward = DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
 	camera.forward.y = 0;
+	camera.up = Vector3::Transform(Vector3::Up, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, character.pitch_, 0.0f));
+	camera.offset = Vector3::Transform(camera.offset, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, 0.0f, 0.0f));
 
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<CameraComponent>(e, camera);

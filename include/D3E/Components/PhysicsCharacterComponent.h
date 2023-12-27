@@ -15,7 +15,7 @@ namespace D3E
 		float collisionTolerance_ = 0.05f;
 		float time_ = 0.0f;
 		bool controlMovementDuringJump_ = true;
-		float yaw_ = 3.14f;
+		float yaw_ = 0.0f;
 		float pitch_ = 0.0f;
 		float speed_ = 30.0f;
 		float jumpSpeed_ = 30.0f;

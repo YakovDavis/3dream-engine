@@ -73,6 +73,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 
 	camera.up = Vector3::Transform(Vector3::Up, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, character.pitch_, 0.0f));
 	camera.forward = Vector3::Transform(Vector3::Forward, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, character.pitch_, 0.0f));
+	camera.offset = Vector3::Transform(camera.initialOffset, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, 0.0f, 0.0f));
 
 	// Determine controller input
 	Vec3 control_input = Vec3::sZero();
