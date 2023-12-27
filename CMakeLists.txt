@@ -163,6 +163,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/render/DebugRenderer.h
         src/physics/JoltDebugRenderer.cpp
         src/physics/JoltDebugRenderer.h
+        src/assetmng/SoundMetaData.cpp
+        src/assetmng/SoundMetaData.h
 )
 
 add_subdirectory(libs)
@@ -170,6 +172,7 @@ add_subdirectory(libs)
 target_include_directories("${PROJECT_NAME}" PUBLIC libs/sol)
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/stb libs/nlohmann)
 target_include_directories("${PROJECT_NAME}" PUBLIC libs/uuid_v4)
+
 
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Inc)
 target_include_directories("${PROJECT_NAME}" PRIVATE libs/DirectXTK12/Src)
@@ -187,6 +190,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         nvrhi
         nvrhi_d3d12
         imgui
+        imguizmo
         FmodCore
         FmodStudio
         EASTL

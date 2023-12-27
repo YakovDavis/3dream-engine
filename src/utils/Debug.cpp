@@ -1,6 +1,7 @@
 #include "D3E/Debug.h"
 #include <chrono>
 #include <iostream>
+#include "editor/Editor.h"
 
 std::fstream D3E::Debug::fileStream;
 HANDLE D3E::Debug::console = GetStdHandle(STD_OUTPUT_HANDLE);;
@@ -9,34 +10,27 @@ void D3E::Debug::LogMessage(const String& text)
 {
 	auto time = GetTime();
 	const String message = time + " " + text;
-	PrintColoredText(Color::White, message);
+	PrintColoredText(TextColor::White, message);
 	LogText(message);
-}
-
-void D3E::Debug::LogMessage(const int& text)
-{
-	auto time = GetTime();
-	std::stringstream stream;
-	stream << time.c_str() << " " << text;
-	auto message = stream.str().c_str();
-	PrintColoredText(Color::White, message);
-	LogText(message);
+	Editor::PrintConsoleMessage(message, White);
 }
 
 void D3E::Debug::LogWarning(const String& text)
 {
 	auto time = GetTime();
 	const String warning = time + " " + text;
-	PrintColoredText(Color::Yellow, warning);
+	PrintColoredText(TextColor::Yellow, warning);
 	LogText("WARNING: " + warning);
+	Editor::PrintConsoleMessage(warning, Yellow);
 }
 
 void D3E::Debug::LogError(const String& text)
 {
 	auto time = GetTime();
 	const String error = time + " " + text;
-	PrintColoredText(Color::Red, error);
+	PrintColoredText(TextColor::Red, error);
 	LogText("ERROR!!!: " + error);
+	Editor::PrintConsoleMessage(error, Red);
 }
 
 void D3E::Debug::Assert(bool condition, const String& text)
@@ -54,7 +48,7 @@ void D3E::Debug::ClearLog()
 		fileStream.open(filePath_.c_str(), std::ios_base::out | std::ios_base::trunc);
 		if (!fileStream.is_open())
 		{
-			PrintColoredText(Color::Red, "Can't open log file");
+			PrintColoredText(TextColor::Red, "Can't open log file");
 			return;
 		}
 	}
@@ -70,7 +64,7 @@ void D3E::Debug::CloseLog()
 	}
 }
 
-void D3E::Debug::PrintColoredText(D3E::Debug::Color color, const String& text)
+void D3E::Debug::PrintColoredText(D3E::Debug::TextColor color, const String& text)
 {
 	if(!console)
 	{
@@ -121,7 +115,7 @@ void D3E::Debug::LogText(const String& text)
 		fileStream.open(filePath_.c_str(), std::ios_base::out | std::ios_base::app);
 		if (!fileStream.is_open())
 		{
-			PrintColoredText(Color::Red, "Can't open log file");
+			PrintColoredText(TextColor::Red, "Can't open log file");
 			return;
 		}
 	}

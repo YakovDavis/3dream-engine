@@ -84,7 +84,7 @@ entt::entity D3E::CreationSystems::CreateSM(
 	StaticMeshComponent sm;
 	sm.meshUuid = meshUuid;
 	sm.pipelineName = "GBuffer";
-		sm.materialUuid = materialUuid;
+	sm.materialUuid = materialUuid;
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;

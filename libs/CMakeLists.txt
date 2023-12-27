@@ -17,6 +17,9 @@ add_subdirectory(nvrhi)
 # imgui
 add_subdirectory(imgui)
 
+# imguizmo
+add_subdirectory(imguizmo)
+
 # FMOD
 add_subdirectory(fmod)
 

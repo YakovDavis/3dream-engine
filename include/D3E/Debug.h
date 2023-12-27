@@ -10,18 +10,17 @@ namespace D3E
 	class Debug
 	{
 	private:
-		enum Color
+		inline static const String filePath_ = R"(..\..\..\..\log.txt)";
+		static std::fstream fileStream;
+		static HANDLE console;
+	public:
+		enum TextColor
 		{
 			White,
 			Yellow,
 			Red,
 		};
-		inline static const String filePath_ = R"(..\..\..\..\..\log.txt)";
-		static std::fstream fileStream;
-		static HANDLE console;
-	public:
 		static void LogMessage(const String& text);
-		static void LogMessage(const int& text);
 		static void LogWarning(const String& text);
 		static void LogError(const String& text);
 
@@ -32,7 +31,7 @@ namespace D3E
 		static void ClearLog();
 		static void CloseLog();
 	private:
-		static void PrintColoredText(Color color, const String& text);
+		static void PrintColoredText(TextColor color, const String& text);
 		static void LogText(const String& text);
 		static String GetTime();
 	};
