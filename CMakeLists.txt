@@ -153,6 +153,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorIdManager.cpp
         src/editor/EditorIdManager.h
         src/render/PickConstBuffer.h
+        include/D3E/Components/PhysicsCharacterComponent.h
+        src/engine/systems/CharacterInitSystem.h
+        src/engine/systems/CharacterInitSystem.cpp
         src/assetmng/MaterialFactory.cpp
         src/assetmng/MaterialFactory.h
         src/assetmng/Material.cpp
@@ -205,6 +208,7 @@ endif()
 target_compile_definitions(nvrhi PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions(nvrhi_d3d12 PRIVATE ${NVRHI_DEFINES})
 target_compile_definitions("${PROJECT_NAME}" PRIVATE ${NVRHI_DEFINES})
+target_compile_definitions("${PROJECT_NAME}" PUBLIC "JPH_PROFILE_ENABLED" "JPH_DEBUG_RENDERER")
 
 set(SHADER_BULID_BATCH)
 file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/CompileShaders.bat" SHADER_BULID_BATCH)
@@ -229,11 +233,19 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
 
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_BINARY_DIR}/D3Engined.dll"        
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
         "${CMAKE_BINARY_DIR}/samples/NewCube"
+        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+)
+
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/Character"
         COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
 )
 
 add_subdirectory(samples/ducks)
 add_subdirectory(samples/scriptingsandbox)
 add_subdirectory(samples/NewCube)
+add_subdirectory(samples/Character)

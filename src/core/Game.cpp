@@ -34,6 +34,7 @@
 #include "physics/PhysicsInfo.h"
 #include "engine/systems/PhysicsInitSystem.h"
 #include "engine/systems/PhysicsUpdateSystem.h"
+#include "engine/systems/CharacterInitSystem.h"
 
 #include <filesystem>
 #include <thread>
@@ -86,7 +87,17 @@ void D3E::Game::Run()
 
 		gameRender_->PrimitiveBatchStart();
 
+		for (auto& sys : systems_)
+		{
+			sys->PrePhysicsUpdate(registry_, this, deltaTime_);
+		}
+
 		physicsInfo_->updatePhysics();
+
+		for (auto& sys : systems_)
+		{
+			sys->PostPhysicsUpdate(registry_);
+		}
 
 		Update(deltaTime_);
 
@@ -162,7 +173,7 @@ void D3E::Game::Init()
 
 	inputDevice_ = new InputDevice(this);
 
-	physicsInfo_ = new PhysicsInfo();
+	physicsInfo_ = new PhysicsInfo(this);
 
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
@@ -173,6 +184,7 @@ void D3E::Game::Init()
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new CharacterInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);

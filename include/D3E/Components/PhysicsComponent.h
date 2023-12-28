@@ -29,7 +29,7 @@ namespace D3E
 		bool isInitialized_ = false;
 
 		JPH::BodyID bodyID_;
-		JPH::Ref<JPH::Shape> collider_ = nullptr;
+		JPH::Ref<JPH::Shape> collider_;
 		ColliderType colliderType_;
 		DirectX::SimpleMath::Vector4 colliderParams_;
 		float mass_;

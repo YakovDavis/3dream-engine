@@ -2,6 +2,7 @@
 
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/StaticMeshComponent.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
@@ -9,6 +10,8 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -53,8 +56,11 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 					{
 						body.SetRestitution(component.restitution_);
 					}
-					body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
-					body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+					if (component.motionType_ != JPH::EMotionType::Static)
+					{
+						body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+						body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+					}
 				}
 			}
 		}
@@ -66,6 +72,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
                              entt::entity entity)
 {
 	auto& physicsComponent = registry.get<PhysicsComponent>(entity);
+	const auto& transformComponent = registry.get<TransformComponent>(entity);
 	BodyInterface &body_interface = physicsSystem_->GetBodyInterface();
 	switch (physicsComponent.colliderType_)
 	{
@@ -96,6 +103,21 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 			physicsComponent.collider_ = new CylinderShape(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y);
 			break;
 		}
+		/*case ConvexHullCollider:
+		{
+			auto& meshComponent = registry.get<StaticMeshComponent>(entity);
+			ConvexHullShapeSettings shapeSettings(meshComponent.)
+		}*/
+		/*case HeightFieldCollider:
+		{
+			if (physicsComponent.heightMap_)
+			{
+				HeightFieldShapeSettings shapeSettings(physicsComponent.heightMap_, Vec3Arg(transformComponent.position.x, transformComponent.position.y, transformComponent.position.z),
+				                                       Vec3Arg(transformComponent.scale.x, transformComponent.scale.y, transformComponent.scale.z), physicsComponent.heightMapSize_);
+				ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+				physicsComponent.collider_ = new HeightFieldShape(shapeSettings, shapeResult);
+			}
+		}*/
 	}
 	//ShapeSettings::ShapeResult shapeResult = physicsComponent.collider_->Create();
 	//ShapeRefC colliderRef = shapeResult.Get();
@@ -106,7 +128,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 		physicsComponent.collider_ = shapeResult.Get();
 	}
-	const auto& transformComponent = registry.get<TransformComponent>(entity);
+
 	ObjectLayer currentLayer;
 	switch (physicsComponent.motionType_)
 	{
@@ -134,8 +156,11 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		bodySettings.mRestitution = physicsComponent.restitution_;
 	}
-	bodySettings.mLinearVelocity = Vec3Arg(physicsComponent.velocity_.x, physicsComponent.velocity_.y, physicsComponent.velocity_.z);
-	bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
+	if (physicsComponent.motionType_ != JPH::EMotionType::Static)
+	{
+		bodySettings.mLinearVelocity = Vec3Arg(physicsComponent.velocity_.x, physicsComponent.velocity_.y, physicsComponent.velocity_.z);
+		bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
+	}
 
 	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 

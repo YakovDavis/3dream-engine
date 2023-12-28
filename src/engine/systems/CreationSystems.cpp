@@ -162,17 +162,12 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
 
-	TransformComponent transform(tc);
-	transform.position = tc.position;
-	transform.rotation = tc.rotation;
-	transform.scale = tc.scale;
-
 	SoundComponent sound;
 	sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
-	sound.location = transform.position;
+	sound.location = tc.position;
 
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<TransformComponent>(e, tc);
@@ -180,6 +175,47 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	registry.emplace<PhysicsComponent>(e, physc);
 	StaticMeshInitSystem::IsDirty = true;
 	registry.emplace<SoundComponent>(e, sound);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& registry, const D3E::ObjectInfoComponent& info,
+                                                           const D3E::TransformComponent& tc, const D3E::PhysicsCharacterComponent& character)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent infoComponent;
+	infoComponent.name = info.name;
+	infoComponent.id = UuidGenerator::NewGuidString();
+	CameraComponent camera;
+	camera.offset.z = 5 * character.colliderParams_.x;
+	camera.offset.y = 2 * character.colliderParams_.x;
+	camera.initialOffset = camera.offset;
+	camera.forward = DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
+	camera.forward.y = 0;
+	camera.up = Vector3::Transform(Vector3::Up, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, character.pitch_, 0.0f));
+	camera.offset = Vector3::Transform(camera.offset, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, 0.0f, 0.0f));
+
+	registry.emplace<ObjectInfoComponent>(e, infoComponent);
+	registry.emplace<CameraComponent>(e, camera);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<PhysicsCharacterComponent>(e, character);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& registry, const D3E::ObjectInfoComponent& info,
+                                                              const D3E::TransformComponent& tc, const D3E::PhysicsComponent& physc)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent infoComponent;
+	infoComponent.name = info.name;
+	infoComponent.id = UuidGenerator::NewGuidString();
+
+	registry.emplace<ObjectInfoComponent>(e, infoComponent);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<PhysicsComponent>(e, physc);
 
 	return e;
 }

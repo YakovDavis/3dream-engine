@@ -1,4 +1,7 @@
+#include "JoltDebugRenderer.h"
+
 #include "PhysicsInfo.h"
+#include "D3E/Game.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
@@ -11,7 +14,7 @@
 
 using namespace JPH;
 
-D3E::PhysicsInfo::PhysicsInfo()
+D3E::PhysicsInfo::PhysicsInfo(Game* game)
 {
 	RegisterDefaultAllocator();
 	Factory::sInstance = new Factory();
@@ -23,6 +26,7 @@ D3E::PhysicsInfo::PhysicsInfo()
 	objectLayerPairFilter_ = new ObjectLayerPairFilterImpl;
 	physicsSystem_ = new PhysicsSystem;
 	physicsSystem_->Init(MAX_BODIES, NUM_BODY_MUTEXES, MAX_BODY_PAIRS, MAX_CONSTRAINTS, *bpLayerInterface_, *objectVsBroadPhaseLayerFilter_, *objectLayerPairFilter_);
+	joltRenderer_ = new JoltDebugRenderer(game);
 }
 
 D3E::PhysicsInfo::~PhysicsInfo()
@@ -39,4 +43,7 @@ D3E::PhysicsInfo::~PhysicsInfo()
 void D3E::PhysicsInfo::updatePhysics()
 {
 	physicsSystem_->Update(DELTA_TIME, COLLISION_STEPS, tempAllocator_, jobSystem_);
+	BodyManager::DrawSettings settings;
+	physicsSystem_->DrawBodies(settings, joltRenderer_);
+
 }

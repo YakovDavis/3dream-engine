@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.26)
-project(Ducks)
+project(Character)
 
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(${PROJECT_NAME} WIN32
-        src/DuckGame.cpp
-        src/DuckGame.h)
+        src/CharacterGame.cpp
+        src/CharacterGame.h)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE)
@@ -47,7 +47,7 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         "${CMAKE_BINARY_DIR}/Shaders"
         "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
     COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
-    
+
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/materials"
         "${CMAKE_CURRENT_BINARY_DIR}/materials"
