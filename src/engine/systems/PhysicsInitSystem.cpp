@@ -162,6 +162,8 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		bodySettings.mAngularVelocity = Vec3Arg(physicsComponent.angularVelocity_.x, physicsComponent.angularVelocity_.y, physicsComponent.angularVelocity_.z);
 	}
 
+	bodySettings.mIsSensor = physicsComponent.isSensor_;
+
 	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 
 	physicsComponent.isInitialized_ = true;

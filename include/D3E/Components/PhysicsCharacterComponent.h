@@ -18,7 +18,7 @@ namespace D3E
 		float yaw_ = 0.0f;
 		float pitch_ = 0.0f;
 		float speed_ = 30.0f;
-		float jumpSpeed_ = 30.0f;
+		float jumpSpeed_ = 10.0f;
 		float sensitivityX_ = 0.01f;
 		float sensitivityY_ = 0.01f;
 		bool isLMBActivated_ = true;

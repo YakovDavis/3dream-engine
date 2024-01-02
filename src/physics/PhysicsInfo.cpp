@@ -1,6 +1,7 @@
 #include "JoltDebugRenderer.h"
 
 #include "PhysicsInfo.h"
+#include "JoltContactListener.h"
 #include "D3E/Game.h"
 
 #include <Jolt/Jolt.h>
@@ -27,6 +28,9 @@ D3E::PhysicsInfo::PhysicsInfo(Game* game)
 	physicsSystem_ = new PhysicsSystem;
 	physicsSystem_->Init(MAX_BODIES, NUM_BODY_MUTEXES, MAX_BODY_PAIRS, MAX_CONSTRAINTS, *bpLayerInterface_, *objectVsBroadPhaseLayerFilter_, *objectLayerPairFilter_);
 	joltRenderer_ = new JoltDebugRenderer(game);
+	contactListener_ = new JoltContactListener();
+	//contactListener_->SetNextListener(mTest->GetContactListener());
+	physicsSystem_->SetContactListener(contactListener_);
 }
 
 D3E::PhysicsInfo::~PhysicsInfo()
@@ -38,6 +42,8 @@ D3E::PhysicsInfo::~PhysicsInfo()
 	delete objectVsBroadPhaseLayerFilter_;
 	delete objectLayerPairFilter_;
 	delete physicsSystem_;
+	delete joltRenderer_;
+	delete contactListener_;
 }
 
 void D3E::PhysicsInfo::updatePhysics()

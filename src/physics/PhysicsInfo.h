@@ -14,6 +14,7 @@ namespace D3E
 {
 	class Game;
 	class JoltDebugRenderer;
+	class JoltContactListener;
 
 	class PhysicsInfo
 	{
@@ -31,6 +32,7 @@ namespace D3E
 		ObjectVsBroadPhaseLayerFilterImpl* objectVsBroadPhaseLayerFilter_;
 		ObjectLayerPairFilterImpl* objectLayerPairFilter_;
 		JoltDebugRenderer* joltRenderer_;
+		JoltContactListener* contactListener_;
 		static constexpr int TEMP_ALLOCATOR_SIZE = 10 * 1024 * 1024;
 		static constexpr int MAX_BODIES = 65536;
 		static constexpr int NUM_BODY_MUTEXES = 0;
