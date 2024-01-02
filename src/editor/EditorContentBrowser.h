@@ -1,8 +1,8 @@
 #pragma once
 
+#include "filesystem"
 #include "imgui.h"
 #include "string"
-#include "filesystem"
 
 namespace D3E
 {
@@ -12,6 +12,8 @@ namespace D3E
 		bool open_;
 		std::filesystem::path rootDirectory_;
 		std::filesystem::path currentDirectory_;
+		static std::string RemoveExtension(std::string basicString);
+		static std::string RemovePath(std::string str);
 	public:
 		void Draw();
 		EditorContentBrowser();

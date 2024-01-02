@@ -7,6 +7,7 @@ namespace D3E
 	struct CameraComponent
 	{
 		DirectX::SimpleMath::Vector3 offset = {0, 0, 0};
+		DirectX::SimpleMath::Vector3 initialOffset = {0, 0, 0};
 		DirectX::SimpleMath::Vector3 forward = {0, 0, 1};
 		DirectX::SimpleMath::Vector3 up = {0, 1, 0};
 		bool isOrthographic = false;

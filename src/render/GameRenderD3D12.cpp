@@ -100,7 +100,7 @@ void D3E::GameRenderD3D12::Init(eastl::vector<GameSystem*>& systems)
 
 	//OnResize();
 
-	ShaderFactory::Initialize(dynamic_cast<Game*>(parentApp));
+	ShaderFactory::Initialize(dynamic_cast<Game*>(parentGame));
 
 	GameRender::Init(systems);
 }
@@ -364,7 +364,7 @@ void D3E::GameRenderD3D12::LogOutputDisplayModes(IDXGIOutput* output,
 	}
 }
 
-D3E::GameRenderD3D12::GameRenderD3D12(App* parent, HINSTANCE hInstance)
+D3E::GameRenderD3D12::GameRenderD3D12(Game* parent, HINSTANCE hInstance)
 	: GameRender(parent, hInstance)
 {
 }

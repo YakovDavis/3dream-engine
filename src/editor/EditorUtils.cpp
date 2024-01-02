@@ -25,6 +25,6 @@ eastl::vector<D3E::ObjectInfo> D3E::EditorUtils::ListActiveObjects()
 					  return;
 				  }
 				  result.push_back({info.name, activeGame_->IsUuidEditorSelected(info.id)});
-	});
+			  });
 	return result;
 }

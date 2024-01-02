@@ -1,5 +1,9 @@
 #pragma once
 
+#include "D3E/Debug.h"
+#include "EASTL/map.h"
+#include "EASTL/string.h"
+#include "EASTL/vector.h"
 #include "imgui.h"
 
 namespace D3E
@@ -9,7 +13,8 @@ namespace D3E
 	private:
 		bool open_;
 		char inputBuffer_[256];
-		ImVector<char*> items_;
+		eastl::vector<eastl::string> items_;
+		eastl::map<eastl::string, D3E::Debug::TextColor> itemColors_;
 		ImVector<char*> history_;
 		int historyPos_;
 		ImGuiTextFilter filter_;
@@ -21,6 +26,7 @@ namespace D3E
 	public:
 		EditorConsole();
 		void Draw();
+		void PrintMessage(const eastl::string& str, D3E::Debug::TextColor color);
 		void ClearLog();
 	};
 }
