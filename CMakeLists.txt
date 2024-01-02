@@ -166,6 +166,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/assetmng/SoundMetaData.cpp
         src/assetmng/SoundMetaData.h
         src/engine/PrefabMetadata.h
+        src/components/ObjectInfoComponent.cpp
+        src/components/TransformComponent.cpp
+        src/components/render/StaticMeshComponent.cpp
+        src/components/render/CameraComponent.cpp
+        src/components/render/LightComponent.cpp
 )
 
 add_subdirectory(libs)

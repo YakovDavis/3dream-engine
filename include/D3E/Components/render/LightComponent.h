@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include "nvrhi/nvrhi.h"
 #include "SimpleMath.h"
 

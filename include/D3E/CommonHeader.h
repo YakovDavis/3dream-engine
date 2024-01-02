@@ -3,6 +3,9 @@
 #define COMMON_HEADER_H
 
 #include "EASTL/string.h"
+#include "json_fwd.hpp"
+
+using json = nlohmann::json;
 
 namespace D3E
 {
