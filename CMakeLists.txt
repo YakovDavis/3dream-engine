@@ -178,6 +178,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/components/PhysicsCharacterComponent.cpp
         src/components/ScriptComponent.cpp
         src/components/PhysicsComponent.cpp
+        src/physics/JoltContactListener.h
+        src/physics/JoltContactListener.h
+        src/physics/JoltContactListener.cpp
 )
 
 add_subdirectory(libs)

@@ -77,8 +77,8 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 
 	// Determine controller input
 	Vec3 control_input = Vec3::sZero();
-	if (game->GetInputDevice()->IsKeyDown(Keys::A))		control_input.SetZ(-1);
-	if (game->GetInputDevice()->IsKeyDown(Keys::D))	control_input.SetZ(1);
+	if (game->GetInputDevice()->IsKeyDown(Keys::A))		control_input.SetZ(1);
+	if (game->GetInputDevice()->IsKeyDown(Keys::D))	control_input.SetZ(-1);
 	if (game->GetInputDevice()->IsKeyDown(Keys::W))		control_input.SetX(1);
 	if (game->GetInputDevice()->IsKeyDown(Keys::S))		control_input.SetX(-1);
 	if (control_input != Vec3::sZero())

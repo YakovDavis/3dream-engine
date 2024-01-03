@@ -23,7 +23,7 @@ void CharacterGame::Init()
 
 	character.colliderType_ = D3E::ColliderType::CapsuleCollider;
 	character.colliderParams_ = DirectX::SimpleMath::Vector4(1.0f, 1.0f, 0.0f, 0.0f);
-	character.mass_ = 1.0f;
+	character.mass_ = 1000.0f;
 	character.friction_ = 0.2f;
 	character.restitution_ = 0.0f;
 
@@ -33,7 +33,6 @@ void CharacterGame::Init()
 
 	D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info, tc, character);
 
-	tc.position = Vector3(0, 0, 0);
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);
 	tc.position = Vector3(0.0f, 0.0f, 0.0f);
 	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
@@ -42,6 +41,14 @@ void CharacterGame::Init()
 	physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
 	physComponent.motionType_ = JPH::EMotionType::Static;
 
+	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc, physComponent);
+
+	tc.position = Vector3(0.0f, 0.0f, 20.0f);
+	tc.scale = Vector3(3.0f, 3.0f, 3.0f);
+	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(1.5f, 1.5f, 1.5f, 0.0f);
+	physComponent.isSensor_ = true;
+	info.name = "Cube";
+	physComponent.motionType_ = JPH::EMotionType::Static;
 	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc, physComponent);
 
 	info.name = "DirectionalLight";

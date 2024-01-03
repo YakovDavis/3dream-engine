@@ -37,6 +37,7 @@ namespace D3E
 		float friction_;
 		float restitution_;
 		bool hasOffsetCenterOfMass_ = false;
+		bool isSensor_ = false;
 		DirectX::SimpleMath::Vector3 centerOfMassOffset_;
 		JPH::EMotionType motionType_;
 		DirectX::SimpleMath::Vector3 velocity_;
