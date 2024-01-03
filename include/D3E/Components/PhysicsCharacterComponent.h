@@ -1,6 +1,8 @@
 #ifndef D3ENGINE_PHYSICSCHARACTERCOMPONENT_H
 #define D3ENGINE_PHYSICSCHARACTERCOMPONENT_H
 
+#include "D3E/CommonHeader.h"
+#include "D3E/Components/PhysicsComponent.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Character/Character.h>
 #include <Jolt/Geometry/Plane.h>
@@ -34,6 +36,10 @@ namespace D3E
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
 	};
+
+	void to_json(json& j, const PhysicsCharacterComponent& t);
+
+	void from_json(const json& j, PhysicsCharacterComponent& t);
 }
 
 #endif // D3ENGINE_PHYSICSCHARACTERCOMPONENT_H

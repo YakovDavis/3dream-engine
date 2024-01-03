@@ -2,6 +2,9 @@
 
 #include "D3E/CommonHeader.h"
 #include "D3E/Uuid.h"
+#include "json_fwd.hpp"
+
+using json = nlohmann::json;
 
 namespace D3E
 {
@@ -13,4 +16,8 @@ namespace D3E
 		uint32_t editorId = 0;
 		bool visible = true; // TODO: implement
 	};
+
+	void to_json(json& j, const ObjectInfoComponent& t);
+
+	void from_json(const json& j, ObjectInfoComponent& t);
 } // namespace D3E

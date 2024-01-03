@@ -17,4 +17,8 @@ namespace D3E
 
 		bool initialized = false;
 	};
+
+	void to_json(json& j, const StaticMeshComponent& t);
+
+	void from_json(const json& j, StaticMeshComponent& t);
 }

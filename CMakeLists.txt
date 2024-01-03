@@ -165,6 +165,19 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/JoltDebugRenderer.h
         src/assetmng/SoundMetaData.cpp
         src/assetmng/SoundMetaData.h
+        src/engine/PrefabMetadata.h
+        src/components/ObjectInfoComponent.cpp
+        src/components/TransformComponent.cpp
+        src/components/render/StaticMeshComponent.cpp
+        src/components/render/CameraComponent.cpp
+        src/components/render/LightComponent.cpp
+        src/components/sound/SoundComponent.cpp
+        src/components/sound/SoundListenerComponent.cpp
+        src/components/FPSControllerComponent.cpp
+        src/components/MouseComponent.cpp
+        src/components/PhysicsCharacterComponent.cpp
+        src/components/ScriptComponent.cpp
+        src/components/PhysicsComponent.cpp
         src/physics/JoltContactListener.h
         src/physics/JoltContactListener.h
         src/physics/JoltContactListener.cpp

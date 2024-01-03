@@ -1,5 +1,7 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
+
 namespace D3E
 {
 	struct FPSControllerComponent
@@ -11,4 +13,8 @@ namespace D3E
 		float sensitivityY = 0.01f;
 		bool isLMBActivated = true;
 	};
+
+	void to_json(json& j, const FPSControllerComponent& t);
+
+	void from_json(const json& j, FPSControllerComponent& t);
 }

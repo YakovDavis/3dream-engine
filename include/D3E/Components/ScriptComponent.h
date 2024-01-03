@@ -1,6 +1,5 @@
 #pragma once
 
-#include "D3E/CommonHeader.h"
 #include "EASTL/string.h"
 #include "entt/entt.hpp"
 #include "sol/sol.hpp"

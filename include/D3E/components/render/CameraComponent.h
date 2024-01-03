@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include "SimpleMath.h"
 
 namespace D3E
@@ -18,4 +19,8 @@ namespace D3E
 		float nearPlane = 1.0f;
 		float farPlane = 1000.f;
 	};
+
+	void to_json(json& j, const CameraComponent& t);
+
+	void from_json(const json& j, CameraComponent& t);
 }

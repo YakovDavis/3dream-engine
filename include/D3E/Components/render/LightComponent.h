@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include "nvrhi/nvrhi.h"
 #include "SimpleMath.h"
 
@@ -26,4 +27,8 @@ namespace D3E
 		nvrhi::BufferHandle csmCBuffer;
 		bool initialized = false;
 	};
+
+	void to_json(json& j, const LightComponent& t);
+
+	void from_json(const json& j, LightComponent& t);
 }

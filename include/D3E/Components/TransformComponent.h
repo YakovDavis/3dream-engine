@@ -1,7 +1,9 @@
 #pragma once
 
 #include "SimpleMath.h"
+#include "json_fwd.hpp"
 
+using json = nlohmann::json;
 using namespace DirectX::SimpleMath;
 
 namespace D3E
@@ -16,4 +18,8 @@ namespace D3E
 		Quaternion relativeRotation = Quaternion(0.f, 0.f, 0.f, 1.f);
 		Vector3 relativeScale = Vector3(1.f, 1.f, 1.f);
 	};
+
+	void to_json(json& j, const TransformComponent& t);
+
+	void from_json(const json& j, TransformComponent& t);
 } // namespace D3E

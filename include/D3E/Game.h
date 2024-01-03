@@ -61,6 +61,8 @@ namespace D3E
 
 		eastl::vector<GameSystem*> renderPPsystems_;
 
+		virtual void OnRegisterCustomComponents() {}
+
 		virtual void Init();
 
 		virtual void Update(float deltaTime);
@@ -93,5 +95,7 @@ namespace D3E
 		void HandleMessages();
 
 		eastl::hash_set<String> selectedUuids;
+
+		void RegisterDefaultComponents();
 	};
 } // namespace D3E
