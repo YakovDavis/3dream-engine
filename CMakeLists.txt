@@ -171,6 +171,13 @@ add_library("${PROJECT_NAME}" SHARED
         src/components/render/StaticMeshComponent.cpp
         src/components/render/CameraComponent.cpp
         src/components/render/LightComponent.cpp
+        src/components/sound/SoundComponent.cpp
+        src/components/sound/SoundListenerComponent.cpp
+        src/components/FPSControllerComponent.cpp
+        src/components/MouseComponent.cpp
+        src/components/PhysicsCharacterComponent.cpp
+        src/components/ScriptComponent.cpp
+        src/components/PhysicsComponent.cpp
 )
 
 add_subdirectory(libs)

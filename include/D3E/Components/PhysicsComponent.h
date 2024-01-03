@@ -1,6 +1,7 @@
 #ifndef D3ENGINE_PHYSICSCOMPONENT_H
 #define D3ENGINE_PHYSICSCOMPONENT_H
 
+#include "D3E/CommonHeader.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyID.h>
@@ -41,6 +42,10 @@ namespace D3E
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
 	};
+
+	void to_json(json& j, const PhysicsComponent& t);
+
+	void from_json(const json& j, PhysicsComponent& t);
 }
 
 
