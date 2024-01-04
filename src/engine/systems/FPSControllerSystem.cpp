@@ -48,8 +48,9 @@ void D3E::FPSControllerSystem::Update(entt::registry& reg, Game* game, float dT)
 void FPSControllerSystem::UpdateFpsComponent(FPSControllerComponent& fpscc,
                                              Game* game)
 {
-	if (game->GetInputDevice()->IsKeyDown(Keys::LeftButton) ||
-	    !fpscc.isLMBActivated)
+	if ((game->GetInputDevice()->IsKeyDown(Keys::LeftButton) ||
+	    !fpscc.isLMBActivated) && (game->GetInputDevice()->IsKeyDown(Keys::RightButton) ||
+	     !fpscc.isRMBActivated))
 	{
 		fpscc.yaw +=
 			fpscc.sensitivityX * game->GetInputDevice()->MouseOffsetInTick.x;

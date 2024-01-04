@@ -11,17 +11,22 @@
 #include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
+#include "EngineState.h"
 #include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
+#include "engine/systems/CharacterInitSystem.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/PhysicsInitSystem.h"
+#include "engine/systems/PhysicsUpdateSystem.h"
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
+#include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
@@ -31,10 +36,6 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
-#include "physics/PhysicsInfo.h"
-#include "engine/systems/PhysicsInitSystem.h"
-#include "engine/systems/PhysicsUpdateSystem.h"
-#include "engine/systems/CharacterInitSystem.h"
 
 #include <filesystem>
 #include <thread>
@@ -101,7 +102,7 @@ void D3E::Game::Run()
 
 		Update(deltaTime_);
 
-		if (!lmbPressedLastTick && inputDevice_->IsKeyDown(Keys::LeftButton))
+		if (lmbPressedLastTick && !inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
 			Pick();
 		}
@@ -132,6 +133,7 @@ void D3E::Game::Init()
 	}
 
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
+	EngineState::Initialize(this);
 	gameRender_->Init(systems_);
 
 	// AssetManager::Get().CreateTexture("default-grid",
@@ -245,6 +247,9 @@ D3E::Game::Game() : soundEngine_{nullptr}
 	prevCycleTimePoint_ =
 		new eastl::chrono::time_point<eastl::chrono::steady_clock>(
 			eastl::chrono::steady_clock::now());
+
+	registry_.on_construct<ObjectInfoComponent>().connect<&Game::OnObjectInfoConstruct>(this);
+	registry_.on_destroy<ObjectInfoComponent>().connect<&Game::OnObjectInfoDestroy>(this);
 }
 
 void D3E::Game::HandleMessages()
@@ -362,12 +367,6 @@ float D3E::Game::GetDeltaTime() const
 	return deltaTime_;
 }
 
-// void D3E::Game::LoadTexture(const String& name,
-//                             const String& fileName)
-//{
-//	gameRender_->LoadTexture(name, fileName);
-// }
-
 void D3E::Game::CheckConsoleInput()
 {
 	std::lock_guard<std::mutex> lock(consoleCommandQueueMutex);
@@ -386,7 +385,13 @@ bool D3E::Game::IsUuidEditorSelected(const D3E::String& uuid)
 
 void D3E::Game::Pick()
 {
-	auto editorPickedId = gameRender_->EditorPick((int)inputDevice_->MousePosition.x, (int)inputDevice_->MousePosition.y);
+	if (!Editor::Get()->IsMouseOnViewport())
+	{
+		return;
+	}
+	int mX, mY;
+	Editor::Get()->GetMousePositionInViewport(mX, mY);
+	auto editorPickedId = gameRender_->EditorPick(mX, mY);
 	if (editorPickedId == 0)
 	{
 		selectedUuids.clear();
@@ -400,6 +405,90 @@ void D3E::Game::Pick()
 		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
 	}
 	EditorUtilsRenderSystem::isSelectionDirty = true;
+	CalculateGizmoTransformsOffsets();
+}
+
+void D3E::Game::SetUuidEditorSelected(const D3E::String& uuid, bool selected, bool resetOthers)
+{
+
+	if (resetOthers)
+	{
+		selectedUuids.clear();
+	}
+	if (selected)
+	{
+		if (selectedUuids.find(uuid) == selectedUuids.end())
+		{
+			selectedUuids.insert(uuid);
+		}
+	}
+	else
+	{
+		if (selectedUuids.find(uuid) != selectedUuids.end())
+		{
+			selectedUuids.erase(uuid);
+		}
+	}
+	EditorUtilsRenderSystem::isSelectionDirty = true;
+	CalculateGizmoTransformsOffsets();
+}
+
+const eastl::hash_set<D3E::String>& D3E::Game::GetSelectedUuids() const
+{
+	return selectedUuids;
+}
+
+void D3E::Game::CalculateGizmoTransformsOffsets()
+{
+	Vector3 gizmoPosition;
+	for (const auto& uuid : selectedUuids)
+	{
+		auto tc = registry_.try_get<TransformComponent>(uuidEntityList[uuid]);
+		if (!tc)
+		{
+			continue;
+		}
+		gizmoPosition += tc->position;
+	}
+	gizmoTransform_ = DirectX::SimpleMath::Matrix::CreateTranslation(gizmoPosition);
+	DirectX::SimpleMath::Matrix invGizmoTransform = gizmoTransform_.Invert();
+	gizmoOffsets_.clear();
+	for (const auto& uuid : selectedUuids)
+	{
+		auto tc = registry_.try_get<TransformComponent>(uuidEntityList[uuid]);
+		if (!tc)
+		{
+			continue;
+		}
+		gizmoOffsets_.insert({uuid, invGizmoTransform});
+		gizmoOffsets_[uuid] *= DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
+		                       DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc->rotation) *
+		                       DirectX::SimpleMath::Matrix::CreateTranslation(tc->position);
+	}
+}
+
+void D3E::Game::OnObjectInfoConstruct(entt::registry& registry, entt::entity entity)
+{
+	uuidEntityList.insert({registry.get<ObjectInfoComponent>(entity).id, entity});
+}
+
+void D3E::Game::OnObjectInfoDestroy(entt::registry& registry, entt::entity entity)
+{
+	uuidEntityList.erase(registry.get<ObjectInfoComponent>(entity).id);
+}
+
+DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoTransform()
+{
+	return gizmoTransform_;
+}
+
+const DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
+{
+	if (gizmoOffsets_.find(uuid) == gizmoOffsets_.end())
+	{
+		return DirectX::SimpleMath::Matrix::Identity;
+	}
+	return gizmoOffsets_.at(uuid);
 }
 
 void D3E::Game::RegisterDefaultComponents()

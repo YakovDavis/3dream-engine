@@ -36,9 +36,10 @@ void NewCubeGame::Init()
 
 	info.name = "Cerberus2";
 	tc.position = Vector3(50, 0, 0);
-	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+	auto cer2 = D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 
 	info.name = "Cerberus3";
+	info.parentId = registry_.get<D3E::ObjectInfoComponent>(cer2).id;
 	tc.position = Vector3(-50, 0, 0);
 	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 

@@ -5,16 +5,18 @@
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/Game.h"
 #include "D3E/components/TransformComponent.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/MeshFactory.h"
+#include "core/EngineState.h"
+#include "input/InputDevice.h"
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
-#include "render/components/GridComponent.h"
 #include "render/ShaderFactory.h"
-#include "assetmng/DefaultAssetLoader.h"
-#include "D3E/Game.h"
+#include "render/components/GridComponent.h"
 
 bool D3E::EditorUtilsRenderSystem::isSelectionDirty = false;
 
@@ -31,7 +33,7 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 	nvrhi::GraphicsState graphicsState = {};
 	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("EditorHighlightPass"));
 	graphicsState.setFramebuffer(fb);
-	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720))); // TODO: un-hardcode
+	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
 	graphicsState.addBindingSet(ShaderFactory::GetBindingSetV("EditorHighlightPass"));
 	graphicsState.addBindingSet(ShaderFactory::GetBindingSetP("EditorHighlightPass"));
 	commandList->setGraphicsState(graphicsState);
@@ -94,7 +96,7 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 						.setFramebuffer(fb)
 						.setViewport(
 							nvrhi::ViewportState().addViewportAndScissorRect(
-								nvrhi::Viewport(1280, 720)))
+								nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
 						.addBindingSet(ShaderFactory::GetBindingSetV(
 							kDebugLineBindingSetUUID))
 						.addBindingSet(ShaderFactory::GetBindingSetP(

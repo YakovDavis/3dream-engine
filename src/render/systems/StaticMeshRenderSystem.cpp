@@ -9,6 +9,7 @@
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "D3E/engine/ConsoleManager.h"
 #include "assetmng/MeshFactory.h"
+#include "core/EngineState.h"
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
 #include "render/ShaderFactory.h"
@@ -65,7 +66,7 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  auto graphicsState = nvrhi::GraphicsState()
 		                                   .setPipeline(renderModeCVar->getInt() == 0 ? defaultPSO : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
-		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720)))
+		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
 		                                   .addBindingSet(ShaderFactory::GetBindingSetV(info.id))
 		                                   .addBindingSet(ShaderFactory::GetBindingSetP(info.id))
 		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshUuid));

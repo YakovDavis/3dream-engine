@@ -4,12 +4,13 @@
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
-#include "render/LightConstBuffer.h"
 #include "D3E/Debug.h"
 #include "D3E/components/TransformComponent.h"
 #include "D3E/engine/ConsoleManager.h"
-#include "render/ShaderFactory.h"
 #include "SimpleMath.h"
+#include "core/EngineState.h"
+#include "render/LightConstBuffer.h"
+#include "render/ShaderFactory.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -45,7 +46,7 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 				  nvrhi::GraphicsState graphicsState = {};
 		          graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("LightPass"));
 				  graphicsState.setFramebuffer(fb);
-				  graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720))); // TODO: un-hardcode
+				  graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
 				  graphicsState.addBindingSet(ShaderFactory::GetBindingSetV(info.id));
 				  graphicsState.addBindingSet(ShaderFactory::GetBindingSetP(info.id));
 				  commandList->setGraphicsState(graphicsState);

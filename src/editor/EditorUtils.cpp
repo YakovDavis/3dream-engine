@@ -14,17 +14,17 @@ void D3E::EditorUtils::Initialize(D3E::Game* game)
 	initialized_ = true;
 }
 
-eastl::vector<D3E::ObjectInfo> D3E::EditorUtils::ListActiveObjects()
+eastl::vector<D3E::EditorObjectInfo> D3E::EditorUtils::ListActiveObjects()
 {
 	Debug::Assert(initialized_, "Editor utils not initialized");
 	auto view = activeGame_->GetRegistry().view<ObjectInfoComponent>();
-	eastl::vector<ObjectInfo> result;
-	view.each([&result](const auto &info) {
+	eastl::vector<EditorObjectInfo> result;
+	view.each([&result](auto &info) {
 				  if (info.name == "EditorDebugRenderObject")
 				  {
 					  return;
 				  }
-				  result.push_back({info.name, activeGame_->IsUuidEditorSelected(info.id)});
+				  result.push_back({&info, activeGame_->IsUuidEditorSelected(info.id)});
 			  });
 	return result;
 }
