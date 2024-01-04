@@ -11,7 +11,8 @@ namespace D3E
 		float speed = 0.02f;
 		float sensitivityX = 0.01f;
 		float sensitivityY = 0.01f;
-		bool isLMBActivated = true;
+		bool isLMBActivated = false;
+		bool isRMBActivated = true;
 	};
 
 	void to_json(json& j, const FPSControllerComponent& t);

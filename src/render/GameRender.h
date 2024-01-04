@@ -82,7 +82,11 @@ namespace D3E
 
 		nvrhi::InputLayoutHandle inputLayout_;
 
+#ifdef D3E_WITH_EDITOR
 		D3E::Editor* editor_;
+		nvrhi::TextureHandle gameFrameTexture_;
+		nvrhi::FramebufferHandle gameFramebuffer_;
+#endif
 
 		GBuffer gbuffer_;
 

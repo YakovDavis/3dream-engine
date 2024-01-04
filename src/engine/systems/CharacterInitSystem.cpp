@@ -44,7 +44,7 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 		reg.view<TransformComponent, CameraComponent, PhysicsCharacterComponent>();
 	if (view.begin() == view.end())
 	{
-		Debug::LogError("Character controller entity not found");
+		//Debug::LogError("Character controller entity not found");
 		return;
 	}
 	auto characterController = view.front();
@@ -149,7 +149,7 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 		reg.view<PhysicsCharacterComponent, CameraComponent, TransformComponent>();
 	if (view.begin() == view.end())
 	{
-		Debug::LogError("Character controller entity not found");
+		//Debug::LogError("Character controller entity not found");
 		return;
 	}
 	auto characterController = view.front();

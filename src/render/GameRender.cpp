@@ -67,6 +67,26 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	frameGBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
 	frameGBuffer = device_->createFramebuffer(frameGBufferDesc);
 
+#ifdef D3E_WITH_EDITOR
+	nvrhi::TextureDesc gameFrameTextureDesc = {};
+	gameFrameTextureDesc.format = nvrhi::Format::RGBA8_UNORM;
+	gameFrameTextureDesc.setWidth(display_->ClientWidth);
+	gameFrameTextureDesc.setHeight(display_->ClientHeight);
+	gameFrameTextureDesc.isRenderTarget = true;
+	gameFrameTextureDesc.sampleCount = 1;
+	gameFrameTextureDesc.sampleQuality = 0;
+	gameFrameTextureDesc.dimension = nvrhi::TextureDimension::Texture2D;
+	gameFrameTextureDesc.initialState = nvrhi::ResourceStates::RenderTarget;
+	gameFrameTextureDesc.setKeepInitialState(true);
+	gameFrameTextureDesc.setDebugName("Game Frame Texture");
+	gameFrameTexture_ = device_->createTexture(gameFrameTextureDesc);
+
+	nvrhi::FramebufferDesc gameFrameBufferDesc = {};
+	gameFrameBufferDesc.addColorAttachment(gameFrameTexture_);
+	gameFrameBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
+	gameFramebuffer_ = device_->createFramebuffer(gameFrameBufferDesc);
+#endif
+
 #ifdef USE_IMGUI
 	editor_ = D3E::Editor::Init(device_, display_, parentGame);
 #endif
@@ -405,10 +425,18 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 		sys->Draw(registry, frameGBuffer, commandList_, device_);
 	}
 
+#ifdef D3E_WITH_EDITOR
+	nvrhi::utils::ClearColorAttachment(commandList_, gameFramebuffer_, 0, nvrhi::Color(0.2f));
+	for (auto& sys : renderPPSystems)
+	{
+		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
+	}
+#else
 	for (auto& sys : renderPPSystems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
+#endif
 
 	debugRenderer_->Begin(commandList_, currentFramebuffer);
 	debugRenderer_->ProcessQueue();
@@ -444,7 +472,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 		sys->PostDraw(registry, commandList_, device_);
 	}
 #ifdef USE_IMGUI
-	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()]);
+	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
 #endif // USE_IMGUI
 }
 

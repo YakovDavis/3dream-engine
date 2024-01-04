@@ -181,6 +181,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/JoltContactListener.h
         src/physics/JoltContactListener.h
         src/physics/JoltContactListener.cpp
+        src/core/EngineState.cpp
+        src/core/EngineState.h
 )
 
 add_subdirectory(libs)
@@ -200,6 +202,8 @@ if(WIN32)
     target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_PLATFORM_WINDOWS=1)
     target_compile_definitions("${PROJECT_NAME}" PUBLIC NOMINMAX _CRT_SECURE_NO_WARNINGS)
 endif()
+
+target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_WITH_EDITOR)
 
 target_link_libraries("${PROJECT_NAME}" PUBLIC
         assimp

@@ -88,6 +88,7 @@ entt::entity D3E::CreationSystems::CreateSM(
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
+	infoComponent.parentId = info.parentId;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 

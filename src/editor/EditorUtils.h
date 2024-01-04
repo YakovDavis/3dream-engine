@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "EASTL/vector.h"
 #include "entt/entt.hpp"
 
@@ -8,16 +9,16 @@ namespace D3E
 {
 	class Game;
 
-	struct ObjectInfo
+	struct EditorObjectInfo
 	{
-		String name;
+		ObjectInfoComponent* infoComponent;
 		bool selected;
 	};
 
 	class EditorUtils
 	{
 	public:
-		static eastl::vector<D3E::ObjectInfo> ListActiveObjects();
+		static eastl::vector<EditorObjectInfo> ListActiveObjects();
 
 	private:
 		static void Initialize(Game* game);

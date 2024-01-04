@@ -5,9 +5,11 @@
 #include "EASTL/string.h"
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
+#include "EditorUtils.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
 #include "imgui_impl_win32.h"
+#include "imgui_internal.h"
 #include "render/Display.h"
 
 namespace D3E
@@ -21,6 +23,10 @@ namespace D3E
 	public:
 		static Editor* Init(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
 		static void PrintConsoleMessage(const eastl::string& str, D3E::Debug::TextColor color);
+		static Editor* Get() { return instance_; }
+
+		bool IsMouseOnViewport();
+		void GetMousePositionInViewport(int& mouseX, int& mouseY);
 
 	private:
 		Game *game_;
@@ -29,20 +35,32 @@ namespace D3E
 		float color_[4] = {0.f, 0.f, 0.f, 0.f};
 		EditorConsole *editorConsole_;
 		EditorContentBrowser *editorContentBrowser_;
+		bool hoveringOnViewport = false;
+		ImRect viewportInnerRect;
+		ImVec2 viewportDimensions;
 
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
 		void SetStyle();
 		void PrintConsoleMessageInternal(const eastl::string& str, D3E::Debug::TextColor color);
 
-		void DrawViewport(nvrhi::IFramebuffer* currentFramebuffer);
+		struct HierarchiNode
+		{
+			EditorObjectInfo info;
+			eastl::vector<HierarchiNode*> children;
+		};
+
+		void DrawViewport(nvrhi::IFramebuffer* gameFramebuffer);
 		void DrawHeader();
 		void DrawPlay();
 		void DrawHierarchy();
+		void DrawHierarchyNode(HierarchiNode* node, String& uuidSelected);
 		void DrawInspector();
+		void DrawGizmo();
+		void DrawTransformEdit();
 	public:
 		void BeginDraw(float deltaTime);
-		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer);
+		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer);
 		void Release();
 	};
 }

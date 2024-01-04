@@ -2,8 +2,10 @@
 
 #include "App.h"
 #include "D3E/systems/GameSystem.h"
-#include "EASTL/vector.h"
 #include "EASTL/hash_set.h"
+#include "EASTL/unordered_map.h"
+#include "EASTL/vector.h"
+#include "SimpleMath.h"
 
 #include <entt/entt.hpp>
 #include <mutex>
@@ -38,13 +40,25 @@ namespace D3E
 
 		bool IsUuidEditorSelected(const String& uuid);
 
+		void SetUuidEditorSelected(const String& uuid, bool selected, bool resetOthers);
+
+		const eastl::hash_set<String>& GetSelectedUuids() const;
+
+		void OnObjectInfoConstruct(entt::registry& registry, entt::entity entity);
+
+		void OnObjectInfoDestroy(entt::registry& registry, entt::entity entity);
+
+		void CalculateGizmoTransformsOffsets();
+
+		DirectX::SimpleMath::Matrix& GetGizmoTransform();
+
+		const DirectX::SimpleMath::Matrix& GetGizmoOffset(const D3E::String& uuid) const;
+
 		[[nodiscard]] float GetDeltaTime() const;
 
 		[[nodiscard]] const entt::registry& GetRegistry() const;
 
 		size_t GetFrameCount();
-
-//		void LoadTexture(const String& name, const String& fileName);
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
@@ -55,6 +69,9 @@ namespace D3E
 		bool isQuitRequested_ = false;
 
 	protected:
+		DirectX::SimpleMath::Matrix gizmoTransform_;
+		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
+
 		entt::registry registry_;
 
 		eastl::vector<GameSystem*> systems_;
@@ -90,6 +107,8 @@ namespace D3E
 		PhysicsInfo* physicsInfo_;
 
 		double totalTime = 0.0;
+
+		eastl::unordered_map<String, entt::entity> uuidEntityList;
 
 	private:
 		void HandleMessages();

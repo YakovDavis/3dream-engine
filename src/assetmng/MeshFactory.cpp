@@ -135,7 +135,7 @@ nvrhi::IndexBufferBinding D3E::MeshFactory::GetIndexBufferBinding(
 	return ibBindings_[uuid];
 }
 
-D3E::MeshData D3E::MeshFactory::GetMeshData(const String& uuid)
+D3E::MeshData& D3E::MeshFactory::GetMeshData(const String& uuid)
 {
 	if (meshData_.find(uuid) == meshData_.end())
 	{
