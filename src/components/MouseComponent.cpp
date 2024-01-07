@@ -5,22 +5,32 @@ namespace D3E
 {
 	void to_json(json& j, const MouseComponent& t)
 	{
-		j = json{{"type", "component"},
-		         {"class", "MouseComponent"},
-		         {"position", std::vector({t.position.x, t.position.y})},
-		         {"delta", std::vector({t.delta.x, t.delta.y})}
-		};
+		t.to_json(j);
 	}
 
 	void from_json(const json& j, MouseComponent& t)
 	{
-		std::vector<float> position(2);
-		std::vector<float> delta(2);
+		t.from_json(j);
+	}
 
-		j.at("position").get_to(position);
-		j.at("delta").get_to(delta);
+	void MouseComponent::to_json(json& j) const
+	{
+		j = json{{"type", "component"},
+		         {"class", "MouseComponent"},
+		         {"position", std::vector({position.x, position.y})},
+		         {"delta", std::vector({delta.x, delta.y})}
+		};
+	}
 
-		t.position = Vector2(position[0], position[1]);
-		t.delta = Vector2(delta[0], delta[1]);
+	void MouseComponent::from_json(const json& j)
+	{
+		std::vector<float> tmp_position(2);
+		std::vector<float> tmp_delta(2);
+
+		j.at("position").get_to(tmp_position);
+		j.at("delta").get_to(tmp_delta);
+
+		position = Vector2(tmp_position[0], tmp_position[1]);
+		delta = Vector2(tmp_delta[0], tmp_delta[1]);
 	}
 }

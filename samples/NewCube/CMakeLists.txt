@@ -29,22 +29,17 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
     COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/textures"
-        "${CMAKE_CURRENT_BINARY_DIR}/Textures"
-    COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
+        "${CMAKE_BINARY_DIR}/shaders"
+        "${CMAKE_CURRENT_BINARY_DIR}/shaders"
+    COMMENT "Copying shaders to build folder"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/textures"
-        "${CMAKE_CURRENT_BINARY_DIR}/Textures"
-    COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
+        "${CMAKE_SOURCE_DIR}/assets"
+        "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    COMMENT "Copying assets to build folder"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/models"
-        "${CMAKE_CURRENT_BINARY_DIR}/Models"
-    COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
-
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_BINARY_DIR}/Shaders"
-        "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
-    COMMENT "Copying ${FMOD_STUDIO_BINARY_PATH_DEBUG} to build folder"
+        "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+        "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    COMMENT "Copying assets to build folder"
 )

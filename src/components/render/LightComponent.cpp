@@ -6,43 +6,53 @@ namespace D3E
 {
 	void to_json(json& j, const LightComponent& t)
 	{
-		j = json{{"type", "component"},
-		         {"class", "StaticMeshComponent"},
-		         {"light_type", magic_enum::enum_name(t.lightType)},
-		         {"offset", std::vector({t.offset.x, t.offset.y, t.offset.z})},
-		         {"direction", std::vector({t.direction.x, t.direction.y, t.direction.z})},
-		         {"color", std::vector({t.color.x, t.color.y, t.color.z})},
-		         {"intensity", t.intensity},
-		         {"casts_shadows", t.castsShadows}
-		};
+		t.to_json(j);
 	}
 
 	void from_json(const json& j, LightComponent& t)
 	{
-		std::string lightType;
-		std::vector<float> offset(3);
-		std::vector<float> direction(3);
-		std::vector<float> color(3);
+		t.from_json(j);
+	}
 
-		j.at("light_type").get_to(lightType);
-		j.at("offset").get_to(offset);
-		j.at("direction").get_to(direction);
-		j.at("color").get_to(color);
-		j.at("intensity").get_to(t.intensity);
-		j.at("casts_shadows").get_to(t.castsShadows);
+	void LightComponent::to_json(json& j) const
+	{
+		j = json{{"type", "component"},
+		         {"class", "StaticMeshComponent"},
+		         {"light_type", magic_enum::enum_name(lightType)},
+		         {"offset", std::vector({offset.x, offset.y, offset.z})},
+		         {"direction", std::vector({direction.x, direction.y, direction.z})},
+		         {"color", std::vector({color.x, color.y, color.z})},
+		         {"intensity", intensity},
+		         {"casts_shadows", castsShadows}
+		};
+	}
 
-		auto c = magic_enum::enum_cast<LightType>(lightType);
+	void LightComponent::from_json(const json& j)
+	{
+		std::string tmp_lightType;
+		std::vector<float> tmp_offset(3);
+		std::vector<float> tmp_direction(3);
+		std::vector<float> tmp_color(3);
+
+		j.at("light_type").get_to(tmp_lightType);
+		j.at("offset").get_to(tmp_offset);
+		j.at("direction").get_to(tmp_direction);
+		j.at("color").get_to(tmp_color);
+		j.at("intensity").get_to(intensity);
+		j.at("casts_shadows").get_to(castsShadows);
+
+		auto c = magic_enum::enum_cast<LightType>(tmp_lightType);
 		if (c.has_value())
 		{
-			t.lightType = c.value();
+			lightType = c.value();
 		}
 		else
 		{
-			t.lightType = LightType::Directional;
+			lightType = LightType::Directional;
 		}
 
-		t.offset = Vector3(offset[0], offset[1], offset[2]);
-		t.direction = Vector3(direction[0], direction[1], direction[2]);
-		t.color = Vector3(color[0], color[1], color[2]);
+		offset = Vector3(tmp_offset[0], tmp_offset[1], tmp_offset[2]);
+		direction = Vector3(tmp_direction[0], tmp_direction[1], tmp_direction[2]);
+		color = Vector3(tmp_color[0], tmp_color[1], tmp_color[2]);
 	}
 }

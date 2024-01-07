@@ -87,6 +87,7 @@ void ShowExampleAppDockSpace(bool* p_open)
 	{
 		if (ImGui::BeginMenu("Options"))
 		{
+			/*
 			// Disabling fullscreen would allow the window to be moved to the
 			// front of other windows, which we can't undo at the moment without
 			// finer window depth/z control.
@@ -133,6 +134,8 @@ void ShowExampleAppDockSpace(bool* p_open)
 				dockSpace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
 			}
 			ImGui::Separator();
+
+			*/
 
 			if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
 				*p_open = false;

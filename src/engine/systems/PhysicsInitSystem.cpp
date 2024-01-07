@@ -108,7 +108,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 			auto& meshComponent = registry.get<StaticMeshComponent>(entity);
 			ConvexHullShapeSettings shapeSettings(meshComponent.)
 		}*/
-		/*case HeightFieldCollider:
+		case HeightFieldCollider:
 		{
 			if (physicsComponent.heightMap_)
 			{
@@ -117,7 +117,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 				ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 				physicsComponent.collider_ = new HeightFieldShape(shapeSettings, shapeResult);
 			}
-		}*/
+		}
 	}
 	//ShapeSettings::ShapeResult shapeResult = physicsComponent.collider_->Create();
 	//ShapeRefC colliderRef = shapeResult.Get();
@@ -174,6 +174,11 @@ void D3E::PhysicsInitSystem::ComponentDestroyedHandler(entt::registry& registry,
 {
 	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
 	auto& physicsComponent = registry.get<PhysicsComponent>(entity);
+	if (physicsComponent.colliderType_ == HeightFieldCollider)
+	{
+		delete[] physicsComponent.heightMap_;
+	}
 	bodyInterface.RemoveBody(physicsComponent.bodyID_);
 	bodyInterface.DestroyBody(physicsComponent.bodyID_);
+	delete physicsComponent.collider_;
 }

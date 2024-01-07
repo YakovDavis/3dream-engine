@@ -1,8 +1,9 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
-#include "nvrhi/nvrhi.h"
+#include "D3E/Components/BaseComponent.h"
 #include "SimpleMath.h"
+#include "nvrhi/nvrhi.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -15,7 +16,7 @@ namespace D3E
 		Spot
 	};
 
-	struct LightComponent
+	struct LightComponent : public BaseComponent
 	{
 		LightType lightType = LightType::Directional;
 		Vector3 offset = Vector3(0.f, 0.f, 0.f);
@@ -26,6 +27,9 @@ namespace D3E
 		nvrhi::BufferHandle lightCBuffer;
 		nvrhi::BufferHandle csmCBuffer;
 		bool initialized = false;
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const LightComponent& t);

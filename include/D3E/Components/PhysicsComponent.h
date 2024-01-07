@@ -1,7 +1,7 @@
-#ifndef D3ENGINE_PHYSICSCOMPONENT_H
-#define D3ENGINE_PHYSICSCOMPONENT_H
+#pragma once
 
 #include "D3E/CommonHeader.h"
+#include "BaseComponent.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyID.h>
@@ -25,7 +25,7 @@ namespace D3E
 		HeightFieldCollider
 	};
 
-	struct PhysicsComponent
+	struct PhysicsComponent : public BaseComponent
 	{
 		bool isInitialized_ = false;
 
@@ -42,12 +42,12 @@ namespace D3E
 		JPH::EMotionType motionType_;
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const PhysicsComponent& t);
 
 	void from_json(const json& j, PhysicsComponent& t);
 }
-
-
-#endif // D3ENGINE_PHYSICSCOMPONENT_H
