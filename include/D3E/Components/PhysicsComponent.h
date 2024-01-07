@@ -42,6 +42,8 @@ namespace D3E
 		JPH::EMotionType motionType_;
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
+		int heightMapSize_ = 0;
+		float* heightMap_ = nullptr;
 
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;

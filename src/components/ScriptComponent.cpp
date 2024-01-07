@@ -9,15 +9,25 @@ namespace D3E
 {
 	void to_json(json& j, const ScriptComponent& sc)
 	{
-		j = json{
-			{"type", "component"},
-			{"class", "ScriptComponent"},
-			{"entryPoint", sc.GetEntryPoint().c_str()},
-			{"ownerId", sc.GetOwnerId()},
-		};
+		sc.to_json(j);
 	}
 
 	void from_json(const json& j, ScriptComponent& sc)
+	{
+		sc.from_json(j);
+	}
+
+	void ScriptComponent::to_json(json& j) const
+	{
+		j = json{
+			{"type", "component"},
+			{"class", "ScriptComponent"},
+			{"entryPoint", GetEntryPoint().c_str()},
+			{"ownerId", GetOwnerId()},
+		};
+	}
+
+	void ScriptComponent::from_json(const json& j)
 	{
 		std::string entryPoint;
 		entt::entity entity{};
@@ -25,6 +35,9 @@ namespace D3E
 		j.at("entryPoint").get_to(entryPoint);
 		j.at("ownerId").get_to(entity);
 
-		ScriptingEngine::GetInstance().InitScriptComponent(sc);
+		entryPoint_ = entryPoint.c_str();
+		ownerId_ = entity;
+
+		ScriptingEngine::GetInstance().InitScriptComponent(*this);
 	}
 } // namespace D3E

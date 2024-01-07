@@ -16,6 +16,18 @@ namespace D3E
 
 	void PhysicsComponent::to_json(json& j) const
 	{
+		std::vector<float> heightMap;
+		if (heightMap_)
+		{
+			heightMap.reserve(heightMapSize_ * heightMapSize_);
+			heightMap.insert(heightMap.begin(), &heightMap_[0], &heightMap_[heightMapSize_ * heightMapSize_]);
+		}
+		else
+		{
+			heightMap.reserve(1);
+			heightMap[0] = 0.0f;
+		}
+
 		j = json{{"type", "component"},
 		         {"class", "PhysicsComponent"},
 		         {"collider_type", magic_enum::enum_name(colliderType_)},
@@ -27,7 +39,9 @@ namespace D3E
 		         {"center_of_mass_offset", std::vector({centerOfMassOffset_.x, centerOfMassOffset_.y, centerOfMassOffset_.z})},
 		         {"motion_type", magic_enum::enum_name(motionType_)},
 		         {"velocity", std::vector({velocity_.x, velocity_.y, velocity_.z})},
-		         {"angular_velocity", std::vector({angularVelocity_.x, angularVelocity_.y, angularVelocity_.z})}
+		         {"angular_velocity", std::vector({angularVelocity_.x, angularVelocity_.y, angularVelocity_.z})},
+		         {"height_map_size", heightMapSize_},
+		         {"height_map", heightMap}
 		};
 	}
 
@@ -50,6 +64,18 @@ namespace D3E
 		j.at("motion_type").get_to(motionType);
 		j.at("velocity").get_to(velocity);
 		j.at("angular_velocity").get_to(angularVelocity);
+		j.at("height_map_size").get_to(heightMapSize_);
+
+		if (heightMapSize_)
+		{
+			std::vector<float> heightMap(heightMapSize_ * heightMapSize_);
+			j.at("height_map").get_to(heightMap);
+			heightMap_ = new float[heightMapSize_ * heightMapSize_];
+			for (size_t i = 0; i < heightMap.size(); ++i)
+			{
+				heightMap_[i] = heightMap[i];
+			}
+		}
 
 		auto c = magic_enum::enum_cast<ColliderType>(colliderType);
 		if (c.has_value())

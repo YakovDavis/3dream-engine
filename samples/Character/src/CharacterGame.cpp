@@ -33,7 +33,7 @@ void CharacterGame::Init()
 
 	info.name = "Player";
 
-	tc.position = Vector3(0.0f, 1.0f, 0.0f);
+	tc.position = Vector3(0.0f, 5.0f, 0.0f);
 
 	auto e = D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info,
 	                                                       tc, character);
@@ -46,11 +46,29 @@ void CharacterGame::Init()
 
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);
 	tc.position = Vector3(0.0f, 0.0f, 0.0f);
-	physComponent.colliderParams_ =
-		DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
+	//physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
+	physComponent.colliderType_ = D3E::ColliderType::HeightFieldCollider;
+	physComponent.heightMapSize_ = 4;
+	physComponent.heightMap_ = new float[physComponent.heightMapSize_ * physComponent.heightMapSize_];
+	physComponent.heightMap_[0] = 2.0f;
+	physComponent.heightMap_[1] = 1.5f;
+	physComponent.heightMap_[2] = 1.0f;
+	physComponent.heightMap_[3] = 1.5f;
+	physComponent.heightMap_[4] = 0.0f;
+	physComponent.heightMap_[5] = 0.0f;
+	physComponent.heightMap_[6] = 0.0f;
+	physComponent.heightMap_[7] = 0.0f;
+	physComponent.heightMap_[8] = -2.0f;
+	physComponent.heightMap_[9] = -1.5f;
+	physComponent.heightMap_[10] = -1.0f;
+	physComponent.heightMap_[11] = -0.5f;
+	physComponent.heightMap_[12] = -4.0f;
+	physComponent.heightMap_[13] = -3.0f;
+	physComponent.heightMap_[14] = -2.0f;
+	physComponent.heightMap_[15] = -1.0f;
 	info.name = "Floor";
 
-	physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
+	//physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
 	physComponent.motionType_ = JPH::EMotionType::Static;
 
 	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc,
@@ -58,6 +76,7 @@ void CharacterGame::Init()
 
 	tc.position = Vector3(0.0f, 0.0f, 20.0f);
 	tc.scale = Vector3(3.0f, 3.0f, 3.0f);
+	physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
 	physComponent.colliderParams_ =
 		DirectX::SimpleMath::Vector4(1.5f, 1.5f, 1.5f, 0.0f);
 	physComponent.isSensor_ = true;

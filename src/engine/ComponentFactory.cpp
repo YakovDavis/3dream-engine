@@ -83,12 +83,12 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			c.from_json(el);
 			game_->GetRegistry().emplace<PhysicsCharacterComponent>(e, c);
 		}
-		/*else if (el.at("class") == "ScriptComponent") TODO
+		else if (el.at("class") == "ScriptComponent")
 		{
-			ScriptComponent c;
+			ScriptComponent c(e);
 			c.from_json(el);
 			game_->GetRegistry().emplace<ScriptComponent>(e, c);
-		}*/
+		}
 		else if (el.at("class") == "CameraComponent")
 		{
 			CameraComponent c;
@@ -190,12 +190,12 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 			game_->GetRegistry().get<PhysicsCharacterComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
-		/*else if (el == "ScriptComponent") TODO
+		else if (el == "ScriptComponent")
 		{
 			json c;
 			game_->GetRegistry().get<ScriptComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
-		}*/
+		}
 		else if (el == "CameraComponent")
 		{
 			json c;

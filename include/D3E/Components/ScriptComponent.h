@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BaseComponent.h"
 #include "D3E/Debug.h"
 #include "EASTL/string.h"
 #include "Jolt/Jolt.h"
@@ -9,7 +10,7 @@
 
 namespace D3E
 {
-	struct ScriptComponent
+	struct ScriptComponent : public BaseComponent
 	{
 		friend class ScriptingEngine;
 
@@ -43,6 +44,9 @@ namespace D3E
 
 		const String& GetEntryPoint() const { return entryPoint_; }
 		void SetEntryPoint(String& entryPoint) { entryPoint_ = entryPoint; }
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 
 	private:
 		String entryPoint_;
