@@ -1,12 +1,14 @@
 #include "D3E/scripting/ScriptingEngine.h"
 
 #include "D3E/Debug.h"
+#include "D3E/Game.h"
 #include "EngineTypeBindings.h"
 #include "assetmng/ScriptFactory.h"
+#include "scripting/LuaECSAdapter.h"
 
 using namespace D3E;
 
-ScriptingEngine::ScriptingEngine() : initialized_{false}
+ScriptingEngine::ScriptingEngine() : initialized_(false)
 {
 }
 
@@ -21,7 +23,7 @@ ScriptingEngine::~ScriptingEngine()
 {
 }
 
-void ScriptingEngine::Init()
+void ScriptingEngine::Init(Game* g)
 {
 	Debug::LogMessage("[ScriptingEngine] Initializing...");
 
@@ -29,20 +31,21 @@ void ScriptingEngine::Init()
 
 	BindEngineTypes(luaState_);
 
+	luaState_["Component"] = new LuaECSAdapter(g->GetRegistry());
+
 	if (!LoadDefaultEnvironment())
 		return;
 
 	initialized_ = true;
 }
 
-bool ScriptingEngine::InstantiateScriptComponent(ScriptComponent& c,
-                                                 String scriptUuid)
+bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 {
 	auto scriptData = ScriptFactory::GetScriptData(scriptUuid);
 
 	if (!scriptData)
 	{
-		Debug::LogError("[ScriptingEngine] InstantiateScriptComponent(): "
+		Debug::LogError("[ScriptingEngine] LoadScript(): "
 		                "Script was not found. UUID: " +
 		                scriptUuid);
 
@@ -57,7 +60,7 @@ bool ScriptingEngine::InstantiateScriptComponent(ScriptComponent& c,
 		{
 			sol::error err = pfr;
 
-			Debug::LogError("[ScriptingEngine] InstantiateScriptComponent(): "
+			Debug::LogError("[ScriptingEngine] LoadScript(): "
 		                    "Error accured while loading script: " +
 		                    scriptUuid + " Entry point: " + script.entryPoint +
 		                    " Error: " + err.what());
@@ -65,19 +68,40 @@ bool ScriptingEngine::InstantiateScriptComponent(ScriptComponent& c,
 			return pfr;
 		});
 
-	std::string entry = script.entryPoint.c_str();
-	auto self = luaState_[entry];
+	c.entryPoint_ = script.entryPoint;
 
-	// Calling Lua object Ctor
-	c.self = self["new"](
-		self,
-		sol::nil); // TODO(Denis): Find a safer way to avoid Panic case
-
-	c.start = self["start"];
-	c.init = self["init"];
-	c.update = self["update"];
+	InitScriptComponent(c);
 
 	return true;
+}
+
+void ScriptingEngine::InitScriptComponent(ScriptComponent& c)
+{
+	auto userType = luaState_[c.entryPoint_.c_str()];
+	// Calling Lua object Ctor
+	c.self = userType["new"](
+		userType,
+		sol::nil); // TODO(Denis): Find a safer way to avoid Panic case
+
+	c.start = userType["start"];
+	c.start.set_error_handler(luaState_["error_handler"]);
+
+	c.init = userType["init"];
+	c.init.set_error_handler(luaState_["error_handler"]);
+
+	c.update = userType["update"];
+	c.update.set_error_handler(luaState_["error_handler"]);
+
+	c.onCollisionEnter = userType["on_collision_enter"];
+	c.onCollisionEnter.set_error_handler(luaState_["error_handler"]);
+
+	c.onCollisionStay = userType["on_collision_stay"];
+	c.onCollisionStay.set_error_handler(luaState_["error_handler"]);
+
+	c.onCollisionExit = userType["on_collision_exit"];
+	c.onCollisionExit.set_error_handler(luaState_["error_handler"]);
+
+	c.self["owner_id"] = c.ownerId_;
 }
 
 bool ScriptingEngine::LoadDefaultEnvironment()

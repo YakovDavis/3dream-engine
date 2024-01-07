@@ -1,7 +1,10 @@
 #include "ScriptMetaData.h"
 
+#include "json.hpp"
+
 namespace D3E
 {
+	using json = nlohmann::json;
 
 	void to_json(json& j, const ScriptMetaData& t)
 	{

@@ -9,6 +9,7 @@ void ScriptingSandbox::Init()
 {
 	Game::Init();
 
+
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};
 	info.name = "Player";
@@ -26,13 +27,12 @@ void ScriptingSandbox::Init()
 
 	auto scriptComponent = D3E::ScriptComponent(duckId);
 
-	D3E::ScriptingEngine::GetInstance().InstantiateScriptComponent(
+	D3E::ScriptingEngine::GetInstance().LoadScript(
 		scriptComponent, "72d4a952-074c-4223-8ded-40c09c182061");
 
 	GetRegistry().emplace<D3E::ScriptComponent>(duckId, scriptComponent);
 
 	info.name = "DirectionalLight";
-
 
 	D3E::CreationSystems::CreateLight(GetRegistry(), info, tc);
 }

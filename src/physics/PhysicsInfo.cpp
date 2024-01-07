@@ -28,7 +28,7 @@ D3E::PhysicsInfo::PhysicsInfo(Game* game)
 	physicsSystem_ = new PhysicsSystem;
 	physicsSystem_->Init(MAX_BODIES, NUM_BODY_MUTEXES, MAX_BODY_PAIRS, MAX_CONSTRAINTS, *bpLayerInterface_, *objectVsBroadPhaseLayerFilter_, *objectLayerPairFilter_);
 	joltRenderer_ = new JoltDebugRenderer(game);
-	contactListener_ = new JoltContactListener();
+	contactListener_ = new JoltContactListener(game);
 	//contactListener_->SetNextListener(mTest->GetContactListener());
 	physicsSystem_->SetContactListener(contactListener_);
 }

@@ -13,6 +13,7 @@ namespace D3E
 		String parentId = EmptyIdString;
 		String name;
 		String id;
+		String tag;
 		uint32_t editorId = 0;
 		bool visible = true; // TODO: implement
 	};

@@ -1,8 +1,11 @@
 #include "CharacterGame.h"
+
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/TimerHandle.h"
 #include "D3E/TimerManager.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 
 #include <format>
@@ -22,7 +25,8 @@ void CharacterGame::Init()
 	D3E::PhysicsCharacterComponent character = {};
 
 	character.colliderType_ = D3E::ColliderType::CapsuleCollider;
-	character.colliderParams_ = DirectX::SimpleMath::Vector4(1.0f, 1.0f, 0.0f, 0.0f);
+	character.colliderParams_ =
+		DirectX::SimpleMath::Vector4(1.0f, 1.0f, 0.0f, 0.0f);
 	character.mass_ = 1000.0f;
 	character.friction_ = 0.2f;
 	character.restitution_ = 0.0f;
@@ -31,25 +35,36 @@ void CharacterGame::Init()
 
 	tc.position = Vector3(0.0f, 1.0f, 0.0f);
 
-	D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info, tc, character);
+	auto e = D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info,
+	                                                       tc, character);
+	auto scriptComponent = D3E::ScriptComponent(e);
+
+	D3E::ScriptingEngine::GetInstance().LoadScript(
+		scriptComponent, "72d4a952-074c-4223-8ded-40c09c182061");
+
+	GetRegistry().emplace<D3E::ScriptComponent>(e, scriptComponent);
 
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);
 	tc.position = Vector3(0.0f, 0.0f, 0.0f);
-	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
+	physComponent.colliderParams_ =
+		DirectX::SimpleMath::Vector4(25.0f, 0.5f, 25.0f, 0.0f);
 	info.name = "Floor";
 
 	physComponent.colliderType_ = D3E::ColliderType::BoxCollider;
 	physComponent.motionType_ = JPH::EMotionType::Static;
 
-	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc, physComponent);
+	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc,
+	                                                 physComponent);
 
 	tc.position = Vector3(0.0f, 0.0f, 20.0f);
 	tc.scale = Vector3(3.0f, 3.0f, 3.0f);
-	physComponent.colliderParams_ = DirectX::SimpleMath::Vector4(1.5f, 1.5f, 1.5f, 0.0f);
+	physComponent.colliderParams_ =
+		DirectX::SimpleMath::Vector4(1.5f, 1.5f, 1.5f, 0.0f);
 	physComponent.isSensor_ = true;
 	info.name = "Cube";
 	physComponent.motionType_ = JPH::EMotionType::Static;
-	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc, physComponent);
+	D3E::CreationSystems::CreatePurelyPhysicalObject(GetRegistry(), info, tc,
+	                                                 physComponent);
 
 	info.name = "DirectionalLight";
 

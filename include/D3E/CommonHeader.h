@@ -24,10 +24,7 @@ namespace D3E
 	const String kDebugLinesTextureUUID =
 		"24c71f11-0d38-4594-ae18-c8eedca9b896";
 	const String kWhiteTextureUUID = "34b9a6f1-240f-4d40-b76d-ad38ce9e65ea";
-
-	const String kEnvironmentScriptId = "591a9f8c-b5b7-4ce0-a9af-8bc809066222";
-
 	const String kDefaultGridMaterialUUID = "cf251109-d50a-49cb-912a-bbdfb5345c97";
+	const String kEnvironmentScriptId = "591a9f8c-b5b7-4ce0-a9af-8bc809066222";
 } // namespace D3E
-
 #endif // COMMON_HEADER_H
