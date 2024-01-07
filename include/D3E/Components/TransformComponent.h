@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BaseComponent.h"
 #include "SimpleMath.h"
 #include "json_fwd.hpp"
 
@@ -8,7 +9,7 @@ using namespace DirectX::SimpleMath;
 
 namespace D3E
 {
-	struct TransformComponent
+	struct TransformComponent : public BaseComponent
 	{
 		Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 		Quaternion rotation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
@@ -17,6 +18,9 @@ namespace D3E
 		Vector3 relativePosition = Vector3(0.f, 0.f, 0.f);
 		Quaternion relativeRotation = Quaternion(0.f, 0.f, 0.f, 1.f);
 		Vector3 relativeScale = Vector3(1.f, 1.f, 1.f);
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const TransformComponent& t);

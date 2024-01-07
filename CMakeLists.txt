@@ -186,7 +186,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/utils/ECSUtils.h
         src/utils/ECSUtils.cpp
         src/scripting/LuaECSAdapter.h
-        src/scripting/LuaECSAdapter.cpp)
+        src/scripting/LuaECSAdapter.cpp
+        src/engine/ComponentFactory.cpp
+        src/engine/ComponentFactory.h
+        include/D3E/Components/BaseComponent.h
+)
 
 add_subdirectory(libs)
 
@@ -244,28 +248,28 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/D3Engined.dll"
         "${CMAKE_BINARY_DIR}/samples/Ducks"
-        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+        COMMENT "Copying D3Engined.dll to build folder"
 )
 
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/D3Engined.dll"
         "${CMAKE_BINARY_DIR}/samples/scriptingsandbox"
-        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+        COMMENT "Copying D3Engined.dll to build folder"
 )
 
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/D3Engined.dll"
         "${CMAKE_BINARY_DIR}/samples/NewCube"
-        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+        COMMENT "Copying D3Engined.dll to build folder"
 )
 
 add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_BINARY_DIR}/D3Engined.dll"
         "${CMAKE_BINARY_DIR}/samples/Character"
-        COMMENT "Copying ${FMOD_CORE_BINARY_PATH_DEBUG} to build folder"
+        COMMENT "Copying D3Engined.dll to build folder"
 )
 
 add_subdirectory(samples/ducks)

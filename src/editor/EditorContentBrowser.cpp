@@ -6,7 +6,7 @@
 #include <iostream>
 #include <assetmng/ScriptMetaData.h>
 
-const std::string AssetDirectory = "../../../";
+const std::string AssetDirectory = "assets/";
 
 D3E::EditorContentBrowser::EditorContentBrowser()
 {

@@ -1,5 +1,4 @@
-#ifndef D3ENGINE_PHYSICSCHARACTERCOMPONENT_H
-#define D3ENGINE_PHYSICSCHARACTERCOMPONENT_H
+#pragma once
 
 #include "D3E/CommonHeader.h"
 #include "D3E/Components/PhysicsComponent.h"
@@ -9,7 +8,7 @@
 
 namespace D3E
 {
-	struct PhysicsCharacterComponent
+	struct PhysicsCharacterComponent : public BaseComponent
 	{
 		JPH::Ref<JPH::Character> character_;
 		float maxSlopeAngle_ = JPH::DegreesToRadians(50.0f);
@@ -35,11 +34,12 @@ namespace D3E
 		DirectX::SimpleMath::Vector3 centerOfMassOffset_;
 		DirectX::SimpleMath::Vector3 velocity_;
 		DirectX::SimpleMath::Vector3 angularVelocity_;
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const PhysicsCharacterComponent& t);
 
 	void from_json(const json& j, PhysicsCharacterComponent& t);
 }
-
-#endif // D3ENGINE_PHYSICSCHARACTERCOMPONENT_H

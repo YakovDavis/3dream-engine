@@ -16,6 +16,7 @@
 #include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
+#include "engine/ComponentFactory.h"
 #include "engine/systems/CharacterInitSystem.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
@@ -159,16 +160,7 @@ void D3E::Game::Init()
 	// AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx",
 	// gameRender_->GetDevice(), gameRender_->GetCommandList());
 
-	AssetManager::Get().LoadAssetsInFolder("textures/", true,
-	                                       gameRender_->GetDevice(),
-	                                       gameRender_->GetCommandList());
-	AssetManager::Get().LoadAssetsInFolder("models/", true,
-	                                       gameRender_->GetDevice(),
-	                                       gameRender_->GetCommandList());
-
-	AssetManager::Get().LoadAssetsInFolder("scripts/", true, nullptr, nullptr);
-
-	AssetManager::Get().LoadAssetsInFolder("materials/", true,
+	AssetManager::Get().LoadAssetsInFolder("assets/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
 
@@ -203,6 +195,8 @@ void D3E::Game::Init()
 	soundEngine_->Init();
 
 	CreationSystems::CreateEditorDebugRender(registry_);
+
+	ComponentFactory::Initialize(this);
 }
 
 void D3E::Game::Update(const float deltaTime)

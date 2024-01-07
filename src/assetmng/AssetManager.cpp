@@ -45,7 +45,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 	{
 		if (entry.is_directory() && recursive)
 		{
-			LoadAssetsInFolder(folder, recursive, device, commandList);
+			LoadAssetsInFolder(String(entry.path().string().c_str()), recursive, device, commandList);
 			continue;
 		}
 		else if (entry.is_directory() && !recursive)

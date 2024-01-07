@@ -1,12 +1,13 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
+#include "D3E/Components/BaseComponent.h"
 #include "EASTL/vector.h"
 #include "nvrhi/nvrhi.h"
 
 namespace D3E
 {
-	struct StaticMeshComponent
+	struct StaticMeshComponent : public BaseComponent
 	{
 		String meshUuid;
 		String pipelineName;
@@ -16,6 +17,9 @@ namespace D3E
 		bool editorHighlighted = false;
 
 		bool initialized = false;
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const StaticMeshComponent& t);

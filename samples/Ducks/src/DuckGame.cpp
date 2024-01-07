@@ -31,8 +31,8 @@ void NewCubeGame::Init()
 	tc.scale = Vector3(0.2f, 0.2f, 0.2f);
 	info.name = "Cerberus1";
 
-	D3E::CreationSystems::CreateSM(
-		GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+	//D3E::CreationSystems::CreateSM(
+	//	GetRegistry(), info, tc, "60481bf4-cab2-4ad9-8d0d-95556bd20f7d", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 
 	info.name = "Cerberus2";
 	tc.position = Vector3(50, 0, 0);

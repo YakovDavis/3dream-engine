@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
+#include "D3E/Components/BaseComponent.h"
 #include "D3E/Uuid.h"
 #include "json_fwd.hpp"
 
@@ -8,7 +9,7 @@ using json = nlohmann::json;
 
 namespace D3E
 {
-	struct ObjectInfoComponent
+	struct ObjectInfoComponent : public BaseComponent
 	{
 		String parentId = EmptyIdString;
 		String name;
@@ -16,6 +17,9 @@ namespace D3E
 		String tag;
 		uint32_t editorId = 0;
 		bool visible = true; // TODO: implement
+
+		void to_json(json& j) const override;
+		void from_json(const json& j) override;
 	};
 
 	void to_json(json& j, const ObjectInfoComponent& t);
