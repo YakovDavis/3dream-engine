@@ -1,0 +1,14 @@
+{
+    "filename": "assets/textures/cerberus_N.png",
+    "format": {
+        "channels": "RGBA8",
+        "type": "Texture2D",
+        "dimensions": [
+            4096,
+            4096
+        ]
+    },
+    "name": "cerberus_N",
+    "type": "texture2d",
+    "uuid": "7b169846-f2a7-4ba3-b076-d1eb689c3e81"
+}

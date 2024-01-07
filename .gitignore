@@ -586,9 +586,6 @@ references/*
 
 **LogData*.txt
 
-**Assets/**
-**Assets/
-
 *log.txt
 
 # Folders and files that should not be ignored despite bad name

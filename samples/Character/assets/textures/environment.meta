@@ -1,0 +1,14 @@
+{
+    "filename": "assets/textures/environment.hdr",
+    "format": {
+        "channels": "RGBA8",
+        "type": "Texture2D",
+        "dimensions": [
+            4000,
+            2000
+        ]
+    },
+    "name": "environment",
+    "type": "texture2d",
+    "uuid": "e408d7c8-f1ad-42fb-a0bd-35669f30d7a1"
+}
