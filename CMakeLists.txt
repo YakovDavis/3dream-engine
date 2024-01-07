@@ -183,7 +183,10 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/JoltContactListener.cpp
         src/core/EngineState.cpp
         src/core/EngineState.h
-)
+        src/utils/ECSUtils.h
+        src/utils/ECSUtils.cpp
+        src/scripting/LuaECSAdapter.h
+        src/scripting/LuaECSAdapter.cpp)
 
 add_subdirectory(libs)
 

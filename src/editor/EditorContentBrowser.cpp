@@ -2,6 +2,10 @@
 #include "D3E/Debug.h"
 #include "assetmng/TextureFactory.h"
 
+#include <cstdlib>
+#include <iostream>
+#include <assetmng/ScriptMetaData.h>
+
 const std::string AssetDirectory = "../../../";
 
 D3E::EditorContentBrowser::EditorContentBrowser()
@@ -67,11 +71,14 @@ void D3E::EditorContentBrowser::Draw()
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				if (metadata.at("type") == "script")
 				{
+					ScriptMetaData scriptMetadata;
+					metadata.get_to(scriptMetadata);
+
 					ImGui::ImageButton(TextureFactory::GetTextureHandle("20bb535f-c03d-44d5-b287-95e091bbf976"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
 					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						Debug::LogMessage("Clicked on Script");
-						// logic for clicking on script
+						std::cout << std::flush;
+						std::system(("code " + scriptMetadata.filename).c_str());
 					}
 
 					ImGui::PopStyleColor();

@@ -36,6 +36,7 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
+#include "utils/ECSUtils.h"
 
 #include <filesystem>
 #include <thread>
@@ -122,6 +123,8 @@ void D3E::Game::Run()
 
 void D3E::Game::Init()
 {
+	D3E::ECSUtils::Init(this);
+
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 
@@ -172,7 +175,7 @@ void D3E::Game::Init()
 	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
 	                                          gameRender_->GetCommandList());
 
-	ScriptingEngine::GetInstance().Init();
+	ScriptingEngine::GetInstance().Init(this);
 	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
@@ -186,8 +189,10 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
-	systems_.push_back(new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
-	systems_.push_back(new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(
+		new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(
+		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new CharacterInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
@@ -398,7 +403,8 @@ void D3E::Game::Pick()
 	}
 	else
 	{
-		if (!(inputDevice_->IsKeyDown(Keys::LeftControl) || inputDevice_->IsKeyDown(Keys::LeftShift)))
+		if (!(inputDevice_->IsKeyDown(Keys::LeftControl) ||
+		      inputDevice_->IsKeyDown(Keys::LeftShift)))
 		{
 			selectedUuids.clear();
 		}

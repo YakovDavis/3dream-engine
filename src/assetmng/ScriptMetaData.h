@@ -3,8 +3,6 @@
 #include "D3E/CommonHeader.h"
 #include "json.hpp"
 
-using json = nlohmann::json;
-
 namespace D3E
 {
 	struct ScriptMetaData
@@ -13,6 +11,6 @@ namespace D3E
 		std::string filename;
 	};
 
-	void to_json(json& j, const ScriptMetaData& t);
-	void from_json(const json& j, ScriptMetaData& t);
+	void to_json(nlohmann::json& j, const ScriptMetaData& t);
+	void from_json(const nlohmann::json& j, ScriptMetaData& t);
 } // namespace D3E
