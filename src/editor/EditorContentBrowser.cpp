@@ -1,15 +1,22 @@
 #include "EditorContentBrowser.h"
+
 #include "D3E/Debug.h"
 #include "assetmng/TextureFactory.h"
+#include "engine/ComponentFactory.h"
+#include "editor/Editor.h"
+#include "D3E/Game.h"
+#include "misc/cpp/imgui_stdlib.h"
 
+#include <assetmng/ScriptMetaData.h>
 #include <cstdlib>
 #include <iostream>
-#include <assetmng/ScriptMetaData.h>
 
 const std::string AssetDirectory = "assets/";
+static std::string renamedItem = "";
 
-D3E::EditorContentBrowser::EditorContentBrowser()
+D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 {
+	editor_ = editor;
 	open_ = true;
 	auto path = std::filesystem::absolute(AssetDirectory).string();
 	rootDirectory_ = path.substr(0, path.length() - 1);
@@ -19,6 +26,21 @@ D3E::EditorContentBrowser::EditorContentBrowser()
 void D3E::EditorContentBrowser::Draw()
 {
 	ImGui::Begin("Content Browser");
+
+	ImGui::Button("New folder", ImVec2(0, 0));
+	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		std::filesystem::create_directory(currentDirectory_ / std::filesystem::path("new_folder"));
+	}
+	ImGui::SameLine();
+	ImGui::Button("Import file", ImVec2(0, 0));
+	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		editor_->game_->AssetFileImport(currentDirectory_.string().c_str());
+	}
+
+	ImGui::SameLine();
+	ImGui::Text(" Alt-LMB: delete, F2-LMB: rename folder");
 
 	if(currentDirectory_ != rootDirectory_)
 	{
@@ -49,6 +71,7 @@ void D3E::EditorContentBrowser::Draw()
 			const auto& path = directoryEntry.path();
 			auto relativePath = std::filesystem::relative(path, rootDirectory_);
 			std::string fileNameString = relativePath.filename().string();
+			bool renamed = path == renamedItem;
 
 			if (directoryEntry.is_directory())
 			{
@@ -56,17 +79,43 @@ void D3E::EditorContentBrowser::Draw()
 				ImGui::ImageButton(TextureFactory::GetTextureHandle("2b7db204-d914-4d33-a4e4-dc7c7f9ff216"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
 				if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 				{
-					currentDirectory_ /= path.filename();
+					if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+					{
+						editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+					}
+					else if (ImGui::IsKeyDown(ImGuiKey_F2))
+					{
+						renamedItem = directoryEntry.path().string();
+					}
+					else
+					{
+						currentDirectory_ /= path.filename();
+					}
 				}
 				ImGui::PopStyleColor();
 
-				ImGui::TextWrapped(fileNameString.c_str());
+				if (renamed)
+				{
+					ImGui::PushItemWidth(-1);
+					ImGui::InputText("##input_label", &fileNameString);
+					ImGui::PopItemWidth();
+					if (ImGui::IsKeyDown(ImGuiKey_Enter))
+					{
+						std::filesystem::rename(directoryEntry.path(), directoryEntry.path().parent_path() / fileNameString);
+						renamedItem = "";
+					}
+				}
+				else
+				{
+					ImGui::TextWrapped(fileNameString.c_str());
+				}
 				ImGui::NextColumn();
 			}
 			else if (directoryEntry.path().extension().generic_string() == ".meta")
 			{
 				std::ifstream f(directoryEntry.path());
 				json metadata = json::parse(f);
+				f.close();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				if (metadata.at("type") == "script")
@@ -77,8 +126,37 @@ void D3E::EditorContentBrowser::Draw()
 					ImGui::ImageButton(TextureFactory::GetTextureHandle("20bb535f-c03d-44d5-b287-95e091bbf976"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
 					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						std::cout << std::flush;
-						std::system(("code " + scriptMetadata.filename).c_str());
+						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						{
+							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+						}
+						else
+						{
+							std::cout << std::flush;
+							std::system(
+								("code " + scriptMetadata.filename).c_str());
+						}
+					}
+
+					ImGui::PopStyleColor();
+
+					ImGui::TextWrapped(RemoveExtension(fileNameString).c_str());
+					ImGui::NextColumn();
+				}
+				else if (metadata.at("type") == "world")
+				{
+
+					ImGui::ImageButton(TextureFactory::GetTextureHandle("e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					{
+						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						{
+							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+						}
+						else
+						{
+							ComponentFactory::ResolveWorld(metadata);
+						}
 					}
 
 					ImGui::PopStyleColor();
@@ -91,20 +169,20 @@ void D3E::EditorContentBrowser::Draw()
 					ImGui::ImageButton(TextureFactory::GetTextureHandle("e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
 					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						Debug::LogMessage("Clicked on Asset");
-						// logic for any other asset except script
+						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						{
+							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+						}
+						else
+						{
+							Debug::LogMessage("Clicked on Asset");
+							// logic for any other asset except script and world
+						}
 					}
 
 					ImGui::PopStyleColor();
 
-					if(metadata.contains("filename"))
-					{
-						ImGui::TextWrapped(RemovePath(metadata.at("filename")).c_str());
-					}
-					else
-					{
-						ImGui::TextWrapped(RemovePath(metadata.at("name")).c_str());
-					}
+					ImGui::TextWrapped(RemovePath(metadata.at("name")).c_str());
 					ImGui::NextColumn();
 				}
 

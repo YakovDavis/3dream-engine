@@ -138,6 +138,7 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	ObjectInfoComponent info;
 	info.name = "EditorDebugRenderObject";
 	info.id = UuidGenerator::NewGuidString();
+	info.serializeEntity = false;
 	info.editorId = EditorIdManager::Get()->RegisterUuid(info.id);
 
 	GridComponent grid;

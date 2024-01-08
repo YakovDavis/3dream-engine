@@ -58,9 +58,13 @@ namespace D3E
 		void DrawInspector();
 		void DrawGizmo();
 		void DrawTransformEdit();
+
+		void AlignForWidth(float width, float alignment = 0.5f);
 	public:
 		void BeginDraw(float deltaTime);
 		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer);
 		void Release();
+
+		friend class EditorContentBrowser;
 	};
 }

@@ -36,7 +36,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 	if (!std::filesystem::exists(folder.c_str()))
 	{
 		Debug::LogError(
-			std::format("Path: {} does not exist!", folder.c_str()).c_str());
+			std::format("[AssetManager] Path: {} does not exist!", folder.c_str()).c_str());
 		return;
 	}
 
@@ -57,6 +57,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 		{
 			std::ifstream f(entry.path());
 			json metadata = json::parse(f);
+			f.close();
 
 			if (metadata.at("type") == "texture2d")
 			{
@@ -102,14 +103,6 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 
 				continue;
 			}
-
-			Debug::LogError(
-				std::format(
-					"[AssetManager] LoadAssetsInFolder() Type of asset:\n"
-					"{}\n is not recognized by any factory. File "
-					"path: {}",
-					metadata.dump(4), entry.path().string())
-					.c_str());
 		}
 	}
 }
@@ -127,14 +120,15 @@ void D3E::AssetManager::CreateTexture(const D3E::String& name,
 	TextureFactory::LoadTexture(asset, true, device, commandList);
 
 	json j(asset);
-	const size_t last_slash_idx = filename.rfind('/');
+	const size_t last_slash_idx = filename.rfind('\\');
 	std::string dir = "";
 	if (std::string::npos != last_slash_idx)
 	{
 		dir = filename.substr(0, last_slash_idx).c_str();
 	}
-	std::ofstream o(dir + "/" + asset.name + ".meta");
+	std::ofstream o(dir + "\\" + asset.name + ".meta");
 	o << std::setw(4) << j << std::endl;
+	o.close();
 }
 
 void D3E::AssetManager::CreateMesh(const D3E::String& name,
@@ -158,6 +152,7 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 	}
 	std::ofstream o(dir + "/" + asset.name + ".meta");
 	o << std::setw(4) << j << std::endl;
+	o.close();
 }
 
 void D3E::AssetManager::CreateMaterial(D3E::Material& material,
@@ -170,6 +165,7 @@ void D3E::AssetManager::CreateMaterial(D3E::Material& material,
 	json j(material);
 	std::ofstream o(folder + "/" + std::string(material.name.c_str()) + ".meta");
 	o << std::setw(4) << j << std::endl;
+	o.close();
 }
 
 void D3E::AssetManager::CreateSound(const D3E::String& name,
@@ -192,4 +188,53 @@ void D3E::AssetManager::CreateSound(const D3E::String& name,
 	}
 	std::ofstream o(dir + "/" + asset.name + ".meta");
 	o << std::setw(4) << j << std::endl;
+	o.close();
+}
+
+bool D3E::AssetManager::IsExtensionTexture(const std::string& name)
+{
+	if (name == ".png")
+	{
+		return true;
+	}
+	return false;
+}
+
+bool D3E::AssetManager::IsExtensionModel(const std::string& name)
+{
+	if (name == ".obj" || name == ".fbx")
+	{
+		return true;
+	}
+	return false;
+}
+
+bool D3E::AssetManager::IsExtensionSound(const std::string& name)
+{
+	if (name == ".mp3" || name == ".wav")
+	{
+		return true;
+	}
+	return false;
+}
+
+void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
+{
+	if (!std::filesystem::exists(filename.c_str()))
+	{
+		Debug::LogError(
+			std::format("[AssetManager] Path: {} does not exist!", filename.c_str()).c_str());
+		return;
+	}
+
+	std::ifstream f(filename.c_str());
+	json metadata = json::parse(f);
+	f.close();
+
+	if (metadata.contains("filename"))
+	{
+		std::filesystem::remove(metadata.at("filename"));
+	}
+
+	std::filesystem::remove(filename.c_str());
 }

@@ -10,7 +10,7 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 
 	hInstance = hInst;
 
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_CLASSDC;
 	wc.lpfnWndProc = D3E::App::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;

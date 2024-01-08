@@ -5,6 +5,7 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "ImGuizmo.h"
+#include "assetmng/TextureFactory.h"
 #include "core/EngineState.h"
 #include "imgui_internal.h"
 #include "input/InputDevice.h"
@@ -168,7 +169,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
 	imGuiNvrhi_.init(device);
 
 	editorConsole_ = new EditorConsole();
-	editorContentBrowser_ = new EditorContentBrowser();
+	editorContentBrowser_ = new EditorContentBrowser(this);
 }
 
 void D3E::Editor::SetStyle()
@@ -267,8 +268,8 @@ void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* gameFramebuffer)
 	windowFlags = hoveringOnViewport ? ImGuiWindowFlags_NoMove : 0;
 
 	auto texture = gameFramebuffer->getDesc().colorAttachments[0].texture;
-	viewportDimensions.x = windowHeight / EngineState::GetViewportHeight() * EngineState::GetViewportWidth();
-	viewportDimensions.y = windowHeight;
+	viewportDimensions.x = viewportInnerRect.GetHeight() / EngineState::GetViewportHeight() * EngineState::GetViewportWidth();
+	viewportDimensions.y = viewportInnerRect.GetHeight();
 	ImGui::Image(texture, viewportDimensions, ImVec2{0, 0}, ImVec2{1, 1});
 
 	if (!game_->GetSelectedUuids().empty())
@@ -286,6 +287,49 @@ void D3E::Editor::DrawHeader()
 
 void D3E::Editor::DrawPlay()
 {
+	ImGuiWindowClass window_class;
+	window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoResizeY | ImGuiDockNodeFlags_NoUndocking;
+	ImGui::SetNextWindowClass(&window_class);
+	static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar |
+	                                      ImGuiWindowFlags_NoScrollWithMouse |
+	                                      ImGuiWindowFlags_NoTitleBar;
+	ImGui::Begin("Play", 0, windowFlags);
+	ImGuiStyle& style = ImGui::GetStyle();
+	float width = 0.0f;
+	AlignForWidth(96.0f);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	ImGui::ImageButton(TextureFactory::GetTextureHandle("a4e0c3f6-8615-4504-bbb6-16ab19891f3d"), {32.0f, 32.0f}, {0, 0}, {1, 1});
+	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		game_->OnEditorPlayPressed();
+	}
+	ImGui::PopStyleColor();
+	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	ImGui::ImageButton(TextureFactory::GetTextureHandle("302abece-d4bf-4875-bc39-8c32bd15f1ef"), {32.0f, 32.0f}, {0, 0}, {1, 1});
+	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		game_->OnEditorPausePressed();
+	}
+	ImGui::PopStyleColor();
+	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	ImGui::ImageButton(TextureFactory::GetTextureHandle("30e4f8eb-08e0-4633-b9f7-207ec70db06e"), {32.0f, 32.0f}, {0, 0}, {1, 1});
+	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		game_->OnEditorStopPressed();
+	}
+	ImGui::PopStyleColor();
+	ImGui::End();
+}
+
+void D3E::Editor::AlignForWidth(float width, float alignment)
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	float avail = ImGui::GetContentRegionAvail().x;
+	float off = (avail - width) * alignment;
+	if (off > 0.0f)
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
 }
 
 void D3E::Editor::DrawHierarchy()

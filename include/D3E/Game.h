@@ -68,14 +68,27 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
+		void OnEditorPlayPressed();
+
+		void OnEditorPausePressed();
+
+		void OnEditorStopPressed();
+
+		void ClearWorld();
+
+		HRESULT AssetFileImport(String currentDir);
+
+		void AssetDeleteDialog(String filename);
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
 
 		entt::registry registry_;
 
-		eastl::vector<GameSystem*> systems_;
+		eastl::vector<GameSystem*> editorSystems_;
 
+		eastl::vector<GameSystem*> systems_;
 		eastl::vector<GameSystem*> renderPPsystems_;
 
 		virtual void OnRegisterCustomComponents() {}
@@ -109,6 +122,8 @@ namespace D3E
 		double totalTime = 0.0;
 
 		eastl::unordered_map<String, entt::entity> uuidEntityList;
+
+		bool isGameRunning_ = false;
 
 	private:
 		void HandleMessages();
