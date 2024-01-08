@@ -11,6 +11,7 @@
 #include "nvrhi/nvrhi.h"
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
+#include "engine/ComponentFactory.h"
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -354,7 +355,32 @@ void D3E::Editor::DrawHierarchy()
 void D3E::Editor::DrawInspector()
 {
 	ImGui::Begin("Inspector");
-	ImGui::Text("Here will be some useful information about object");
+
+	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
+	if (objectUuids.size() == 1)
+	{
+		String currentUuid = *objectUuids.begin();
+		entt::entity currentEntity = entt::null;
+		if (game_->FindEntityByID(currentEntity, currentUuid))
+		{
+			eastl::vector<D3E::String> currentComponents(ComponentFactory::GetAllEntityComponents(currentEntity));
+			auto& infoComponent = game_->GetRegistry().get<ObjectInfoComponent>(currentEntity);
+			ImGui::Text(infoComponent.name.c_str());
+		}
+		else
+		{
+			ImGui::Text("Error: Incorrect ID");
+		}
+	}
+	else if (objectUuids.empty())
+	{
+		ImGui::Text("No object selected");
+	}
+	else
+	{
+		ImGui::Text("Multiple objects selected");
+	}
+
 	ImGui::End();
 }
 
