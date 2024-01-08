@@ -36,3 +36,9 @@ option(LUA_BUILD_AS_CXX ON)
 option(LUA_ENABLE_SHARED OFF)
 option(LUA_ENABLE_TESTING OFF)
 add_subdirectory(lua)
+
+# recast nav
+option(RECASTNAVIGATION_DEMO OFF)
+option(RECASTNAVIGATION_TESTS OFF)
+option(RECASTNAVIGATION_EXAMPLES OFF)
+add_subdirectory(recastnavigation)
