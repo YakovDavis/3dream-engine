@@ -223,6 +223,11 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         EASTL
         Jolt        
         lua_static
+        DebugUtils
+        Detour
+        DetourCrowd
+        DetourTileCache
+        Recast
 )
 
 
