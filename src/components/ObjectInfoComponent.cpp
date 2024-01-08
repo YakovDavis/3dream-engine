@@ -21,7 +21,8 @@ namespace D3E
 		         {"class", "ObjectInfoComponent"},
 		         {"name", name.c_str()},
 		         {"id", id.c_str()},
-		         {"visible", visible}
+		         {"visible", visible},
+		         {"serialize_entity", serializeEntity}
 		};
 	}
 
@@ -33,6 +34,7 @@ namespace D3E
 		j.at("id").get_to(tmp_id);
 		j.at("name").get_to(tmp_name);
 		j.at("visible").get_to(visible);
+		j.at("serialize_entity").get_to(serializeEntity);
 
 		if (tmp_id == EmptyIdStdStr)
 		{

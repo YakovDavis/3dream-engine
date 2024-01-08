@@ -190,6 +190,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/engine/ComponentFactory.cpp
         src/engine/ComponentFactory.h
         include/D3E/Components/BaseComponent.h
+        src/assetmng/CDialogEventHandler.cpp
+        src/assetmng/CDialogEventHandler.h
 )
 
 add_subdirectory(libs)
@@ -212,6 +214,8 @@ endif()
 
 target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_WITH_EDITOR)
 
+set(WIN_FILE_LIBS "comctl32.lib propsys.lib shlwapi.lib")
+
 target_link_libraries("${PROJECT_NAME}" PUBLIC
         assimp
         nvrhi
@@ -223,6 +227,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         EASTL
         Jolt        
         lua_static
+        ${WIN_FILE_LIBS}
         DebugUtils
         Detour
         DetourCrowd

@@ -38,9 +38,12 @@
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
 #include "utils/ECSUtils.h"
-
+#include "json.hpp"
 #include <filesystem>
 #include <thread>
+#include "assetmng/CDialogEventHandler.h"
+
+static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -74,6 +77,11 @@ void D3E::Game::Run()
 	std::thread inputCheckingThread(PollConsoleInput, this);
 
 	bool lmbPressedLastTick = false; // temp
+
+	json j;
+	ComponentFactory::SerializeWorld(j);
+	std::ofstream o("DuckWorld.meta");
+	o << std::setw(4) << j << std::endl;
 
 	while (!isQuitRequested_)
 	{
@@ -140,26 +148,6 @@ void D3E::Game::Init()
 	EngineState::Initialize(this);
 	gameRender_->Init(systems_);
 
-	// AssetManager::Get().CreateTexture("default-grid",
-	// "textures/default-grid.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("white", "textures/white.png",
-	// gameRender_->GetDevice(), gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_A",
-	// "textures/cerberus_A.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_M",
-	// "textures/cerberus_M.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_R",
-	// "textures/cerberus_R.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("environment",
-	// "textures/environment.hdr", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx",
-	// gameRender_->GetDevice(), gameRender_->GetCommandList());
-
 	AssetManager::Get().LoadAssetsInFolder("assets/", true,
 	                                       gameRender_->GetDevice(),
 	                                       gameRender_->GetCommandList());
@@ -194,7 +182,8 @@ void D3E::Game::Init()
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 
-	CreationSystems::CreateEditorDebugRender(registry_);
+	//CreationSystems::CreateEditorDebugRender(registry_);
+	ClearWorld();
 
 	ComponentFactory::Initialize(this);
 }
@@ -509,4 +498,150 @@ void D3E::Game::RegisterDefaultComponents()
 		.data<&TransformComponent::relativePosition>("relativePosition"_hs)
 		.data<&TransformComponent::relativeRotation>("relativeRotation"_hs)
 		.data<&TransformComponent::relativeScale>("relativeScale"_hs);
+}
+
+void D3E::Game::OnEditorPlayPressed()
+{
+	if (!isGameRunning_)
+	{
+		isGameRunning_ = true;
+	}
+}
+
+void D3E::Game::OnEditorPausePressed()
+{
+	// TODO: implement
+}
+
+void D3E::Game::OnEditorStopPressed()
+{
+	if (isGameRunning_)
+	{
+		isGameRunning_ = false;
+		ClearWorld();
+		ComponentFactory::ResolveWorld(currentMapSavedState);
+	}
+}
+
+void D3E::Game::ClearWorld()
+{
+	EditorIdManager::Get()->UnregisterAll();
+	uuidEntityList.clear();
+	registry_.clear();
+#ifdef D3E_WITH_EDITOR
+	CreationSystems::CreateEditorDebugRender(registry_);
+#endif
+}
+
+HRESULT D3E::Game::AssetFileImport(String currentDir)
+{
+	// CoCreate the File Open Dialog object.
+	IFileDialog *pfd = NULL;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+	if (SUCCEEDED(hr))
+	{
+		// Create an event handling object, and hook it up to the dialog.
+		IFileDialogEvents *pfde = NULL;
+		hr = CDialogEventHandler_CreateInstance(IID_PPV_ARGS(&pfde));
+		if (SUCCEEDED(hr))
+		{
+			// Hook up the event handler.
+			DWORD dwCookie;
+			hr = pfd->Advise(pfde, &dwCookie);
+			if (SUCCEEDED(hr))
+			{
+				// Set the options on the dialog.
+				DWORD dwFlags;
+
+				// Before setting, always get the options first in order not to override existing options.
+				hr = pfd->GetOptions(&dwFlags);
+				if (SUCCEEDED(hr))
+				{
+					// In this case, get shell items only for file system items.
+					hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
+					if (SUCCEEDED(hr))
+					{
+						// Set the file types to display only. Notice that, this is a 1-based array.
+						hr = pfd->SetFileTypes(ARRAYSIZE(c_rgSaveTypes), c_rgSaveTypes);
+						if (SUCCEEDED(hr))
+						{
+							// Set the selected file type index to Word Docs for this example.
+							hr = pfd->SetFileTypeIndex(INDEX_TEXTURE);
+							if (SUCCEEDED(hr))
+							{
+								// Set the default extension to be ".doc" file.
+								hr = pfd->SetDefaultExtension(L"doc");
+								if (SUCCEEDED(hr))
+								{
+									// Show the dialog
+									hr = pfd->Show(NULL);
+									if (SUCCEEDED(hr))
+									{
+										// Obtain the result, once the user clicks the 'Open' button.
+										// The result is an IShellItem object.
+										IShellItem *psiResult;
+										hr = pfd->GetResult(&psiResult);
+										if (SUCCEEDED(hr))
+										{
+											PWSTR pszFilePath = NULL;
+											hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+											if (SUCCEEDED(hr))
+											{
+												auto sourcePath = std::filesystem::path(pszFilePath);
+												auto destinationPath = std::filesystem::path(currentDir.c_str() / sourcePath.filename());
+												auto workingDirPath = std::filesystem::current_path();
+												auto relDestinationPath = std::filesystem::relative(destinationPath, workingDirPath);
+												std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::overwrite_existing);
+												if (AssetManager::IsExtensionTexture(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateTexture(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+												}
+												else if (AssetManager::IsExtensionModel(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateMesh(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+												}
+												else if (AssetManager::IsExtensionSound(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateSound(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str());
+												}
+												CoTaskMemFree(pszFilePath);
+											}
+											psiResult->Release();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				// Unhook the event handler.
+				pfd->Unadvise(dwCookie);
+			}
+			pfde->Release();
+		}
+		pfd->Release();
+	}
+	return hr;
+}
+
+void D3E::Game::AssetDeleteDialog(D3E::String filename)
+{
+	int res = 0;
+	TaskDialog(NULL,
+	           NULL,
+	           L"Delete confirm",
+	           L"Are you sure you want to delete this item?",
+	           NULL,
+	           TDCBF_YES_BUTTON | TDCBF_NO_BUTTON,
+	           TD_INFORMATION_ICON,
+	           &res);
+
+	if (res == IDYES)
+	{
+		if (is_directory(std::filesystem::path(filename.c_str())))
+		{
+			std::filesystem::remove_all(std::filesystem::path(filename.c_str()));
+		}
+		AssetManager::Get().DeleteAsset(filename);
+	}
 }

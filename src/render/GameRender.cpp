@@ -431,14 +431,14 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 	{
 		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
+	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
 	for (auto& sys : renderPPSystems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
-#endif
-
 	debugRenderer_->Begin(commandList_, currentFramebuffer);
+#endif
 	debugRenderer_->ProcessQueue();
 	debugRenderer_->End();
 

@@ -17,7 +17,7 @@ namespace D3E
 	void LightComponent::to_json(json& j) const
 	{
 		j = json{{"type", "component"},
-		         {"class", "StaticMeshComponent"},
+		         {"class", "LightComponent"},
 		         {"light_type", magic_enum::enum_name(lightType)},
 		         {"offset", std::vector({offset.x, offset.y, offset.z})},
 		         {"direction", std::vector({direction.x, direction.y, direction.z})},
