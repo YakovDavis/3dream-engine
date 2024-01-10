@@ -195,7 +195,10 @@ add_library("${PROJECT_NAME}" SHARED
         src/navigation/Context.cpp 
         src/navigation/PerformanceTimer.h 
         src/navigation/PerformanceTimer.cpp
-        src/navigation/NavmeshManager.h)
+        src/navigation/NavmeshManager.h
+        src/navigation/NavmeshManager.cpp
+        src/navigation/NavmeshConfig.h
+        src/navigation/NavmeshCore.h)
 
 add_subdirectory(libs)
 
