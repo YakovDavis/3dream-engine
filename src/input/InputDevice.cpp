@@ -53,6 +53,11 @@ void D3E::InputDevice::OnKeyDown(KeyboardInputEventArgs args)
 
 void D3E::InputDevice::OnMouseMove(RawMouseEventArgs args)
 {
+	if (Game::MouseLockedByImGui)
+	{
+		return;
+	}
+
 	if(args.ButtonFlags & static_cast<int>(MouseButtonFlags::LeftButtonDown))
 		AddPressedKey(Keys::LeftButton);
 	if (args.ButtonFlags & static_cast<int>(MouseButtonFlags::LeftButtonUp))

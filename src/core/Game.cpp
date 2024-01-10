@@ -45,6 +45,9 @@
 
 static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
 
+bool D3E::Game::MouseLockedByImGui = false;
+bool D3E::Game::KeyboardLockedByImGui = false;
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
                                                              WPARAM wParam,

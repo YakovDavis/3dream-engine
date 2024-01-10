@@ -220,6 +220,21 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
 
+	if (usingGizmo)
+	{
+		Game::MouseLockedByImGui = true;
+	}
+	else if (hoveringOnViewport || viewportFocused)
+	{
+		Game::MouseLockedByImGui = false;
+	}
+	else
+	{
+		Game::MouseLockedByImGui = ImGui::GetIO().WantCaptureMouse;
+	}
+
+	Game::KeyboardLockedByImGui = ImGui::GetIO().WantCaptureKeyboard;
+
 	// not sure if it's necessary
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
@@ -265,6 +280,7 @@ void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* gameFramebuffer)
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	viewportInnerRect = window->InnerRect;
 	hoveringOnViewport = ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(window->InnerRect.Min, window->InnerRect.Max);
+	viewportFocused = ImGui::IsWindowFocused();
 	windowFlags = hoveringOnViewport ? ImGuiWindowFlags_NoMove : 0;
 
 	auto texture = gameFramebuffer->getDesc().colorAttachments[0].texture;
@@ -431,6 +447,8 @@ void D3E::Editor::DrawGizmo()
 	float viewManipulateRight = ImGui::GetWindowPos().x + windowWidth;
 	float viewManipulateTop = ImGui::GetWindowPos().y;
 
+	usingGizmo = ImGuizmo::IsUsing();
+
 	ImGuizmo::Manipulate((float*)CameraUtils::GetView(origin, *camera).m, (float*)CameraUtils::GetProj(*camera).m, mCurrentGizmoOperation, mCurrentGizmoMode, (float*)game_->GetGizmoTransform().m, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 
 	// Cube view manipulation, idk if needed - need extracting camera vectors from view matrix to work
@@ -452,6 +470,8 @@ void D3E::Editor::DrawGizmo()
 				  tc.rotation = rot;
 				  tc.scale = scale;
 			  });
+
+	game_->CalculateGizmoTransformsOffsets();
 }
 
 void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
