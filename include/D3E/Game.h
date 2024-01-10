@@ -68,6 +68,9 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
+		static bool MouseLockedByImGui;
+		static bool KeyboardLockedByImGui;
+
 		void OnEditorPlayPressed();
 
 		void OnEditorPausePressed();

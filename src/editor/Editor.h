@@ -36,6 +36,8 @@ namespace D3E
 		EditorConsole *editorConsole_;
 		EditorContentBrowser *editorContentBrowser_;
 		bool hoveringOnViewport = false;
+		bool viewportFocused = false;
+		bool usingGizmo = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
 
