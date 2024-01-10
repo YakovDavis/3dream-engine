@@ -190,7 +190,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/engine/ComponentFactory.cpp
         src/engine/ComponentFactory.h
         include/D3E/Components/BaseComponent.h
-)
+        include/D3E/Components/NavmeshComponent.h 
+        src/navigation/Context.h 
+        src/navigation/Context.cpp 
+        src/navigation/PerformanceTimer.h 
+        src/navigation/PerformanceTimer.cpp)
 
 add_subdirectory(libs)
 
