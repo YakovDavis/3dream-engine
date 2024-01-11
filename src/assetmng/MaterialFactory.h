@@ -16,6 +16,7 @@ namespace D3E
 		static void Initialize(Game* game);
 		static void AddMaterial(const Material& m);
 		static const Material& GetMaterial(const String& uuid);
+		static bool IsMaterialUuidValid(const String& uuid);
 
 	private:
 		static bool isInitialized_;

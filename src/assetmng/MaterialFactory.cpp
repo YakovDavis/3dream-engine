@@ -26,3 +26,8 @@ const D3E::Material& D3E::MaterialFactory::GetMaterial(const D3E::String& uuid)
 
 	return materials_[uuid];
 }
+
+bool D3E::MaterialFactory::IsMaterialUuidValid(const D3E::String& uuid)
+{
+	return materials_.find(uuid) != materials_.end();
+}

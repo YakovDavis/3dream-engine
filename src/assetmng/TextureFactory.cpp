@@ -77,16 +77,14 @@ void D3E::TextureFactory::DestroyResources()
 {
 }
 
-nvrhi::TextureHandle D3E::TextureFactory::GetTextureHandle(const String& name)
+nvrhi::TextureHandle D3E::TextureFactory::GetTextureHandle(const String& uuid)
 {
-	if (textures_.find(name) == textures_.end())
+	if (textures_.find(uuid) == textures_.end())
 	{
-		Debug::LogError("[TextureFactory] Texture handle not found: " + name);
+		Debug::LogError("[TextureFactory] Texture handle not found: " + uuid);
 	}
 
-	//LoadTexture(name);
-
-	return textures_[name].Handle;
+	return textures_[uuid].Handle;
 }
 
 nvrhi::SamplerHandle& D3E::TextureFactory::GetSampler(const String& name)
@@ -103,4 +101,9 @@ nvrhi::SamplerHandle& D3E::TextureFactory::AddSampler(const String& name, nvrhi:
 {
 	samplers_.insert({name, device->createSampler(desc)});
 	return samplers_[name];
+}
+
+bool D3E::TextureFactory::IsTextureUuidValid(const D3E::String& uuid)
+{
+	return textures_.find(uuid) != textures_.end();
 }

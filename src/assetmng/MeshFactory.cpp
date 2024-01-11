@@ -233,3 +233,8 @@ void D3E::MeshFactory::ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* me
 			meshData_[metaData.uuid.c_str()].indices.push_back(face.mIndices[j]);
 	}
 }
+
+bool D3E::MeshFactory::IsMeshUuidValid(const D3E::String& uuid)
+{
+	return meshData_.find(uuid) != meshData_.end();
+}
