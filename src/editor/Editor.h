@@ -38,6 +38,9 @@ namespace D3E
 		bool hoveringOnViewport = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
+		//char xInputBuffer_[256];
+		//char yInputBuffer_[256];
+		//char zInputBuffer_[256];
 
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
