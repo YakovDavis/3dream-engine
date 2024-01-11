@@ -36,7 +36,9 @@ namespace D3E
 		static void RegisterGBuffer(GBuffer* gbuffer) { gbuffer_ = gbuffer; }
 		static GBuffer* GetGBuffer() { return gbuffer_; }
 
-		static nvrhi::TextureHandle GetTextureHandle(const String& name);
+		static bool IsTextureUuidValid(const D3E::String& uuid);
+
+		static nvrhi::TextureHandle GetTextureHandle(const String& uuid);
 		static void LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		static nvrhi::SamplerHandle& GetSampler(const String& name);

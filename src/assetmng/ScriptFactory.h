@@ -19,6 +19,7 @@ namespace D3E
 		static void Initialize(Game* game);
 		static void LoadScript(const ScriptMetaData& metaData);
 		static std::optional<ScriptData> GetScriptData(const String& uuid);
+		static bool IsScriptUuidValid(const String& uuid);
 
 	private:
 		static bool isInitialized_;

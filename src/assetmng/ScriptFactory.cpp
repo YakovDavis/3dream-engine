@@ -59,3 +59,8 @@ std::optional<ScriptData> ScriptFactory::GetScriptData(const String& uuid)
 
 	return scriptsData_[uuid];
 }
+
+bool ScriptFactory::IsScriptUuidValid(const String& uuid)
+{
+	return scriptsData_.find(uuid) != scriptsData_.end();
+}

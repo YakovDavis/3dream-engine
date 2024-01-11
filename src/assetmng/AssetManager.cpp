@@ -99,7 +99,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				SoundMetaData asset;
 				metadata.get_to(asset);
-				SoundEngine::GetInstance().LoadSound(asset.filename.c_str(), asset.is3d, asset.isLooping, asset.stream);
+				SoundEngine::GetInstance().LoadSound(asset);
 
 				continue;
 			}
@@ -177,7 +177,7 @@ void D3E::AssetManager::CreateSound(const D3E::String& name,
 	asset.filename = filename.c_str();
 	asset.name = name.c_str();
 
-	SoundEngine::GetInstance().LoadSound(filename, is3d, isLooping, stream);
+	SoundEngine::GetInstance().LoadSound(asset);
 
 	json j(asset);
 	const size_t last_slash_idx = filename.rfind('/');
