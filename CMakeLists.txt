@@ -192,6 +192,8 @@ add_library("${PROJECT_NAME}" SHARED
         include/D3E/Components/BaseComponent.h
         src/assetmng/CDialogEventHandler.cpp
         src/assetmng/CDialogEventHandler.h
+        src/render/RenderUtils.cpp
+        src/render/RenderUtils.h
 )
 
 add_subdirectory(libs)

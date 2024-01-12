@@ -83,6 +83,9 @@ namespace D3E
 
 		void AssetDeleteDialog(String filename);
 
+		bool IsGameRunning() const { return isGameRunning_; }
+		bool IsGamePaused() const { return isGamePaused_; }
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
@@ -98,9 +101,13 @@ namespace D3E
 
 		virtual void Init();
 
+		void EditorUpdate(float deltaTime);
+
 		virtual void Update(float deltaTime);
 
 		void Pick();
+
+		void EditorDraw();
 
 		virtual void Draw();
 
@@ -128,11 +135,11 @@ namespace D3E
 
 		bool isGameRunning_ = false;
 
+		bool isGamePaused_ = false;
+
 	private:
 		void HandleMessages();
 
 		eastl::hash_set<String> selectedUuids;
-
-		void RegisterDefaultComponents();
 	};
 } // namespace D3E

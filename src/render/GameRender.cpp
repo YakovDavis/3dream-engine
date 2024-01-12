@@ -403,37 +403,50 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 	return commandList_;
 }
 
-void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
-	// Obtain the current framebuffer from the graphics API
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
 
 	commandList_->open();
+	for (auto& sys : systems)
+	{
+		sys->Draw(registry, frameGBuffer, commandList_, device_);
+	}
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+}
 
-	// Clear the primary render target
+void D3E::GameRender::PrepareFrame()
+{
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	commandList_->open();
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
-	//nvrhi::utils::ClearColorAttachment(commandList_, frameGBuffer, 0, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.albedoBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.positionBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.normalBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.metalRoughnessBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureUInt(gbuffer_.editorIdsBuffer, nvrhi::AllSubresources, 0);
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, true, 0U);
-
-	for (auto& sys : systems)
-	{
-		sys->Draw(registry, frameGBuffer, commandList_, device_);
-	}
-
 #ifdef D3E_WITH_EDITOR
 	nvrhi::utils::ClearColorAttachment(commandList_, gameFramebuffer_, 0, nvrhi::Color(0.2f));
-	for (auto& sys : renderPPSystems)
+#endif
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+}
+
+void D3E::GameRender::DrawPostProcess(entt::registry& registry,
+                                      eastl::vector<GameSystem*>& systems)
+{
+	commandList_->open();
+#ifdef D3E_WITH_EDITOR
+	for (auto& sys : systems)
 	{
 		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
 	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
-	for (auto& sys : renderPPSystems)
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	for (auto& sys : systems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
@@ -441,39 +454,24 @@ void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>&
 #endif
 	debugRenderer_->ProcessQueue();
 	debugRenderer_->End();
-
-	// Close and execute the command list
 	commandList_->close();
 	device_->executeCommandList(commandList_);
 }
 
-void D3E::GameRender::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::BeginDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
 	for (auto& sys : systems)
-	{
-		sys->PreDraw(registry, commandList_, device_);
-	}
-
-	for (auto& sys : renderPPSystems)
 	{
 		sys->PreDraw(registry, commandList_, device_);
 	}
 }
 
-void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
 	for (auto& sys : systems)
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
-
-	for (auto& sys : renderPPSystems)
-	{
-		sys->PostDraw(registry, commandList_, device_);
-	}
-#ifdef USE_IMGUI
-	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
-#endif // USE_IMGUI
 }
 
 //void D3E::GameRender::LoadTexture(const String& name,
@@ -521,4 +519,11 @@ uint32_t D3E::GameRender::EditorPick(int x, int y)
 D3E::DebugRenderer* D3E::GameRender::GetDebugRenderer()
 {
 	return debugRenderer_;
+}
+
+void D3E::GameRender::DrawGUI()
+{
+#ifdef USE_IMGUI
+	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
+#endif // USE_IMGUI
 }

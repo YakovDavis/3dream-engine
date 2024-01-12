@@ -314,7 +314,7 @@ void D3E::Editor::DrawPlay()
 	float width = 0.0f;
 	AlignForWidth(96.0f);
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-	ImGui::ImageButton(TextureFactory::GetTextureHandle("a4e0c3f6-8615-4504-bbb6-16ab19891f3d"), {32.0f, 32.0f}, {0, 0}, {1, 1});
+	ImGui::ImageButtonEx(ImGui::GetID("PlayButton"), TextureFactory::GetTextureHandle("a4e0c3f6-8615-4504-bbb6-16ab19891f3d"), {32.0f, 32.0f}, {0, 0}, {1, 1}, ImVec4(0.3f, 0.3f, 0.3f, game_->IsGameRunning()), ImVec4(1, 1, 1, 1));
 	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
 		game_->OnEditorPlayPressed();
@@ -322,7 +322,7 @@ void D3E::Editor::DrawPlay()
 	ImGui::PopStyleColor();
 	ImGui::SameLine();
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-	ImGui::ImageButton(TextureFactory::GetTextureHandle("302abece-d4bf-4875-bc39-8c32bd15f1ef"), {32.0f, 32.0f}, {0, 0}, {1, 1});
+	ImGui::ImageButtonEx(ImGui::GetID("PauseButton"), TextureFactory::GetTextureHandle("302abece-d4bf-4875-bc39-8c32bd15f1ef"), {32.0f, 32.0f}, {0, 0}, {1, 1}, ImVec4(0.3f, 0.3f, 0.3f, game_->IsGamePaused()), ImVec4(1, 1, 1, 1));
 	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
 		game_->OnEditorPausePressed();

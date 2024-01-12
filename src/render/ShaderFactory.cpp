@@ -259,11 +259,29 @@ const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSetV(const String& 
 	return bSetsV_[name];
 }
 
+void D3E::ShaderFactory::RemoveBindingSetV(const String& name)
+{
+	if (bSetsV_.find(name) == bSetsV_.end())
+	{
+		return;
+	}
+	bSetsV_.erase(name);
+}
+
 const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSetP(const String& name,
                                                                   const nvrhi::BindingSetDesc& desc, const String& bLayoutName)
 {
 	bSetsP_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
 	return bSetsP_[name];
+}
+
+void D3E::ShaderFactory::RemoveBindingSetP(const String& name)
+{
+	if (bSetsP_.find(name) == bSetsP_.end())
+	{
+		return;
+	}
+	bSetsP_.erase(name);
 }
 
 const nvrhi::ComputePipelineHandle& D3E::ShaderFactory::AddComputePipeline(const D3E::String& name,
@@ -288,6 +306,15 @@ const nvrhi::BindingSetHandle& D3E::ShaderFactory::AddBindingSetC(const D3E::Str
 {
 	bSetsC_.insert({name, activeGame_->GetRender()->GetDevice()->createBindingSet(desc, GetBindingLayout(bLayoutName))});
 	return bSetsC_[name];
+}
+
+void D3E::ShaderFactory::RemoveBindingSetC(const String& name)
+{
+	if (bSetsC_.find(name) == bSetsC_.end())
+	{
+		return;
+	}
+	bSetsC_.erase(name);
 }
 
 const nvrhi::BindingSetHandle& D3E::ShaderFactory::GetBindingSetC(const D3E::String& name)
