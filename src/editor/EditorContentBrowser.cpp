@@ -76,18 +76,25 @@ void D3E::EditorContentBrowser::Draw()
 			if (directoryEntry.is_directory())
 			{
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::ImageButton(TextureFactory::GetTextureHandle("2b7db204-d914-4d33-a4e4-dc7c7f9ff216"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-				if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				ImGui::ImageButton(TextureFactory::GetTextureHandle(
+									   "2b7db204-d914-4d33-a4e4-dc7c7f9ff216"),
+				                   {thumbnailSize, thumbnailSize}, {0, -1},
+				                   {-1, 0});
+				if (ImGui::IsItemHovered())
 				{
-					if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						{
+							editor_->game_->AssetDeleteDialog(
+								directoryEntry.path().string().c_str());
+						}
+						else if (ImGui::IsKeyDown(ImGuiKey_F2))
+						{
+							renamedItem = directoryEntry.path().string();
+						}
 					}
-					else if (ImGui::IsKeyDown(ImGuiKey_F2))
-					{
-						renamedItem = directoryEntry.path().string();
-					}
-					else
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
 						currentDirectory_ /= path.filename();
 					}
@@ -101,7 +108,10 @@ void D3E::EditorContentBrowser::Draw()
 					ImGui::PopItemWidth();
 					if (ImGui::IsKeyDown(ImGuiKey_Enter))
 					{
-						std::filesystem::rename(directoryEntry.path(), directoryEntry.path().parent_path() / fileNameString);
+						std::filesystem::rename(
+							directoryEntry.path(),
+							directoryEntry.path().parent_path() /
+								fileNameString);
 						renamedItem = "";
 					}
 				}
@@ -111,81 +121,128 @@ void D3E::EditorContentBrowser::Draw()
 				}
 				ImGui::NextColumn();
 			}
-			else if (directoryEntry.path().extension().generic_string() == ".meta")
+			else
 			{
-				std::ifstream f(directoryEntry.path());
-				json metadata = json::parse(f);
-				f.close();
-
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				if (metadata.at("type") == "script")
+				if (directoryEntry.path().extension().generic_string() == ".meta")
 				{
-					ScriptMetaData scriptMetadata;
-					metadata.get_to(scriptMetadata);
+					std::ifstream f(directoryEntry.path());
+					json metadata = json::parse(f);
+					f.close();
 
-					ImGui::ImageButton(TextureFactory::GetTextureHandle("20bb535f-c03d-44d5-b287-95e091bbf976"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+					if (metadata.at("type") == "script")
 					{
-						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						ScriptMetaData scriptMetadata;
+						metadata.get_to(scriptMetadata);
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"20bb535f-c03d-44d5-b287-95e091bbf976"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered() &&
+						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
-							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+								std::cout << std::flush;
+								std::system(("code " + scriptMetadata.filename)
+								                .c_str());
+							}
 						}
-						else
-						{
-							std::cout << std::flush;
-							std::system(
-								("code " + scriptMetadata.filename).c_str());
-						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemoveExtension(fileNameString).c_str());
+						ImGui::NextColumn();
 					}
-
-					ImGui::PopStyleColor();
-
-					ImGui::TextWrapped(RemoveExtension(fileNameString).c_str());
-					ImGui::NextColumn();
-				}
-				else if (metadata.at("type") == "world")
-				{
-
-					ImGui::ImageButton(TextureFactory::GetTextureHandle("e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					else if (metadata.at("type") == "world")
 					{
-						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered() &&
+						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
-							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+								ComponentFactory::ResolveWorld(metadata);
+							}
 						}
-						else
-						{
-							ComponentFactory::ResolveWorld(metadata);
-						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemoveExtension(fileNameString).c_str());
+						ImGui::NextColumn();
 					}
-
-					ImGui::PopStyleColor();
-
-					ImGui::TextWrapped(RemoveExtension(fileNameString).c_str());
-					ImGui::NextColumn();
-				}
-				else
-				{
-					ImGui::ImageButton(TextureFactory::GetTextureHandle("e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"), {thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-					if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					else
 					{
-						if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered() &&
+						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 						{
-							editor_->game_->AssetDeleteDialog(directoryEntry.path().string().c_str());
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+								Debug::LogMessage("Double-clicked on Asset");
+								// logic for any other asset except script and world
+							}
 						}
-						else
-						{
-							Debug::LogMessage("Clicked on Asset");
-							// logic for any other asset except script and world
-						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemovePath(metadata.at("name")).c_str());
+						ImGui::NextColumn();
 					}
-
-					ImGui::PopStyleColor();
-
-					ImGui::TextWrapped(RemovePath(metadata.at("name")).c_str());
-					ImGui::NextColumn();
 				}
-
 			}
 		}
 	}
