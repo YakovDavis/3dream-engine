@@ -12,6 +12,7 @@
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "EngineState.h"
+#include "assetmng/CDialogEventHandler.h"
 #include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
@@ -27,9 +28,11 @@
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
+#include "json.hpp"
 #include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/RenderUtils.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
 #include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
@@ -38,10 +41,9 @@
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
 #include "utils/ECSUtils.h"
-#include "json.hpp"
+
 #include <filesystem>
 #include <thread>
-#include "assetmng/CDialogEventHandler.h"
 
 static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
 
@@ -113,7 +115,21 @@ void D3E::Game::Run()
 			sys->PostPhysicsUpdate(registry_);
 		}
 
-		Update(deltaTime_);
+		if (isGameRunning_)
+		{
+			if (!isGamePaused_)
+			{
+				Update(deltaTime_);
+			}
+		}
+		else
+		{
+			EditorUpdate(deltaTime_);
+		}
+
+		gameRender_->UpdateAnimations(deltaTime_);
+
+		inputDevice_->EndTick();
 
 		if (lmbPressedLastTick && !inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
@@ -123,7 +139,14 @@ void D3E::Game::Run()
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
-		Draw();
+		if (isGameRunning_)
+		{
+			Draw();
+		}
+		else
+		{
+			EditorDraw();
+		}
 
 		++frameCount_;
 	}
@@ -139,8 +162,6 @@ void D3E::Game::Init()
 
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
-
-	RegisterDefaultComponents();
 
 	for (auto& sys : systems_)
 	{
@@ -180,15 +201,47 @@ void D3E::Game::Init()
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
-	renderPPsystems_.push_back(new EditorUtilsRenderSystem);
+
+	editorSystems_.push_back(new FPSControllerSystem);
+	editorSystems_.push_back(new EditorUtilsRenderSystem);
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 
-	//CreationSystems::CreateEditorDebugRender(registry_);
 	ClearWorld();
 
 	ComponentFactory::Initialize(this);
+}
+
+void D3E::Game::EditorUpdate(const float deltaTime)
+{
+	totalTime += deltaTime;
+
+	soundEngine_->Update();
+
+	TimerManager::GetInstance().Update(deltaTime);
+
+	for (auto& sys : editorSystems_)
+	{
+		sys->Update(registry_, this, deltaTime);
+	}
+}
+
+void D3E::Game::EditorDraw()
+{
+	gameRender_->PrepareFrame();
+	gameRender_->BeginDraw(registry_, systems_);
+	gameRender_->BeginDraw(registry_, renderPPsystems_);
+	gameRender_->BeginDraw(registry_, editorSystems_);
+	gameRender_->DrawOpaque(registry_, systems_);
+	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
+	gameRender_->DrawPostProcess(registry_, editorSystems_);
+	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->EndDraw(registry_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, editorSystems_);
+	gameRender_->DrawGUI();
+	gameRender_->Present();
+	gameRender_->GetDevice()->runGarbageCollection();
 }
 
 void D3E::Game::Update(const float deltaTime)
@@ -208,20 +261,19 @@ void D3E::Game::Update(const float deltaTime)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
-
-	gameRender_->UpdateAnimations(deltaTime);
-
-	inputDevice_->EndTick();
 }
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_, systems_, renderPPsystems_);
-	gameRender_->Draw(registry_, systems_, renderPPsystems_);
-	gameRender_->EndDraw(registry_, systems_, renderPPsystems_);
-
+	gameRender_->PrepareFrame();
+	gameRender_->BeginDraw(registry_, systems_);
+	gameRender_->BeginDraw(registry_, renderPPsystems_);
+	gameRender_->DrawOpaque(registry_, systems_);
+	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->EndDraw(registry_, renderPPsystems_);
+	gameRender_->DrawGUI();
 	gameRender_->Present();
-
 	gameRender_->GetDevice()->runGarbageCollection();
 }
 
@@ -483,37 +535,23 @@ const DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoOffset(const D3E::String& 
 	return gizmoOffsets_.at(uuid);
 }
 
-void D3E::Game::RegisterDefaultComponents()
-{
-	using namespace entt::literals;
-
-	entt::meta<ObjectInfoComponent>().type("ObjectInfoComponent"_hs)
-		.data<&ObjectInfoComponent::parentId>("parentId"_hs)
-		.data<&ObjectInfoComponent::name>("name"_hs)
-		.data<&ObjectInfoComponent::id>("id"_hs)
-		.data<&ObjectInfoComponent::editorId>("editorId"_hs)
-		.data<&ObjectInfoComponent::visible>("visible"_hs);
-
-	entt::meta<TransformComponent>().type("TransformComponent"_hs)
-		.data<&TransformComponent::position>("position"_hs)
-		.data<&TransformComponent::rotation>("rotation"_hs)
-		.data<&TransformComponent::scale>("rotation"_hs)
-		.data<&TransformComponent::relativePosition>("relativePosition"_hs)
-		.data<&TransformComponent::relativeRotation>("relativeRotation"_hs)
-		.data<&TransformComponent::relativeScale>("relativeScale"_hs);
-}
-
 void D3E::Game::OnEditorPlayPressed()
 {
 	if (!isGameRunning_)
 	{
+		ComponentFactory::SerializeWorld(currentMapSavedState);
+		selectedUuids.clear();
+		EditorUtilsRenderSystem::isSelectionDirty = true;
 		isGameRunning_ = true;
 	}
 }
 
 void D3E::Game::OnEditorPausePressed()
 {
-	// TODO: implement
+	if (isGameRunning_)
+	{
+		isGamePaused_ = !isGamePaused_;
+	}
 }
 
 void D3E::Game::OnEditorStopPressed()
@@ -521,6 +559,7 @@ void D3E::Game::OnEditorStopPressed()
 	if (isGameRunning_)
 	{
 		isGameRunning_ = false;
+		isGamePaused_ = false;
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
 	}
@@ -528,6 +567,7 @@ void D3E::Game::OnEditorStopPressed()
 
 void D3E::Game::ClearWorld()
 {
+	RenderUtils::InvalidateWorldBuffers(registry_);
 	EditorIdManager::Get()->UnregisterAll();
 	uuidEntityList.clear();
 	registry_.clear();
