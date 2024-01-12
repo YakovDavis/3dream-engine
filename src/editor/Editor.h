@@ -36,6 +36,8 @@ namespace D3E
 		EditorConsole *editorConsole_;
 		EditorContentBrowser *editorContentBrowser_;
 		bool hoveringOnViewport = false;
+		bool viewportFocused = false;
+		bool usingGizmo = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
 		//char xInputBuffer_[256];
@@ -61,9 +63,13 @@ namespace D3E
 		void DrawInspector();
 		void DrawGizmo();
 		void DrawTransformEdit();
+
+		void AlignForWidth(float width, float alignment = 0.5f);
 	public:
 		void BeginDraw(float deltaTime);
 		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer);
 		void Release();
+
+		friend class EditorContentBrowser;
 	};
 }

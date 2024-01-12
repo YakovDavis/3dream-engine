@@ -70,23 +70,46 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
+		static bool MouseLockedByImGui;
+		static bool KeyboardLockedByImGui;
+
+		void OnEditorPlayPressed();
+
+		void OnEditorPausePressed();
+
+		void OnEditorStopPressed();
+
+		void ClearWorld();
+
+		HRESULT AssetFileImport(String currentDir);
+
+		void AssetDeleteDialog(String filename);
+
+		bool IsGameRunning() const { return isGameRunning_; }
+		bool IsGamePaused() const { return isGamePaused_; }
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
 
 		entt::registry registry_;
 
-		eastl::vector<GameSystem*> systems_;
+		eastl::vector<GameSystem*> editorSystems_;
 
+		eastl::vector<GameSystem*> systems_;
 		eastl::vector<GameSystem*> renderPPsystems_;
 
 		virtual void OnRegisterCustomComponents() {}
 
 		virtual void Init();
 
+		void EditorUpdate(float deltaTime);
+
 		virtual void Update(float deltaTime);
 
 		void Pick();
+
+		void EditorDraw();
 
 		virtual void Draw();
 
@@ -112,11 +135,13 @@ namespace D3E
 
 		eastl::unordered_map<String, entt::entity> uuidEntityList;
 
+		bool isGameRunning_ = false;
+
+		bool isGamePaused_ = false;
+
 	private:
 		void HandleMessages();
 
 		eastl::hash_set<String> selectedUuids;
-
-		void RegisterDefaultComponents();
 	};
 } // namespace D3E

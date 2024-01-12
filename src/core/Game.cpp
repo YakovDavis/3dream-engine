@@ -12,6 +12,7 @@
 #include "D3E/systems/CreationSystems.h"
 #include "EASTL/chrono.h"
 #include "EngineState.h"
+#include "assetmng/CDialogEventHandler.h"
 #include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
@@ -27,9 +28,11 @@
 #include "engine/systems/SoundEngineListenerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
+#include "json.hpp"
 #include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
+#include "render/RenderUtils.h"
 #include "render/systems/EditorUtilsRenderSystem.h"
 #include "render/systems/InputSyncSystem.h"
 #include "render/systems/LightInitSystem.h"
@@ -41,6 +44,11 @@
 
 #include <filesystem>
 #include <thread>
+
+static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
+
+bool D3E::Game::MouseLockedByImGui = false;
+bool D3E::Game::KeyboardLockedByImGui = false;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
                                                              UINT msg,
@@ -75,6 +83,11 @@ void D3E::Game::Run()
 
 	bool lmbPressedLastTick = false; // temp
 
+	json j;
+	ComponentFactory::SerializeWorld(j);
+	std::ofstream o("DuckWorld.meta");
+	o << std::setw(4) << j << std::endl;
+
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -102,7 +115,21 @@ void D3E::Game::Run()
 			sys->PostPhysicsUpdate(registry_);
 		}
 
-		Update(deltaTime_);
+		if (isGameRunning_)
+		{
+			if (!isGamePaused_)
+			{
+				Update(deltaTime_);
+			}
+		}
+		else
+		{
+			EditorUpdate(deltaTime_);
+		}
+
+		gameRender_->UpdateAnimations(deltaTime_);
+
+		inputDevice_->EndTick();
 
 		if (lmbPressedLastTick && !inputDevice_->IsKeyDown(Keys::LeftButton))
 		{
@@ -112,7 +139,14 @@ void D3E::Game::Run()
 
 		*prevCycleTimePoint = eastl::chrono::steady_clock::now();
 
-		Draw();
+		if (isGameRunning_)
+		{
+			Draw();
+		}
+		else
+		{
+			EditorDraw();
+		}
 
 		++frameCount_;
 	}
@@ -129,8 +163,6 @@ void D3E::Game::Init()
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
 
-	RegisterDefaultComponents();
-
 	for (auto& sys : systems_)
 	{
 		sys->Init();
@@ -139,26 +171,6 @@ void D3E::Game::Init()
 	gameRender_ = new GameRenderD3D12(this, mhAppInst);
 	EngineState::Initialize(this);
 	gameRender_->Init(systems_);
-
-	// AssetManager::Get().CreateTexture("default-grid",
-	// "textures/default-grid.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("white", "textures/white.png",
-	// gameRender_->GetDevice(), gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_A",
-	// "textures/cerberus_A.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_M",
-	// "textures/cerberus_M.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("cerberus_R",
-	// "textures/cerberus_R.png", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateTexture("environment",
-	// "textures/environment.hdr", gameRender_->GetDevice(),
-	// gameRender_->GetCommandList());
-	// AssetManager::Get().CreateMesh("cerberus", "models/cerberus.fbx",
-	// gameRender_->GetDevice(), gameRender_->GetCommandList());
 
 	AssetManager::Get().LoadAssetsInFolder("assets/", true,
 	                                       gameRender_->GetDevice(),
@@ -189,14 +201,47 @@ void D3E::Game::Init()
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
-	renderPPsystems_.push_back(new EditorUtilsRenderSystem);
+
+	editorSystems_.push_back(new FPSControllerSystem);
+	editorSystems_.push_back(new EditorUtilsRenderSystem);
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 
-	CreationSystems::CreateEditorDebugRender(registry_);
+	ClearWorld();
 
 	ComponentFactory::Initialize(this);
+}
+
+void D3E::Game::EditorUpdate(const float deltaTime)
+{
+	totalTime += deltaTime;
+
+	soundEngine_->Update();
+
+	TimerManager::GetInstance().Update(deltaTime);
+
+	for (auto& sys : editorSystems_)
+	{
+		sys->Update(registry_, this, deltaTime);
+	}
+}
+
+void D3E::Game::EditorDraw()
+{
+	gameRender_->PrepareFrame();
+	gameRender_->BeginDraw(registry_, systems_);
+	gameRender_->BeginDraw(registry_, renderPPsystems_);
+	gameRender_->BeginDraw(registry_, editorSystems_);
+	gameRender_->DrawOpaque(registry_, systems_);
+	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
+	gameRender_->DrawPostProcess(registry_, editorSystems_);
+	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->EndDraw(registry_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, editorSystems_);
+	gameRender_->DrawGUI();
+	gameRender_->Present();
+	gameRender_->GetDevice()->runGarbageCollection();
 }
 
 void D3E::Game::Update(const float deltaTime)
@@ -216,20 +261,19 @@ void D3E::Game::Update(const float deltaTime)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
-
-	gameRender_->UpdateAnimations(deltaTime);
-
-	inputDevice_->EndTick();
 }
 
 void D3E::Game::Draw()
 {
-	gameRender_->PrepareDraw(registry_, systems_, renderPPsystems_);
-	gameRender_->Draw(registry_, systems_, renderPPsystems_);
-	gameRender_->EndDraw(registry_, systems_, renderPPsystems_);
-
+	gameRender_->PrepareFrame();
+	gameRender_->BeginDraw(registry_, systems_);
+	gameRender_->BeginDraw(registry_, renderPPsystems_);
+	gameRender_->DrawOpaque(registry_, systems_);
+	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
+	gameRender_->EndDraw(registry_, systems_);
+	gameRender_->EndDraw(registry_, renderPPsystems_);
+	gameRender_->DrawGUI();
 	gameRender_->Present();
-
 	gameRender_->GetDevice()->runGarbageCollection();
 }
 
@@ -491,24 +535,158 @@ const DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoOffset(const D3E::String& 
 	return gizmoOffsets_.at(uuid);
 }
 
-void D3E::Game::RegisterDefaultComponents()
+void D3E::Game::OnEditorPlayPressed()
 {
-	using namespace entt::literals;
+	if (!isGameRunning_)
+	{
+		ComponentFactory::SerializeWorld(currentMapSavedState);
+		selectedUuids.clear();
+		EditorUtilsRenderSystem::isSelectionDirty = true;
+		isGameRunning_ = true;
+	}
+}
 
-	entt::meta<ObjectInfoComponent>().type("ObjectInfoComponent"_hs)
-		.data<&ObjectInfoComponent::parentId>("parentId"_hs)
-		.data<&ObjectInfoComponent::name>("name"_hs)
-		.data<&ObjectInfoComponent::id>("id"_hs)
-		.data<&ObjectInfoComponent::editorId>("editorId"_hs)
-		.data<&ObjectInfoComponent::visible>("visible"_hs);
+void D3E::Game::OnEditorPausePressed()
+{
+	if (isGameRunning_)
+	{
+		isGamePaused_ = !isGamePaused_;
+	}
+}
 
-	entt::meta<TransformComponent>().type("TransformComponent"_hs)
-		.data<&TransformComponent::position>("position"_hs)
-		.data<&TransformComponent::rotation>("rotation"_hs)
-		.data<&TransformComponent::scale>("rotation"_hs)
-		.data<&TransformComponent::relativePosition>("relativePosition"_hs)
-		.data<&TransformComponent::relativeRotation>("relativeRotation"_hs)
-		.data<&TransformComponent::relativeScale>("relativeScale"_hs);
+void D3E::Game::OnEditorStopPressed()
+{
+	if (isGameRunning_)
+	{
+		isGameRunning_ = false;
+		isGamePaused_ = false;
+		ClearWorld();
+		ComponentFactory::ResolveWorld(currentMapSavedState);
+	}
+}
+
+void D3E::Game::ClearWorld()
+{
+	RenderUtils::InvalidateWorldBuffers(registry_);
+	EditorIdManager::Get()->UnregisterAll();
+	uuidEntityList.clear();
+	registry_.clear();
+#ifdef D3E_WITH_EDITOR
+	CreationSystems::CreateEditorDebugRender(registry_);
+#endif
+}
+
+HRESULT D3E::Game::AssetFileImport(String currentDir)
+{
+	// CoCreate the File Open Dialog object.
+	IFileDialog *pfd = NULL;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+	if (SUCCEEDED(hr))
+	{
+		// Create an event handling object, and hook it up to the dialog.
+		IFileDialogEvents *pfde = NULL;
+		hr = CDialogEventHandler_CreateInstance(IID_PPV_ARGS(&pfde));
+		if (SUCCEEDED(hr))
+		{
+			// Hook up the event handler.
+			DWORD dwCookie;
+			hr = pfd->Advise(pfde, &dwCookie);
+			if (SUCCEEDED(hr))
+			{
+				// Set the options on the dialog.
+				DWORD dwFlags;
+
+				// Before setting, always get the options first in order not to override existing options.
+				hr = pfd->GetOptions(&dwFlags);
+				if (SUCCEEDED(hr))
+				{
+					// In this case, get shell items only for file system items.
+					hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
+					if (SUCCEEDED(hr))
+					{
+						// Set the file types to display only. Notice that, this is a 1-based array.
+						hr = pfd->SetFileTypes(ARRAYSIZE(c_rgSaveTypes), c_rgSaveTypes);
+						if (SUCCEEDED(hr))
+						{
+							// Set the selected file type index to Word Docs for this example.
+							hr = pfd->SetFileTypeIndex(INDEX_TEXTURE);
+							if (SUCCEEDED(hr))
+							{
+								// Set the default extension to be ".doc" file.
+								hr = pfd->SetDefaultExtension(L"doc");
+								if (SUCCEEDED(hr))
+								{
+									// Show the dialog
+									hr = pfd->Show(NULL);
+									if (SUCCEEDED(hr))
+									{
+										// Obtain the result, once the user clicks the 'Open' button.
+										// The result is an IShellItem object.
+										IShellItem *psiResult;
+										hr = pfd->GetResult(&psiResult);
+										if (SUCCEEDED(hr))
+										{
+											PWSTR pszFilePath = NULL;
+											hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+											if (SUCCEEDED(hr))
+											{
+												auto sourcePath = std::filesystem::path(pszFilePath);
+												auto destinationPath = std::filesystem::path(currentDir.c_str() / sourcePath.filename());
+												auto workingDirPath = std::filesystem::current_path();
+												auto relDestinationPath = std::filesystem::relative(destinationPath, workingDirPath);
+												std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::overwrite_existing);
+												if (AssetManager::IsExtensionTexture(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateTexture(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+												}
+												else if (AssetManager::IsExtensionModel(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateMesh(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+												}
+												else if (AssetManager::IsExtensionSound(sourcePath.extension().string()))
+												{
+													AssetManager::Get().CreateSound(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str());
+												}
+												CoTaskMemFree(pszFilePath);
+											}
+											psiResult->Release();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				// Unhook the event handler.
+				pfd->Unadvise(dwCookie);
+			}
+			pfde->Release();
+		}
+		pfd->Release();
+	}
+	return hr;
+}
+
+void D3E::Game::AssetDeleteDialog(D3E::String filename)
+{
+	int res = 0;
+	TaskDialog(NULL,
+	           NULL,
+	           L"Delete confirm",
+	           L"Are you sure you want to delete this item?",
+	           NULL,
+	           TDCBF_YES_BUTTON | TDCBF_NO_BUTTON,
+	           TD_INFORMATION_ICON,
+	           &res);
+
+	if (res == IDYES)
+	{
+		if (is_directory(std::filesystem::path(filename.c_str())))
+		{
+			std::filesystem::remove_all(std::filesystem::path(filename.c_str()));
+		}
+		AssetManager::Get().DeleteAsset(filename);
+	}
 }
 
 bool D3E::Game::FindEntityByID(entt::entity& entity, const D3E::String& uuid)

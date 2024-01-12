@@ -36,9 +36,15 @@ namespace D3E
 
 		static const nvrhi::InputLayoutHandle& AddInputLayout(const String& name, nvrhi::VertexAttributeDesc* desc, uint32_t count, const nvrhi::ShaderHandle& vs);
 		static const nvrhi::BindingLayoutHandle& AddBindingLayout(const String& name, const nvrhi::BindingLayoutDesc& desc);
+
 		static const nvrhi::BindingSetHandle& AddBindingSetV(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
 		static const nvrhi::BindingSetHandle& AddBindingSetP(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
 		static const nvrhi::BindingSetHandle& AddBindingSetC(const String& name, const nvrhi::BindingSetDesc& desc, const String& bLayoutName);
+
+		static void RemoveBindingSetV(const String& name);
+		static void RemoveBindingSetP(const String& name);
+		static void RemoveBindingSetC(const String& name);
+
 		static const nvrhi::ShaderHandle& AddVertexShader(const String& name, const String& fileName, const String& entryPoint);
 		static const nvrhi::ShaderHandle& AddPixelShader(const String& name, const String& fileName, const String& entryPoint);
 		static const nvrhi::ShaderHandle& AddGeometryShader(const String& name, const String& fileName, const String& entryPoint);

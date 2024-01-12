@@ -59,3 +59,15 @@ eastl::string D3E::EditorIdManager::GetUuid(uint32_t id)
 	}
 	return ids_[id];
 }
+
+void D3E::EditorIdManager::UnregisterAll()
+{
+	for (auto& id : ids_)
+	{
+		if (id == "null")
+		{
+			continue;
+		}
+		UnregisterUuid(id);
+	}
+}

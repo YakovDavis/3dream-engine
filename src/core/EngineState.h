@@ -26,5 +26,7 @@ namespace D3E
 		static int GetViewportHeight();
 
 		static bool isViewportDirty;
+
+		static String CurrentMapUuid;
 	};
 }
