@@ -24,6 +24,8 @@ UUIDv4::UUIDGenerator<std::mt19937_64> uuidGenerator;
 
 D3E::AssetManager D3E::AssetManager::instance_ = {};
 
+eastl::unordered_map<D3E::String, D3E::String> D3E::AssetManager::assetMetaData_ = {};
+
 D3E::AssetManager& D3E::AssetManager::Get()
 {
 	return instance_;
@@ -63,6 +65,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				Texture2DMetaData asset;
 				metadata.get_to(asset);
+				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
 				TextureFactory::LoadTexture(asset, false, device, commandList);
 
 				continue;
@@ -72,6 +75,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				MeshMetaData asset;
 				metadata.get_to(asset);
+				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
 				MeshFactory::LoadMesh(asset, false, device, commandList);
 
 				continue;
@@ -90,6 +94,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				Material asset;
 				metadata.get_to(asset);
+				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
 				MaterialFactory::AddMaterial(asset);
 
 				continue;
@@ -99,6 +104,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				SoundMetaData asset;
 				metadata.get_to(asset);
+				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
 				SoundEngine::GetInstance().LoadSound(asset);
 
 				continue;
@@ -237,4 +243,9 @@ void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
 	}
 
 	std::filesystem::remove(filename.c_str());
+}
+
+D3E::String D3E::AssetManager::GetAssetName(const D3E::String& uuid)
+{
+	return assetMetaData_.at(uuid);
 }

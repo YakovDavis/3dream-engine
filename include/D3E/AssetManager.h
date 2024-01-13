@@ -3,6 +3,7 @@
 #include "D3E/CommonHeader.h"
 #include "D3E/render/Material.h"
 #include "EASTL/string.h"
+#include "EASTL/unordered_map.h"
 #include "nvrhi/nvrhi.h"
 
 namespace D3E
@@ -30,10 +31,13 @@ namespace D3E
 
 		static bool IsExtensionSound(const std::string& name);
 
+		static String GetAssetName(const String& uuid);
 	private:
 		AssetManager() = default;
 
 		static AssetManager instance_;
+
+		static eastl::unordered_map<String, String> assetMetaData_;
 
 	public:
 		AssetManager(AssetManager const&) = delete;
