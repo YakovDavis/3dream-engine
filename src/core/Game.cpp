@@ -45,7 +45,7 @@
 #include <filesystem>
 #include <thread>
 
-static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
+static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"filename", ""}, {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
 bool D3E::Game::KeyboardLockedByImGui = false;
@@ -771,4 +771,30 @@ bool D3E::Game::FindEntityByID(entt::entity& entity, const D3E::String& uuid)
 		entity = foundElement->second;
 		return true;
 	}
+}
+
+void D3E::Game::OnEditorSaveMapPressed()
+{
+	if (!isGameRunning_)
+	{
+		ComponentFactory::SerializeWorld(currentMapSavedState);
+		if (currentMapSavedState.at("id") == D3E::EmptyIdStdStr)
+		{
+			currentMapSavedState.at("id") = UuidGenerator::NewGuidStdStr();
+			std::ofstream o(contentBrowserFilePath_ + "\\NewWorld.meta");
+			o << std::setw(4) << currentMapSavedState << std::endl;
+			o.close();
+		}
+		else
+		{
+			std::ofstream o(contentBrowserFilePath_ + "\\" + to_string(currentMapSavedState.at("filename")) + ".meta");
+			o << std::setw(4) << currentMapSavedState << std::endl;
+			o.close();
+		}
+	}
+}
+
+void D3E::Game::SetContentBrowserFilePath(const std::string& s)
+{
+	contentBrowserFilePath_ = s;
 }

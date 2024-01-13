@@ -53,6 +53,8 @@ namespace D3E
 			eastl::vector<HierarchiNode*> children;
 		};
 
+		void ShowEditorApp(bool* p_open);
+
 		void DrawViewport(nvrhi::IFramebuffer* gameFramebuffer);
 		void DrawHeader();
 		void DrawPlay();

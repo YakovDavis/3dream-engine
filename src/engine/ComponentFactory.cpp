@@ -243,7 +243,14 @@ void D3E::ComponentFactory::ResolveWorld(const json& j)
 
 void D3E::ComponentFactory::SerializeWorld(json& j)
 {
-	j = json({{"type", "world"}, {"entities", {}}});
+	std::string worldId = EmptyIdStdStr;
+
+	if (j.contains("id"))
+	{
+		worldId = j.at("id");
+	}
+
+	j = json({{"type", "world"}, {"id", worldId}, {"entities", {}}});
 
 	for (const auto& ent : game_->GetRegistry().storage<entt::entity>())
 	{

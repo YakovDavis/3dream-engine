@@ -24,6 +24,7 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 	auto path = std::filesystem::absolute(AssetDirectory).string();
 	rootDirectory_ = path.substr(0, path.length() - 1);
 	currentDirectory_ = rootDirectory_;
+	editor_->game_->SetContentBrowserFilePath(currentDirectory_.string());
 }
 
 void D3E::EditorContentBrowser::Draw()
@@ -43,7 +44,7 @@ void D3E::EditorContentBrowser::Draw()
 	}
 
 	ImGui::SameLine();
-	ImGui::Text(" Alt-LMB: delete, F2-LMB: rename folder");
+	ImGui::Text(" Alt+LMB: delete, F2+LMB: rename folder");
 
 	if(currentDirectory_ != rootDirectory_)
 	{
@@ -100,6 +101,7 @@ void D3E::EditorContentBrowser::Draw()
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
 						currentDirectory_ /= path.filename();
+						editor_->game_->SetContentBrowserFilePath(currentDirectory_.string());
 					}
 				}
 				ImGui::PopStyleColor();
