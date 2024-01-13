@@ -7,6 +7,7 @@
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
+#include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
@@ -22,7 +23,8 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "SimpleMath.h"
 
-#include <iostream>
+#include <assetmng/MeshFactory.h>
+#include <assetmng/MaterialFactory.h>
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -227,6 +229,11 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	DrawInspector();
 	editorConsole_->Draw();
 	editorContentBrowser_->Draw();
+
+	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	{
+		editorContentBrowser_->ResetTempUuid();
+	}
 
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
@@ -1073,7 +1080,37 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "StaticMeshComponent")
 					{
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_ReadOnly;
+						String meshUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).meshUuid;
+						std::string meshName;
+						if (MeshFactory::IsMeshUuidValid(meshUuid))
+						{
+							//meshName = MeshFactory::GetMeshMetaData(meshUuid).
+						}
+						if (ImGui::InputText("Mesh", &meshName, input_text_flags))
+						{
+							if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+							{
 
+							}
+						}
+						String materialUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).materialUuid;
+						std::string materialName;
+						if (MaterialFactory::IsMaterialUuidValid(materialUuid))
+						{
+							materialName = MaterialFactory::GetMaterial(materialUuid).name.c_str();
+						}
+						if (ImGui::InputText("Material", &materialName, input_text_flags))
+						{
+							if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+							{
+								std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+								if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
+								{
+									game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.materialUuid = selectedUuid.c_str(); });
+								}
+							}
+						}
 					}
 					else if (componentName == "SoundComponent")
 					{
