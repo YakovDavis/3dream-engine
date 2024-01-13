@@ -85,6 +85,8 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 			{
 				ScriptMetaData asset;
 				metadata.get_to(asset);
+				assetMetaData_.insert(
+					{String(asset.uuid.c_str()), String(asset.filename.c_str())});
 				ScriptFactory::LoadScript(asset);
 
 				continue;

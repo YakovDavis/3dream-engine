@@ -1,5 +1,6 @@
 #include "ScriptingSandbox.h"
 
+#include "D3E/CommonHeader.h"
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/scripting/ScriptingEngine.h"
@@ -8,7 +9,6 @@
 void ScriptingSandbox::Init()
 {
 	Game::Init();
-
 
 	D3E::TransformComponent tc = {};
 	D3E::ObjectInfoComponent info = {};
@@ -23,12 +23,13 @@ void ScriptingSandbox::Init()
 	info.name = "Duck";
 
 	auto duckId = D3E::CreationSystems::CreateSM(
-		GetRegistry(), info, tc, "5bfb3a8a-46c0-4125-83cb-e031a263e91a", "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+		GetRegistry(), info, tc, "5bfb3a8a-46c0-4125-83cb-e031a263e91a",
+		"ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 
-	auto scriptComponent = D3E::ScriptComponent(duckId);
+	D3E::String scriptUuid = "72d4a952-074c-4223-8ded-40c09c182061";
+	auto scriptComponent = D3E::ScriptComponent(duckId, scriptUuid);
 
-	D3E::ScriptingEngine::GetInstance().LoadScript(
-		scriptComponent, "72d4a952-074c-4223-8ded-40c09c182061");
+	D3E::ScriptingEngine::GetInstance().LoadScript(scriptComponent, scriptUuid);
 
 	GetRegistry().emplace<D3E::ScriptComponent>(duckId, scriptComponent);
 

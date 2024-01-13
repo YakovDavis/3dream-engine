@@ -2,6 +2,7 @@
 
 #include "BaseComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/Uuid.h"
 #include "EASTL/string.h"
 #include "Jolt/Jolt.h"
 #include "Jolt/Physics/Body/Body.h"
@@ -14,7 +15,12 @@ namespace D3E
 	{
 		friend class ScriptingEngine;
 
-		explicit ScriptComponent(entt::entity ownerId) : ownerId_{ownerId} {}
+		ScriptComponent() : ownerId_(entt::null), scriptUuid_(EmptyIdString) {}
+
+		ScriptComponent(entt::entity ownerId, const String& scriptUuid)
+			: ownerId_(ownerId), scriptUuid_(scriptUuid)
+		{
+		}
 
 		void Init() { ValidateCallResult(init_(self_)); }
 
@@ -43,6 +49,8 @@ namespace D3E
 		entt::entity GetOwnerId() const { return ownerId_; }
 
 		const String& GetEntryPoint() const { return entryPoint_; }
+		const String& GetScriptUuid() const { return scriptUuid_; }
+		void SetScriptUuid(const String& uuid) { scriptUuid_ = uuid; }
 		void SetEntryPoint(String& entryPoint) { entryPoint_ = entryPoint; }
 		void Free()
 		{
@@ -59,6 +67,7 @@ namespace D3E
 		void from_json(const json& j) override;
 
 	private:
+		String scriptUuid_;
 		String entryPoint_;
 		entt::entity ownerId_;
 		sol::table self_;

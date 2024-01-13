@@ -9,6 +9,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -21,6 +22,7 @@
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
 #include "engine/ComponentFactory.h"
+#include "assetmng/ScriptFactory.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "SimpleMath.h"
 
@@ -1236,6 +1238,42 @@ void D3E::Editor::DrawInspector()
 							ImGui::TreePop();
 						}
 					}
+					else if (componentName == "ScriptComponent")
+					{
+						ImGuiInputTextFlags input_text_flags =
+							ImGuiInputTextFlags_ReadOnly;
+
+						auto& sc = game_->GetRegistry().get<ScriptComponent>(
+							currentEntity);
+						const String scriptUuid = sc.GetScriptUuid();
+						
+						std::string scriptName;
+						if (ScriptFactory::IsScriptUuidValid(scriptUuid))
+						{
+							scriptName =
+								AssetManager::GetAssetName(scriptUuid).c_str();
+						}
+						ImGui::InputText("Script", &scriptName,
+						                 input_text_flags);
+
+						if (ImGui::IsItemHovered() && lmbDownLastFrame &&
+						    !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						{
+							std::string selectedUuid =
+								editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() &&
+							    ScriptFactory::IsScriptUuidValid(
+									selectedUuid.c_str()))
+							{
+								game_->GetRegistry().patch<ScriptComponent>(
+									currentEntity,
+									[selectedUuid](auto& sc) {
+										sc.SetScriptUuid(selectedUuid.c_str());
+									});
+							}
+						}
+					}
+
 					ImGui::TreePop();
 				}
 				++idx;

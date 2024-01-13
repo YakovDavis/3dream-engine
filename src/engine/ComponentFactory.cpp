@@ -87,7 +87,7 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 		}
 		else if (el.at("class") == "ScriptComponent")
 		{
-			ScriptComponent c(e);
+			ScriptComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<ScriptComponent>(e, c);
 		}

@@ -22,6 +22,7 @@ namespace D3E
 		j = json{
 			{"type", "component"},
 			{"class", "ScriptComponent"},
+			{"script_uuid", scriptUuid_.c_str()},
 			{"entryPoint", GetEntryPoint().c_str()},
 		};
 	}
@@ -29,10 +30,13 @@ namespace D3E
 	void ScriptComponent::from_json(const json& j)
 	{
 		std::string entryPoint;
+		std::string scriptUuid;
 
 		j.at("entryPoint").get_to(entryPoint);
+		j.at("script_uuid").get_to(scriptUuid);
 
 		entryPoint_ = entryPoint.c_str();
+		scriptUuid_ = scriptUuid.c_str();
 
 		ScriptingEngine::GetInstance().InitScriptComponent(*this);
 	}
