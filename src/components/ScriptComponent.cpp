@@ -23,20 +23,16 @@ namespace D3E
 			{"type", "component"},
 			{"class", "ScriptComponent"},
 			{"entryPoint", GetEntryPoint().c_str()},
-			{"ownerId", GetOwnerId()},
 		};
 	}
 
 	void ScriptComponent::from_json(const json& j)
 	{
 		std::string entryPoint;
-		entt::entity entity{};
 
 		j.at("entryPoint").get_to(entryPoint);
-		j.at("ownerId").get_to(entity);
 
 		entryPoint_ = entryPoint.c_str();
-		ownerId_ = entity;
 
 		ScriptingEngine::GetInstance().InitScriptComponent(*this);
 	}

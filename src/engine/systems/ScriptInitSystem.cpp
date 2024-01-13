@@ -11,16 +11,24 @@ ScriptInitSystem::ScriptInitSystem(entt::registry& registry)
 {
 	registry_.on_construct<ScriptComponent>()
 		.connect<&ScriptInitSystem::ScriptCreated>(this);
+	registry_.on_destroy<ScriptComponent>()
+		.connect<&ScriptInitSystem::ScriptDestroyed>(this);
 }
 
 ScriptInitSystem::~ScriptInitSystem()
 {
 	registry_.on_construct<ScriptComponent>()
 		.disconnect<&ScriptInitSystem::ScriptCreated>(this);
+	registry_.on_destroy<ScriptComponent>()
+		.disconnect<&ScriptInitSystem::ScriptDestroyed>(this);
 }
 
 void ScriptInitSystem::ScriptCreated(entt::registry& registry, entt::entity e)
 {
-	auto& sc = registry.get<ScriptComponent>(e);
-	sc.Init();
+	registry.get<ScriptComponent>(e).Init();
+}
+
+void ScriptInitSystem::ScriptDestroyed(entt::registry& registry, entt::entity e)
+{
+	registry.get<ScriptComponent>(e).Free();
 }

@@ -235,7 +235,6 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 
 void D3E::ComponentFactory::ResolveWorld(const json& j)
 {
-	game_->ClearWorld();
 	for (const auto& el : j.at("entities"))
 	{
 		ResolveEntity(el);

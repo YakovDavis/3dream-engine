@@ -542,6 +542,7 @@ void D3E::Game::OnEditorPlayPressed()
 		ComponentFactory::SerializeWorld(currentMapSavedState);
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
+		ScriptingEngine::GetInstance().Start();
 		isGameRunning_ = true;
 	}
 }
@@ -568,7 +569,7 @@ void D3E::Game::OnEditorStopPressed()
 void D3E::Game::ClearWorld()
 {
 	RenderUtils::InvalidateWorldBuffers(registry_);
-	EditorIdManager::Get()->UnregisterAll();
+	EditorIdManager::Get()->UnregisterAll();	
 	uuidEntityList.clear();
 	registry_.clear();
 #ifdef D3E_WITH_EDITOR

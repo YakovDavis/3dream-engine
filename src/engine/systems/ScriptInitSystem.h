@@ -12,7 +12,7 @@ namespace D3E
 		~ScriptInitSystem();
 
 		void ScriptCreated(entt::registry& registry, entt::entity e);
-
+		void ScriptDestroyed(entt::registry& registry, entt::entity e);
 	private:
 		entt::registry& registry_;
 	};
