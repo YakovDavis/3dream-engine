@@ -65,6 +65,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
 
 	editorConsole_ = new EditorConsole();
 	editorContentBrowser_ = new EditorContentBrowser(this);
+	materialEditor_ = new MaterialEditor(this);
 }
 
 void D3E::Editor::SetStyle()
@@ -111,6 +112,10 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	DrawInspector();
 	editorConsole_->Draw();
 	editorContentBrowser_->Draw();
+	if (materialEditor_->open)
+	{
+		materialEditor_->Draw();
+	}
 
 	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
@@ -1421,11 +1426,6 @@ void D3E::Editor::ShowEditorApp(bool* p_open)
 			if (ImGui::MenuItem("Save map", "Ctrl+S", false, p_open != NULL))
 			{
 				game_->OnEditorSaveMapPressed();
-			}
-			ImGui::Separator();
-			if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
-			{
-				*p_open = false;
 			}
 			ImGui::EndMenu();
 		}

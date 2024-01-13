@@ -92,6 +92,8 @@ namespace D3E
 
 		void SetContentBrowserFilePath(const std::string& s);
 
+		std::string GetContentBrowserFilePath() const { return contentBrowserFilePath_; }
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;

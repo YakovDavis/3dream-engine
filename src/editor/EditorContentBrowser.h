@@ -22,7 +22,7 @@ namespace D3E
 		void Draw();
 		std::string GetTempUuid();
 		void ResetTempUuid();
-		EditorContentBrowser(Editor* editor);
+		explicit EditorContentBrowser(Editor* editor);
 	};
 }
 
