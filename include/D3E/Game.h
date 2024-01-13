@@ -60,6 +60,8 @@ namespace D3E
 
 		size_t GetFrameCount();
 
+		bool FindEntityByID(entt::entity& entity, const D3E::String& uuid);
+
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 		std::mutex consoleCommandQueueMutex;

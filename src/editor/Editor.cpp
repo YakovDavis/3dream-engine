@@ -2,6 +2,13 @@
 
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/FPSControllerComponent.h"
+#include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/PhysicsCharacterComponent.h"
+#include "D3E/Components/render/CameraComponent.h"
+#include "D3E/Components/render/LightComponent.h"
+#include "D3E/Components/render/StaticMeshComponent.h"
+#include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -13,6 +20,13 @@
 #include "nvrhi/nvrhi.h"
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
+#include "engine/ComponentFactory.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "SimpleMath.h"
+
+#include "D3E/AssetManager.h"
+#include <assetmng/MeshFactory.h>
+#include <assetmng/MaterialFactory.h>
 #include "misc/cpp/imgui_stdlib.h"
 
 D3E::Editor* D3E::Editor::instance_;
@@ -218,6 +232,11 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	DrawInspector();
 	editorConsole_->Draw();
 	editorContentBrowser_->Draw();
+
+	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	{
+		editorContentBrowser_->ResetTempUuid();
+	}
 
 	ImGui::Render();
 	imGuiNvrhi_.render(currentFramebuffer);
@@ -464,7 +483,779 @@ void D3E::Editor::DrawHierarchy()
 void D3E::Editor::DrawInspector()
 {
 	ImGui::Begin("Inspector");
-	ImGui::Text("Here will be some useful information about object");
+
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
+
+	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
+	if (objectUuids.size() == 1)
+	{
+		String currentUuid = *objectUuids.begin();
+		entt::entity currentEntity = entt::null;
+		if (game_->FindEntityByID(currentEntity, currentUuid))
+		{
+			eastl::vector<D3E::String> currentComponents(ComponentFactory::GetAllEntityComponents(currentEntity));
+			auto& infoComponent = game_->GetRegistry().get<ObjectInfoComponent>(currentEntity);
+			ImGui::Text(infoComponent.name.c_str());
+			size_t idx = 0;
+			for (auto componentName : currentComponents)
+			{
+				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+				bool opened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", componentName.c_str());
+				if (opened)
+				{
+					if (componentName == "TransformComponent")
+					{
+						//game_->GetRegistry().patch<TransformComponent>(currentEntity, [](auto& transform){ transform.position = {10, 10, 10, 1.0f};});
+						size_t fieldIdx = idx * 100;
+						bool positionOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Position");
+						if (positionOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).position.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [x](auto &transform) { transform.position.x = x; std::cout << x << "\n"; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).position.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [y](auto &transform) { transform.position.y = y; std::cout << y << "\n"; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).position.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [z](auto &transform) { transform.position.z = z; std::cout << z << "\n";});
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool rotationOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Rotation");
+						if (rotationOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).rotation.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [x](auto &transform) { transform.rotation.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).rotation.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [y](auto &transform) { transform.rotation.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).rotation.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<TransformComponent>(currentEntity, [z](auto &transform) { transform.rotation.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool scaleOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Scale");
+						if (scaleOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).scale.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									if (x > 0.0f)
+									{
+										game_->GetRegistry().patch<TransformComponent>(currentEntity, [x](auto &transform) { transform.scale.x = x; });
+									}
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).scale.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									if (y > 0.0f)
+									{
+										game_->GetRegistry().patch<TransformComponent>(currentEntity, [y](auto &transform) { transform.scale.y = y; });
+									}
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<TransformComponent>(currentEntity).scale.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									if (z > 0.0f)
+									{
+										game_->GetRegistry().patch<TransformComponent>(currentEntity, [z](auto &transform) { transform.scale.z = z; });
+									}
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else if (componentName == "FPSControllerComponent")
+					{
+						size_t fieldIdx = idx * 100;
+						float yaw, pitch, speed;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string yawInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).yaw);
+						if (ImGui::InputText("Yaw", &yawInput, input_text_flags))
+						{
+							if (!(yawInput.empty()))
+							{
+								yaw = std::stof(yawInput);
+								yaw +=
+									game_->GetRegistry().get<FPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (yaw < -DirectX::XM_2PI)
+									yaw += DirectX::XM_2PI;
+								while (yaw > DirectX::XM_2PI)
+									yaw -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<FPSControllerComponent>(currentEntity, [yaw](auto &controller) { controller.yaw = yaw; });
+							}
+						}
+						std::string pitchInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).pitch);
+						if (ImGui::InputText("Pitch", &pitchInput, input_text_flags))
+						{
+							if (!(pitchInput.empty()))
+							{
+								pitch = std::stof(pitchInput);
+								pitch -=
+									game_->GetRegistry().get<FPSControllerComponent>(currentEntity).sensitivityY * game_->GetInputDevice()->MouseOffsetInTick.y;
+								while (pitch < -DirectX::XM_2PI)
+									pitch += DirectX::XM_2PI;
+								while (pitch > DirectX::XM_2PI)
+									pitch -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<FPSControllerComponent>(currentEntity, [pitch](auto &controller) { controller.pitch = pitch; });
+							}
+						}
+						std::string speedInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).speed);
+						if (ImGui::InputText("Speed", &speedInput, input_text_flags))
+						{
+							if (!(speedInput.empty()))
+							{
+								speed = std::stof(speedInput);
+								if (speed > 0.0f)
+								{
+									game_->GetRegistry().patch<FPSControllerComponent>(currentEntity, [speed](auto &controller) { controller.speed = speed; });
+								}
+							}
+						}
+					}
+					else if (componentName == "PhysicsComponent")
+					{
+						float friction, restitution;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string frictionInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).friction_);
+						if (ImGui::InputText("Friction", &frictionInput, input_text_flags))
+						{
+							if (!(frictionInput.empty()))
+							{
+								friction = std::stof(frictionInput);
+								if (friction >= 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [friction](auto &component) { component.friction_ = friction; });
+								}
+							}
+						}
+						std::string restitutionInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).restitution_);
+						if (ImGui::InputText("Restitution", &restitutionInput, input_text_flags))
+						{
+							if (!(restitutionInput.empty()))
+							{
+								restitution = std::stof(restitutionInput);
+								if (restitution >= 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [restitution](auto &component) { component.restitution_ = restitution; });
+								}
+							}
+						}
+						size_t fieldIdx = idx * 100;
+						bool velocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Velocity");
+						if (velocityOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).velocity_.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [x](auto &component) { component.velocity_.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).velocity_.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [y](auto &component) { component.velocity_.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).velocity_.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [z](auto &component) { component.velocity_.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool angularVelocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Angular Velocity");
+						if (angularVelocityOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).angularVelocity_.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [x](auto &component) { component.angularVelocity_.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).angularVelocity_.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [y](auto &component) { component.angularVelocity_.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).angularVelocity_.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [z](auto &component) { component.angularVelocity_.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else if (componentName == "PhysicsCharacterComponent")
+					{
+						float yaw, pitch, speed, jumpSpeed, friction, restitution;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string yawInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).yaw_);
+						if (ImGui::InputText("Yaw", &yawInput, input_text_flags))
+						{
+							if (!(yawInput.empty()))
+							{
+								yaw = std::stof(yawInput);
+								yaw +=
+									game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).sensitivityX_ * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (yaw < -DirectX::XM_2PI)
+									yaw += DirectX::XM_2PI;
+								while (yaw > DirectX::XM_2PI)
+									yaw -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [yaw](auto &controller) { controller.yaw_ = yaw; });
+							}
+						}
+						std::string pitchInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).pitch_);
+						if (ImGui::InputText("Pitch", &pitchInput, input_text_flags))
+						{
+							if (!(pitchInput.empty()))
+							{
+								pitch = std::stof(pitchInput);
+								pitch -=
+									game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).sensitivityY_ * game_->GetInputDevice()->MouseOffsetInTick.y;
+								while (pitch < -DirectX::XM_2PI)
+									pitch += DirectX::XM_2PI;
+								while (pitch > DirectX::XM_2PI)
+									pitch -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [pitch](auto &controller) { controller.pitch_ = pitch; });
+							}
+						}
+						std::string speedInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).speed_);
+						if (ImGui::InputText("Speed", &speedInput, input_text_flags))
+						{
+							if (!(speedInput.empty()))
+							{
+								speed = std::stof(speedInput);
+								if (speed > 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [speed](auto &controller) { controller.speed_ = speed; });
+								}
+							}
+						}
+						std::string jumpSpeedInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).jumpSpeed_);
+						if (ImGui::InputText("Jump Speed", &jumpSpeedInput, input_text_flags))
+						{
+							if (!(jumpSpeedInput.empty()))
+							{
+								jumpSpeed = std::stof(jumpSpeedInput);
+								if (jumpSpeed > 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [jumpSpeed](auto &controller) { controller.jumpSpeed_ = jumpSpeed; });
+								}
+							}
+						}
+						std::string frictionInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).friction_);
+						if (ImGui::InputText("Friction", &frictionInput, input_text_flags))
+						{
+							if (!(frictionInput.empty()))
+							{
+								friction = std::stof(frictionInput);
+								if (friction >= 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [friction](auto &component) { component.friction_ = friction; });
+								}
+							}
+						}
+						std::string restitutionInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).restitution_);
+						if (ImGui::InputText("Restitution", &restitutionInput, input_text_flags))
+						{
+							if (!(restitutionInput.empty()))
+							{
+								restitution = std::stof(restitutionInput);
+								if (restitution >= 0.0f)
+								{
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [restitution](auto &component) { component.restitution_ = restitution; });
+								}
+							}
+						}
+						size_t fieldIdx = idx * 100;
+						bool velocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Velocity");
+						if (velocityOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).velocity_.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [x](auto &component) { component.velocity_.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).velocity_.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [y](auto &component) { component.velocity_.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).velocity_.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [z](auto &component) { component.velocity_.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool angularVelocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Angular Velocity");
+						if (angularVelocityOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).angularVelocity_.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [x](auto &component) { component.angularVelocity_.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).angularVelocity_.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [y](auto &component) { component.angularVelocity_.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).angularVelocity_.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<PhysicsCharacterComponent>(currentEntity, [z](auto &component) { component.angularVelocity_.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else if (componentName == "CameraComponent")
+					{
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						size_t fieldIdx = idx * 100;
+						bool upOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Up");
+						if (upOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).up.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [x](auto &component) { component.up.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).up.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [y](auto &component) { component.up.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).up.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [z](auto &component) { component.up.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool forwardOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Forward");
+						if (forwardOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).forward.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [x](auto &component) { component.forward.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).forward.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [y](auto &component) { component.forward.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).forward.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [z](auto &component) { component.forward.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else if (componentName == "LightComponent")
+					{
+						float intensity;
+						int castsShadowsSelection;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						LightType lightType = game_->GetRegistry().get<LightComponent>(currentEntity).lightType;
+						const char* const types[] = {"Directional", "Point", "Spot"};
+						int selectedIdx = lightType;
+						ImGui::ListBox("Light Type", &selectedIdx, types, IM_ARRAYSIZE(types));
+						game_->GetRegistry().patch<LightComponent>(currentEntity, [selectedIdx](auto& component) {component.lightType =
+									static_cast<LightType>(selectedIdx);});
+						size_t fieldIdx = idx * 100;
+						bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Offset");
+						if (offsetOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).offset.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [x](auto &component) { component.offset.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).offset.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [y](auto &component) { component.offset.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).offset.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [z](auto &component) { component.offset.z = z;} );
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool directionOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Direction");
+						if (directionOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).direction.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [x](auto &component) { component.direction.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).direction.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [y](auto &component) { component.direction.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).direction.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [z](auto &component) { component.direction.z = z;} );
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
+						bool colorOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Color");
+						if (colorOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).color.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									if (x >= 0.0f && x <= 1.0f)
+									{
+										game_->GetRegistry().patch<LightComponent>(currentEntity, [x](auto &component) { component.color.x = x; });
+									}
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).color.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									if (y >= 0.0f && y <= 1.0f)
+									{
+										game_->GetRegistry().patch<LightComponent>(currentEntity, [y](auto &component) { component.color.y = y; });
+									}
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).color.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									if (z >= 0.0f && z <= 1.0f)
+									{
+										game_->GetRegistry().patch<LightComponent>(currentEntity, [z](auto &component) { component.color.z = z;} );
+									}
+								}
+							}
+							ImGui::TreePop();
+						}
+						std::string intensityInput = std::to_string(game_->GetRegistry().get<LightComponent>(currentEntity).intensity);
+						if (ImGui::InputText("Intensity", &intensityInput, input_text_flags))
+						{
+							if (!(intensityInput.empty()))
+							{
+								intensity = std::stof(intensityInput);
+								if (intensity >= 0.0f)
+								{
+									game_->GetRegistry().patch<LightComponent>(currentEntity, [intensity](auto &component) { component.intensity = intensity; });
+								}
+							}
+						}
+						castsShadowsSelection = game_->GetRegistry().get<LightComponent>(currentEntity).castsShadows;
+						ImGui::RadioButton("Casts Shadows Off", &castsShadowsSelection, 0);
+						ImGui::RadioButton("Casts Shadows On", &castsShadowsSelection, 1);
+						game_->GetRegistry().patch<LightComponent>(currentEntity, [castsShadowsSelection](auto &component) { component.castsShadows = castsShadowsSelection; });
+					}
+					else if (componentName == "StaticMeshComponent")
+					{
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_ReadOnly;
+						String meshUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).meshUuid;
+						std::string meshName;
+						if (MeshFactory::IsMeshUuidValid(meshUuid))
+						{
+							meshName = AssetManager::GetAssetName(meshUuid).c_str();
+						}
+						ImGui::InputText("Mesh", &meshName, input_text_flags);
+						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						{
+							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() && MeshFactory::IsMeshUuidValid(selectedUuid.c_str()))
+							{
+								game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.meshUuid = selectedUuid.c_str(); });
+							}
+						}
+
+						String materialUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).materialUuid;
+						std::string materialName;
+						if (MaterialFactory::IsMaterialUuidValid(materialUuid))
+						{
+							materialName = MaterialFactory::GetMaterial(materialUuid).name.c_str();
+						}
+						if (ImGui::InputText("Material", &materialName, input_text_flags))
+						{
+							if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+							{
+								std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+								if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
+								{
+									game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.materialUuid = selectedUuid.c_str(); });
+								}
+							}
+						}
+					}
+					else if (componentName == "SoundComponent")
+					{
+						int is3D, isLooping, isStreaming;
+						float volume;
+						is3D = game_->GetRegistry().get<SoundComponent>(currentEntity).is3D;
+						ImGui::RadioButton("Is 3D Off", &is3D, 0);
+						ImGui::RadioButton("Is 3D On", &is3D, 1);
+						game_->GetRegistry().patch<SoundComponent>(currentEntity, [is3D](auto &component) { component.is3D = is3D; });
+						isLooping = game_->GetRegistry().get<SoundComponent>(currentEntity).isLooping;
+						ImGui::RadioButton("Is Looping Off", &isLooping, 0);
+						ImGui::RadioButton("Is Looping On", &isLooping, 1);
+						game_->GetRegistry().patch<SoundComponent>(currentEntity, [isLooping](auto &component) { component.isLooping = isLooping; });
+						isStreaming = game_->GetRegistry().get<SoundComponent>(currentEntity).isStreaming;
+						ImGui::RadioButton("Is Streaming Off", &isStreaming, 0);
+						ImGui::RadioButton("Is Streaming On", &isStreaming, 1);
+						game_->GetRegistry().patch<SoundComponent>(currentEntity, [isStreaming](auto &component) { component.isStreaming = isStreaming; });
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string volumeInput = std::to_string(game_->GetRegistry().get<SoundComponent>(currentEntity).volume);
+						if (ImGui::InputText("Volume", &volumeInput, input_text_flags))
+						{
+							if (!(volumeInput.empty()))
+							{
+								volume = std::stof(volumeInput);
+								if (volume >= 0.0f)
+								{
+									game_->GetRegistry().patch<SoundComponent>(currentEntity, [volume](auto &component) { component.volume = volume; });
+								}
+							}
+						}
+						size_t fieldIdx = idx * 100;
+						bool locationOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Location");
+						if (locationOpened)
+						{
+							float x, y, z;
+							ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+							std::string xInput = std::to_string(game_->GetRegistry().get<SoundComponent>(currentEntity).location.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<SoundComponent>(currentEntity, [x](auto &component) { component.location.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<SoundComponent>(currentEntity).location.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<SoundComponent>(currentEntity, [y](auto &component) { component.location.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<SoundComponent>(currentEntity).location.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<SoundComponent>(currentEntity, [z](auto &component) { component.location.z = z;} );
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					ImGui::TreePop();
+				}
+				++idx;
+			}
+
+		}
+		else
+		{
+			ImGui::Text("Error: Incorrect ID");
+		}
+	}
+	else if (objectUuids.empty())
+	{
+		ImGui::Text("No object selected");
+	}
+	else
+	{
+		ImGui::Text("Multiple objects selected");
+	}
+
 	ImGui::End();
 }
 

@@ -38,6 +38,43 @@ D3E::CharacterInitSystem::CharacterInitSystem(entt::registry& registry, JPH::Phy
 
 }
 
+void D3E::CharacterInitSystem::Update(entt::registry& reg, Game* game, float dT)
+{
+	updateObserver_.each(
+		[&](const auto entity)
+		{
+			auto& component = reg.get<PhysicsCharacterComponent>(entity);
+			const BodyLockInterfaceLocking& lockInterface = physicsSystem_->GetBodyLockInterface();
+			{
+				BodyLockWrite lock(lockInterface, component.bodyID_);
+				if (lock.Succeeded())
+				{
+					Body& body = lock.GetBody();
+					if (component.friction_ >= 0.0f)
+					{
+						body.SetFriction(component.friction_);
+					}
+					if (component.restitution_ >= 0.0f)
+					{
+						body.SetRestitution(component.restitution_);
+					}
+					body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+					body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+				}
+			}
+			while (component.yaw_ < -DirectX::XM_2PI)
+				component.yaw_ += DirectX::XM_2PI;
+			while (component.yaw_ > DirectX::XM_2PI)
+				component.yaw_ -= DirectX::XM_2PI;
+			while (component.pitch_ < -DirectX::XM_2PI)
+				component.pitch_ += DirectX::XM_2PI;
+			while (component.pitch_ > DirectX::XM_2PI)
+				component.pitch_ -= DirectX::XM_2PI;
+		}
+	);
+
+}
+
 void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game, float dT)
 {
 	auto view =

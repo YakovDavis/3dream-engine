@@ -17,6 +17,7 @@ namespace D3E
 	{
 	public:
 		CharacterInitSystem(entt::registry& registry, JPH::PhysicsSystem* physicsSystem);
+		void Update(entt::registry& reg, Game* game, float dT) override;
 		void PrePhysicsUpdate(entt::registry& reg, Game* game, float dT) override;
 		void PostPhysicsUpdate(entt::registry& reg) override;
 

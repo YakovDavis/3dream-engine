@@ -8,6 +8,9 @@
 #include "misc/cpp/imgui_stdlib.h"
 
 #include <assetmng/ScriptMetaData.h>
+#include <assetmng/MeshMetaData.h>
+#include "D3E/render/Material.h"
+#include <assetmng/SoundMetaData.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -139,8 +142,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"20bb535f-c03d-44d5-b287-95e091bbf976"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -161,6 +163,7 @@ void D3E::EditorContentBrowser::Draw()
 								std::cout << std::flush;
 								std::system(("code " + scriptMetadata.filename)
 								                .c_str());
+								tempUuid_ = scriptMetadata.uuid;
 							}
 						}
 
@@ -177,8 +180,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -206,8 +208,135 @@ void D3E::EditorContentBrowser::Draw()
 							RemoveExtension(fileNameString).c_str());
 						ImGui::NextColumn();
 					}
+					else if (metadata.at("type") == "mesh")
+					{
+						MeshMetaData meshMetaData;
+						metadata.get_to(meshMetaData);
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered())
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+								else
+								{
+									tempUuid_ = meshMetaData.uuid.c_str();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+
+							}
+
+						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemovePath(metadata.at("name")).c_str());
+						ImGui::NextColumn();
+					}
+					else if (metadata.at("type") == "material")
+					{
+						Material material;
+						metadata.get_to(material);
+
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered())
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+								else
+								{
+									tempUuid_ = material.uuid.c_str();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+
+							}
+						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemovePath(metadata.at("name")).c_str());
+						ImGui::NextColumn();
+					}
+					else if (metadata.at("type") == "sound")
+					{
+						SoundMetaData soundMetaData;
+						metadata.get_to(soundMetaData);
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered() &&
+						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+								else
+								{
+									tempUuid_ = soundMetaData.uuid.c_str();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+
+							}
+						}
+
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemovePath(metadata.at("name")).c_str());
+						ImGui::NextColumn();
+					}
 					else
 					{
+
 						ImGui::ImageButton(
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
@@ -271,4 +400,14 @@ std::string D3E::EditorContentBrowser::RemovePath(std::string str)
 		return str;
 	}
 	return str.substr(lastSlash + 1, str.size());
+}
+
+std::string D3E::EditorContentBrowser::GetTempUuid()
+{
+	return tempUuid_;
+}
+
+void D3E::EditorContentBrowser::ResetTempUuid()
+{
+	tempUuid_ = "";
 }

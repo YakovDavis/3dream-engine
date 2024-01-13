@@ -688,3 +688,17 @@ void D3E::Game::AssetDeleteDialog(D3E::String filename)
 		AssetManager::Get().DeleteAsset(filename);
 	}
 }
+
+bool D3E::Game::FindEntityByID(entt::entity& entity, const D3E::String& uuid)
+{
+	auto foundElement = uuidEntityList.find(uuid);
+	if (foundElement == uuidEntityList.end())
+	{
+		return false;
+	}
+	else
+	{
+		entity = foundElement->second;
+		return true;
+	}
+}
