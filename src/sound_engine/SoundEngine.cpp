@@ -122,7 +122,7 @@ void SoundEngine::LoadSound(SoundMetaData& metadata)
 	if (CheckError(system->createSound(metadata.filename.c_str(), mode, nullptr, &sound)))
 		return;
 
-	sounds[metadata.filename.c_str()] = sound;
+	sounds[metadata.uuid.c_str()] = sound;
 }
 
 void SoundEngine::UnloadSound(const String& soundName)

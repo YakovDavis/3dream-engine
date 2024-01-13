@@ -24,6 +24,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "SimpleMath.h"
 
+#include "D3E/AssetManager.h"
 #include <assetmng/MeshFactory.h>
 #include <assetmng/MaterialFactory.h>
 #include "misc/cpp/imgui_stdlib.h"
@@ -482,6 +483,11 @@ void D3E::Editor::DrawHierarchy()
 void D3E::Editor::DrawInspector()
 {
 	ImGui::Begin("Inspector");
+
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	if (objectUuids.size() == 1)
@@ -1135,15 +1141,18 @@ void D3E::Editor::DrawInspector()
 						std::string meshName;
 						if (MeshFactory::IsMeshUuidValid(meshUuid))
 						{
-							//meshName = MeshFactory::GetMeshMetaData(meshUuid).
+							meshName = AssetManager::GetAssetName(meshUuid).c_str();
 						}
-						if (ImGui::InputText("Mesh", &meshName, input_text_flags))
+						ImGui::InputText("Mesh", &meshName, input_text_flags);
+						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 						{
-							if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() && MeshFactory::IsMeshUuidValid(selectedUuid.c_str()))
 							{
-
+								game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.meshUuid = selectedUuid.c_str(); });
 							}
 						}
+
 						String materialUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).materialUuid;
 						std::string materialName;
 						if (MaterialFactory::IsMaterialUuidValid(materialUuid))
@@ -1152,7 +1161,7 @@ void D3E::Editor::DrawInspector()
 						}
 						if (ImGui::InputText("Material", &materialName, input_text_flags))
 						{
-							if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+							if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 							{
 								std::string selectedUuid = editorContentBrowser_->GetTempUuid();
 								if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))

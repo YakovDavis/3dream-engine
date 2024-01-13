@@ -142,8 +142,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"20bb535f-c03d-44d5-b287-95e091bbf976"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -181,8 +180,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -210,7 +208,7 @@ void D3E::EditorContentBrowser::Draw()
 							RemoveExtension(fileNameString).c_str());
 						ImGui::NextColumn();
 					}
-					else if (metadata.at("type") == "model")
+					else if (metadata.at("type") == "mesh")
 					{
 						MeshMetaData meshMetaData;
 						metadata.get_to(meshMetaData);
@@ -219,8 +217,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -234,12 +231,17 @@ void D3E::EditorContentBrowser::Draw()
 									renamedItem =
 										directoryEntry.path().string();
 								}
+								else
+								{
+									tempUuid_ = meshMetaData.uuid.c_str();
+								}
 							}
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
-								tempUuid_ = meshMetaData.uuid.c_str();
+
 							}
+
 						}
 
 						ImGui::PopStyleColor();
@@ -258,8 +260,7 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered())
 						{
 							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
@@ -273,11 +274,15 @@ void D3E::EditorContentBrowser::Draw()
 									renamedItem =
 										directoryEntry.path().string();
 								}
+								else
+								{
+									tempUuid_ = material.uuid.c_str();
+								}
 							}
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
-								tempUuid_ = material.uuid.c_str();
+
 							}
 						}
 
@@ -311,11 +316,15 @@ void D3E::EditorContentBrowser::Draw()
 									renamedItem =
 										directoryEntry.path().string();
 								}
+								else
+								{
+									tempUuid_ = soundMetaData.uuid.c_str();
+								}
 							}
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
-								tempUuid_ = soundMetaData.uuid.c_str();
+
 							}
 						}
 
