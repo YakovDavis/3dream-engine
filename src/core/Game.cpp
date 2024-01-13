@@ -398,6 +398,75 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			delete[] lpb;
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
+		// WM_SIZE is sent when the user resizes the window.
+		case WM_SIZE:
+			if (GetRender() && GetDisplay())
+			{
+				// Save the new client area dimensions.
+				GetDisplay()->ClientWidth = LOWORD(lParam);
+				GetDisplay()->ClientHeight = HIWORD(lParam);
+				if (wParam == SIZE_MINIMIZED)
+				{
+					GetDisplay()->IsMinimized = true;
+					GetDisplay()->IsMaximized = false;
+				}
+				else if (wParam == SIZE_MAXIMIZED)
+				{
+					GetDisplay()->IsMinimized = false;
+					GetDisplay()->IsMaximized = true;
+					GetRender()->OnResize();
+				}
+				else if (wParam == SIZE_RESTORED)
+				{
+					// Restoring from minimized state?
+					if (GetDisplay()->IsMinimized)
+					{
+						GetDisplay()->IsMinimized = false;
+						GetRender()->OnResize();
+					}
+					// Restoring from maximized state?
+					else if (GetDisplay()->IsMaximized)
+					{
+						GetDisplay()->IsMaximized = false;
+						GetRender()->OnResize();
+					}
+					else if (GetDisplay()->IsResizing)
+					{
+						// If user is dragging the resize bars, we do not resize
+						// the buffers here because as the user continuously
+						// drags the resize bars, a stream of WM_SIZE messages are sent to the window, and it would be pointless (and slow) to resize for each WM_SIZE message received from dragging the resize bars.  So instead, we reset after the user is done resizing the window and releases the resize bars, which sends a WM_EXITSIZEMOVE message.
+					}
+					else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+					{
+						GetRender()->OnResize();
+					}
+				}
+			}
+		return 0;
+
+		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+		case WM_ENTERSIZEMOVE:
+			if (GetRender() && GetDisplay())
+			{
+				GetDisplay()->IsResizing = true;
+			}
+			return 0;
+
+		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+		// Here we reset everything based on the new window dimensions.
+		case WM_EXITSIZEMOVE:
+			if (GetRender() && GetDisplay())
+			{
+				GetDisplay()->IsResizing = false;
+				GetRender()->OnResize();
+			}
+			return 0;
+
+
+		// WM_DESTROY is sent when the window is being destroyed.
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			return 0;
 		default:
 		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);

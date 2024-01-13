@@ -47,7 +47,11 @@ namespace D3E
 		void UpdateDisplayWin32();
 
 	protected:
+		DXGI_SWAP_CHAIN_DESC1 mSwapChainDesc;
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC mFullScreenDesc;
+
 		nvrhi::RefCountPtr<IDXGIFactory2> mdxgiFactory;
+		nvrhi::RefCountPtr<IDXGISwapChain1> pSwapChain1;
 		nvrhi::RefCountPtr<IDXGISwapChain3> mSwapChain;
 		nvrhi::RefCountPtr<ID3D12Device> md3dDevice;
 		nvrhi::RefCountPtr<IDXGIAdapter> mDxgiAdapter;
@@ -66,7 +70,6 @@ namespace D3E
 		int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
 		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mSwapChainBuffer;
-		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mDepthStencilBuffer;
 
 		D3D12_VIEWPORT mScreenViewport{};
 		D3D12_RECT mScissorRect{};
@@ -75,7 +78,6 @@ namespace D3E
 		std::string mMainWndCaption = "d3d App";
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 		bool mTearingSupported = false;
 
