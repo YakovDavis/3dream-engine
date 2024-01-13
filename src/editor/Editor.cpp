@@ -27,6 +27,7 @@
 #include "D3E/AssetManager.h"
 #include <assetmng/MeshFactory.h>
 #include <assetmng/MaterialFactory.h>
+#include <sound_engine/SoundEngine.h>
 #include "misc/cpp/imgui_stdlib.h"
 
 D3E::Editor* D3E::Editor::instance_;
@@ -675,6 +676,7 @@ void D3E::Editor::DrawInspector()
 					else if (componentName == "PhysicsComponent")
 					{
 						float friction, restitution;
+						int isSensorSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string frictionInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).friction_);
 						if (ImGui::InputText("Friction", &frictionInput, input_text_flags))
@@ -700,6 +702,10 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 						}
+						isSensorSelection = game_->GetRegistry().get<PhysicsComponent>(currentEntity).isSensor_;
+						ImGui::RadioButton("Is Sensor Off", &isSensorSelection, 0);
+						ImGui::RadioButton("Is Sensor On", &isSensorSelection, 1);
+						game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [isSensorSelection](auto &component) { component.isSensor_ = isSensorSelection; });
 						size_t fieldIdx = idx * 100;
 						bool velocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Velocity");
 						if (velocityOpened)
@@ -768,6 +774,12 @@ void D3E::Editor::DrawInspector()
 							}
 							ImGui::TreePop();
 						}
+						JPH::EMotionType motionType = game_->GetRegistry().get<PhysicsComponent>(currentEntity).motionType_;
+						const char* const types[] = {"Static", "Kinematic", "Dynamic"};
+						int selectedIdx = static_cast<int>(motionType);
+						ImGui::ListBox("Motion Type", &selectedIdx, types, IM_ARRAYSIZE(types));
+						game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [selectedIdx](auto& component) {component.motionType_ =
+																		 static_cast<JPH::EMotionType>(selectedIdx);});
 					}
 					else if (componentName == "PhysicsCharacterComponent")
 					{
@@ -1234,6 +1246,22 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 							ImGui::TreePop();
+						}
+						input_text_flags = ImGuiInputTextFlags_ReadOnly;
+						String soundUuid = game_->GetRegistry().get<SoundComponent>(currentEntity).soundUuid;
+						std::string soundName;
+						if (MeshFactory::IsMeshUuidValid(soundUuid))
+						{
+							soundName = AssetManager::GetAssetName(soundUuid).c_str();
+						}
+						ImGui::InputText("Sound Asset", &soundName, input_text_flags);
+						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						{
+							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() && SoundEngine::GetInstance().IsSoundUuidValid(selectedUuid.c_str()))
+							{
+								game_->GetRegistry().patch<SoundComponent>(currentEntity, [selectedUuid](auto &component) { component.soundUuid = selectedUuid.c_str(); });
+							}
 						}
 					}
 					ImGui::TreePop();

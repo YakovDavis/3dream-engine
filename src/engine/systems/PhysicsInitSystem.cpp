@@ -48,6 +48,8 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 				if (lock.Succeeded())
 				{
 					Body& body = lock.GetBody();
+					body.SetMotionType(component.motionType_);
+					body.SetIsSensor(component.isSensor_);
 					if (component.friction_ >= 0.0f)
 					{
 						body.SetFriction(component.friction_);

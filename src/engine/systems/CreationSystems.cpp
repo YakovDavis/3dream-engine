@@ -131,7 +131,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	infoComponent.id = UuidGenerator::NewGuidString();
 
 	SoundComponent sound;
-	sound.fileName = "sfx.mp3";
+	//sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
