@@ -5,6 +5,7 @@
 #include "EASTL/string.h"
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
+#include "MaterialEditor.h"
 #include "EditorUtils.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
@@ -34,7 +35,8 @@ namespace D3E
 		eastl::shared_ptr<Display> display_;
 		float color_[4] = {0.f, 0.f, 0.f, 0.f};
 		EditorConsole *editorConsole_;
-		EditorContentBrowser *editorContentBrowser_;
+		EditorContentBrowser* editorContentBrowser_;
+		MaterialEditor* materialEditor_;
 		bool hoveringOnViewport = false;
 		bool viewportFocused = false;
 		bool usingGizmo = false;
@@ -71,5 +73,6 @@ namespace D3E
 		void Release();
 
 		friend class EditorContentBrowser;
+		friend class MaterialEditor;
 	};
 }

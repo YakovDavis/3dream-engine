@@ -194,6 +194,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/assetmng/CDialogEventHandler.h
         src/render/RenderUtils.cpp
         src/render/RenderUtils.h
+        src/editor/MaterialEditor.cpp
+        src/editor/MaterialEditor.h
 )
 
 add_subdirectory(libs)
