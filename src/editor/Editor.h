@@ -40,10 +40,7 @@ namespace D3E
 		bool usingGizmo = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
-		//bool releasedMouseOnAssetField = false;
-		//char xInputBuffer_[256];
-		//char yInputBuffer_[256];
-		//char zInputBuffer_[256];
+		bool lmbDownLastFrame = false;
 
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);

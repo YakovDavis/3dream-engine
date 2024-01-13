@@ -11,6 +11,7 @@
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
+#include "D3E/systems/CreationSystems.h"
 #include "ImGuizmo.h"
 #include "assetmng/TextureFactory.h"
 #include "core/EngineState.h"
@@ -25,6 +26,7 @@
 
 #include <assetmng/MeshFactory.h>
 #include <assetmng/MaterialFactory.h>
+#include "misc/cpp/imgui_stdlib.h"
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -210,7 +212,7 @@ void D3E::Editor::BeginDraw(float deltaTime)
 	auto displaySize =
 		ImVec2(float(display_->ClientWidth), float(display_->ClientHeight));
 	ImGui_ImplWin32_NewFrame();
-	imGuiNvrhi_.beginFrame(deltaTime, displaySize);
+	imGuiNvrhi_.beginFrame(deltaTime / 1000.0f, displaySize);
 }
 
 void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer)
@@ -252,6 +254,8 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	}
 
 	Game::KeyboardLockedByImGui = ImGui::GetIO().WantCaptureKeyboard;
+
+	lmbDownLastFrame = ImGui::IsMouseDown(ImGuiMouseButton_Left);
 
 	// not sure if it's necessary
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -366,9 +370,25 @@ void D3E::Editor::AlignForWidth(float width, float alignment)
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
 }
 
+static D3E::String hierarchyCarriedUuid = "";
+static D3E::String hierarchyRenamedItemUuid = "";
+static std::string hierarchyRenamedString = "";
+
 void D3E::Editor::DrawHierarchy()
 {
 	ImGui::Begin("Hierarchy");
+
+	static int createItem = 0;
+	ImGui::Combo("##create_combo", &createItem, "Empty\0Plane\0Cube\0Sphere\0Light\0\0");
+	ImGui::SameLine();
+	ImGui::Button("Create", ImVec2(0, 0));
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		CreationSystems::OnCreateObjectButtonPressed(game_->GetRegistry(), createItem);
+	}
+
+	ImGui::Separator();
+
 	auto objects = EditorUtils::ListActiveObjects();
 
 	eastl::map<String, HierarchiNode> tree;
@@ -399,11 +419,41 @@ void D3E::Editor::DrawHierarchy()
 	String uuidClicked = "";
 	for (auto node : tree[EmptyIdString].children)
 	{
-		ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		bool opened = ImGui::TreeNodeEx((void*)(intptr_t)(node->info.infoComponent->editorId), node_flags, "%s", node->info.infoComponent->name.c_str());
+		ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) |
+		                                ImGuiTreeNodeFlags_OpenOnArrow |
+		                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+		bool opened = false;
+		if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
+		{
+			ImGui::InputText("##renamed_hierarchy", &hierarchyRenamedString);
+			if (ImGui::IsKeyDown(ImGuiKey_Enter))
+			{
+				node->info.infoComponent->name = hierarchyRenamedString.c_str();
+				hierarchyRenamedItemUuid = "";
+			}
+		}
+		else
+		{
+			opened = ImGui::TreeNodeEx(
+				(void*)(intptr_t)(node->info.infoComponent->editorId),
+				node_flags, "%s", node->info.infoComponent->name.c_str());
+		}
 		if (ImGui::IsItemClicked())
 		{
-			uuidClicked = node->info.infoComponent->id;
+			if (ImGui::IsKeyDown(ImGuiKey_F2))
+			{
+				hierarchyRenamedItemUuid = node->info.infoComponent->id;
+				hierarchyRenamedString = node->info.infoComponent->name.c_str();
+			}
+			else
+			{
+				uuidClicked = node->info.infoComponent->id;
+				hierarchyCarriedUuid = uuidClicked;
+			}
+		}
+		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && lmbDownLastFrame)
+		{
+			// TODO: link new parent
 		}
 		if (opened)
 		{
@@ -1259,11 +1309,41 @@ void D3E::Editor::DrawGizmo()
 void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
                                     D3E::String& uuidClicked)
 {
-	ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-	bool opened = ImGui::TreeNodeEx((void*)(intptr_t)(node->info.infoComponent->editorId), node_flags, "%s", node->info.infoComponent->name.c_str());
+	ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) |
+	                                ImGuiTreeNodeFlags_OpenOnArrow |
+	                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+	bool opened = false;
+	if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
+	{
+		ImGui::InputText("##renamed_hierarchy", &hierarchyRenamedString);
+		if (ImGui::IsKeyDown(ImGuiKey_Enter))
+		{
+			node->info.infoComponent->name = hierarchyRenamedString.c_str();
+			hierarchyRenamedItemUuid = "";
+		}
+	}
+	else
+	{
+		opened = ImGui::TreeNodeEx(
+			(void*)(intptr_t)(node->info.infoComponent->editorId),
+			node_flags, "%s", node->info.infoComponent->name.c_str());
+	}
 	if (ImGui::IsItemClicked())
 	{
-		uuidClicked = node->info.infoComponent->id;
+		if (ImGui::IsKeyDown(ImGuiKey_F2))
+		{
+			hierarchyRenamedItemUuid = node->info.infoComponent->id;
+			hierarchyRenamedString = node->info.infoComponent->name.c_str();
+		}
+		else
+		{
+			uuidClicked = node->info.infoComponent->id;
+			hierarchyCarriedUuid = uuidClicked;
+		}
+	}
+	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && lmbDownLastFrame)
+	{
+		// TODO: link new parent
 	}
 	if (opened)
 	{

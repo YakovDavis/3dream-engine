@@ -11,7 +11,12 @@ namespace D3E
 	class CreationSystems
 	{
 	public:
-		static entt::entity CreateCubeSM(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc);
+		static entt::entity CreateDefaultEmpty(entt::registry& registry);
+		static entt::entity CreateDefaultPlane(entt::registry& registry);
+		static entt::entity CreateDefaultCube(entt::registry& registry);
+		static entt::entity CreateDefaultSphere(entt::registry& registry);
+		static entt::entity CreateDefaultLight(entt::registry& registry);
+
 		static entt::entity CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
 		static entt::entity CreateSM(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const String& meshUuid, const String& materialUuid);
 		static entt::entity CreateLight(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc);
@@ -19,5 +24,6 @@ namespace D3E
 		static entt::entity CreateEditorDebugRender(entt::registry& registry);
 		static entt::entity CreatePhysicalCharacter(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsCharacterComponent& character);
 		static entt::entity CreatePurelyPhysicalObject(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
+		static entt::entity OnCreateObjectButtonPressed(entt::registry& registry, int item);
 	};
 }
