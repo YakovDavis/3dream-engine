@@ -1,0 +1,57 @@
+{
+    "components": [
+        {
+            "class": "ObjectInfoComponent",
+            "name": "Cerberus3",
+            "serialize_entity": true,
+            "type": "component",
+            "uuid": "00000000-0000-0000-0000-000000000000",
+            "visible": true
+        },
+        {
+            "class": "TransformComponent",
+            "position": [
+                -50.0,
+                0.0,
+                0.0
+            ],
+            "rel_position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rel_rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rel_scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "rotation": [
+                -0.0,
+                0.0,
+                -0.0,
+                1.0
+            ],
+            "scale": [
+                0.20000000298023224,
+                0.20000000298023224,
+                0.20000000298023224
+            ],
+            "type": "component"
+        },
+        {
+            "class": "StaticMeshComponent",
+            "material_uuid": "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4",
+            "mesh_uuid": "60481bf4-cab2-4ad9-8d0d-95556bd20f7d",
+            "pipeline": "GBuffer",
+            "type": "component"
+        }
+    ],
+    "type": "entity",
+    "uuid": "7e80b853-1b53-45de-9852-02060f1c1867"
+}
