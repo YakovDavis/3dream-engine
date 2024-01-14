@@ -263,6 +263,23 @@ void D3E::Editor::DrawHierarchy()
 {
 	ImGui::Begin("Hierarchy");
 
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
+
+	// Load prefab dragged on hierarchy
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	{
+		if (!editorContentBrowser_->GetTempUuid().empty())
+		{
+			if (AssetManager::IsPrefabUuidValid(editorContentBrowser_->GetTempUuid().c_str()))
+			{
+				game_->CreateEntityFromPrefab(AssetManager::GetPrefabFilePath(editorContentBrowser_->GetTempUuid().c_str()));
+			}
+		}
+	}
+
 	static int createItem = 0;
 	ImGui::Combo("##create_combo", &createItem, "Empty\0Plane\0Cube\0Sphere\0Light\0\0");
 	ImGui::SameLine();
