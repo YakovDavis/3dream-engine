@@ -491,6 +491,86 @@ void D3E::Editor::DrawInspector()
 	}
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
+	static int createComponent = 0;
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0\0");
+	switch (createComponent)
+	{
+		case 0:
+		case 3:
+		case 4:
+		case 6:
+			creatingComponentWithDefault = true;
+			creatingComponentWithNonDefault = true;
+			break;
+		case 5:
+		case 7:
+			creatingComponentWithDefault = true;
+			creatingComponentWithNonDefault = false;
+			break;
+		case 1:
+		case 2:
+			creatingComponentWithDefault = false;
+			creatingComponentWithNonDefault = true;
+			break;
+	}
+	if (creatingComponentWithNonDefault)
+	{
+		ImGui::SameLine();
+		ImGui::Button("Create", ImVec2(0, 0));
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (objectUuids.size() == 1)
+			{
+				String currentUuid = *objectUuids.begin();
+				entt::entity currentEntity = entt::null;
+				if (game_->FindEntityByID(currentEntity, currentUuid))
+				{
+
+				}
+			}
+		}
+	}
+	if (creatingComponentWithDefault)
+	{
+		ImGui::SameLine();
+		ImGui::Button("Create Default", ImVec2(0, 0));
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (objectUuids.size() == 1)
+			{
+				String currentUuid = *objectUuids.begin();
+				entt::entity currentEntity = entt::null;
+				if (game_->FindEntityByID(currentEntity, currentUuid))
+				{
+					switch (createComponent)
+					{
+						case 0:
+							CreationSystems::CreateDefaultFPSControllerComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 3:
+							CreationSystems::CreateDefaultCameraComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 4:
+							CreationSystems::CreateDefaultLightComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 5:
+							CreationSystems::CreateDefaultStaticMeshComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 6:
+							CreationSystems::CreateDefaultSoundComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 7:
+							CreationSystems::CreateDefaultSoundListenerComponent(game_->GetRegistry(), currentEntity);
+							break;
+					}
+				}
+			}
+		}
+	}
+
+
+	ImGui::Separator();
+
 	if (objectUuids.size() == 1)
 	{
 		String currentUuid = *objectUuids.begin();

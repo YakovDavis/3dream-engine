@@ -316,3 +316,38 @@ entt::entity D3E::CreationSystems::CreateDefaultLight(entt::registry& registry)
 
 	return e;
 }
+
+void D3E::CreationSystems::CreateDefaultFPSControllerComponent(entt::registry& registry, entt::entity& entity)
+{
+	FPSControllerComponent component = {};
+	registry.emplace<FPSControllerComponent>(entity, component);
+}
+void D3E::CreationSystems::CreateDefaultCameraComponent(entt::registry& registry, entt::entity& entity)
+{
+	CameraComponent component = {};
+	registry.emplace<CameraComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry, entt::entity& entity)
+{
+	LightComponent component = {};
+	registry.emplace<LightComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity)
+{
+	StaticMeshComponent component = {};
+	registry.emplace<StaticMeshComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundComponent component = {};
+	registry.emplace<SoundComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundListenerComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundListenerComponent component = {};
+	registry.emplace<SoundListenerComponent>(entity, component);
+}
