@@ -41,8 +41,6 @@ void CharacterGame::Init()
 	D3E::String scriptId = "72d4a952-074c-4223-8ded-40c09c182061";
 	auto scriptComponent = D3E::ScriptComponent(e, scriptId);
 
-	D3E::ScriptingEngine::GetInstance().LoadScript(scriptComponent, scriptId);
-
 	GetRegistry().emplace<D3E::ScriptComponent>(e, scriptComponent);
 
 	tc.scale = Vector3(50.0f, 1.0f, 50.0f);

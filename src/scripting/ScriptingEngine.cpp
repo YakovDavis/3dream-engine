@@ -45,7 +45,7 @@ void ScriptingEngine::Init(Game* g)
 	initialized_ = true;
 }
 
-bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
+bool ScriptingEngine::LoadScript(ScriptComponent& c)
 {
 	if (!initialized_)
 	{
@@ -57,13 +57,13 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 		return false;
 	}
 
-	auto scriptData = ScriptFactory::GetScriptData(scriptUuid);
+	auto scriptData = ScriptFactory::GetScriptData(c.scriptUuid_);
 
 	if (!scriptData)
 	{
 		Debug::LogError("[ScriptingEngine] : LoadScript(): "
 		                "Script was not found. UUID: " +
-		                scriptUuid);
+		                c.scriptUuid_);
 
 		return false;
 	}
@@ -72,14 +72,14 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 
 	luaState_.safe_script(
 		script.scriptContent.c_str(),
-		[&script, &scriptUuid](lua_State*, sol::protected_function_result pfr)
+		[&script, &c](lua_State*, sol::protected_function_result pfr)
 		{
 			sol::error err = pfr;
 
 			Debug::LogError("[ScriptingEngine] : LoadScript(): "
 		                    "Error accured while loading script: " +
-		                    scriptUuid + " Entry point: " + script.entryPoint +
-		                    " Error: " + err.what());
+		                    c.scriptUuid_ + " Entry point: " +
+		                    script.entryPoint + " Error: " + err.what());
 
 			return pfr;
 		});
@@ -155,11 +155,32 @@ void ScriptingEngine::LoadStandardLibraries()
 	                         sol::lib::table);
 }
 
-void ScriptingEngine::Start()
+void ScriptingEngine::InitScripts()
 {
 	if (!initialized_)
 	{
-		Debug::LogError("[ScriptingEngine] : Start(): Attempted "
+		Debug::LogError("[ScriptingEngine] : InitScripts(): Attempted "
+		                "to init scripts before "
+		                "ScriptingEngine initialization. Call "
+		                "ScriptingEngine::Init() first.");
+
+		return;
+	}
+
+	game_->GetRegistry().view<ScriptComponent>().each(
+		[this](auto& sc)
+		{
+			LoadScript(sc);
+			InitScriptComponent(sc);
+			sc.Init();
+		});
+}
+
+void ScriptingEngine::StartScripts()
+{
+	if (!initialized_)
+	{
+		Debug::LogError("[ScriptingEngine] : StartScripts(): Attempted "
 		                "to start scripts before "
 		                "ScriptingEngine initialization. Call "
 		                "ScriptingEngine::Init() first.");
@@ -169,6 +190,22 @@ void ScriptingEngine::Start()
 
 	game_->GetRegistry().view<ScriptComponent>().each([](auto& sc)
 	                                                  { sc.Start(); });
+}
+
+void ScriptingEngine::FreeScripts()
+{
+	if (!initialized_)
+	{
+		Debug::LogError("[ScriptingEngine] : FreeScripts(): Attempted "
+		                "to free scripts before "
+		                "ScriptingEngine initialization. Call "
+		                "ScriptingEngine::Init() first.");
+
+		return;
+	}
+
+	game_->GetRegistry().view<ScriptComponent>().each([](auto& sc)
+	                                                  { sc.Free(); });
 }
 
 void ScriptingEngine::Clear()

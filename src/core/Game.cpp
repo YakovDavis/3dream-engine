@@ -620,7 +620,9 @@ void D3E::Game::OnEditorPlayPressed()
 		ComponentFactory::SerializeWorld(currentMapSavedState);
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
-		ScriptingEngine::GetInstance().Start();
+		ScriptingEngine::GetInstance().Init(this);
+		ScriptingEngine::GetInstance().InitScripts();
+		ScriptingEngine::GetInstance().StartScripts();
 		isGameRunning_ = true;
 	}
 }
@@ -641,6 +643,7 @@ void D3E::Game::OnEditorStopPressed()
 		isGamePaused_ = false;
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
+		ScriptingEngine::GetInstance().Clear();
 	}
 }
 

@@ -17,6 +17,11 @@ namespace D3E
 
 		ScriptComponent() : ownerId_(entt::null), scriptUuid_(EmptyIdString) {}
 
+		explicit ScriptComponent(entt::entity ownerId)
+			: ScriptComponent(ownerId, EmptyIdString)
+		{
+		}
+
 		ScriptComponent(entt::entity ownerId, const String& scriptUuid)
 			: ownerId_(ownerId), scriptUuid_(scriptUuid)
 		{

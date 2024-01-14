@@ -29,8 +29,6 @@ void ScriptingSandbox::Init()
 	D3E::String scriptUuid = "72d4a952-074c-4223-8ded-40c09c182061";
 	auto scriptComponent = D3E::ScriptComponent(duckId, scriptUuid);
 
-	D3E::ScriptingEngine::GetInstance().LoadScript(scriptComponent, scriptUuid);
-
 	GetRegistry().emplace<D3E::ScriptComponent>(duckId, scriptComponent);
 
 	info.name = "DirectionalLight";
