@@ -67,6 +67,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
 	editorConsole_ = new EditorConsole();
 	editorContentBrowser_ = new EditorContentBrowser(this);
 	materialEditor_ = new MaterialEditor(this);
+	componentWindow_ = new ComponentCreationWindow(game_, this);
 }
 
 void D3E::Editor::SetStyle()
@@ -116,6 +117,10 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	if (materialEditor_->open)
 	{
 		materialEditor_->Draw();
+	}
+	if (componentWindow_->open)
+	{
+		componentWindow_->Draw();
 	}
 
 	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
@@ -409,7 +414,9 @@ void D3E::Editor::DrawInspector()
 				entt::entity currentEntity = entt::null;
 				if (game_->FindEntityByID(currentEntity, currentUuid))
 				{
-
+					componentWindow_->componentType = createComponent;
+					componentWindow_->currentEntity = currentEntity;
+					componentWindow_->open = true;
 				}
 			}
 		}
@@ -591,7 +598,6 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "FPSControllerComponent")
 					{
-						size_t fieldIdx = idx * 100;
 						float yaw, pitch, speed;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).yaw);
@@ -1135,15 +1141,14 @@ void D3E::Editor::DrawInspector()
 						{
 							materialName = MaterialFactory::GetMaterial(materialUuid).name.c_str();
 						}
-						if (ImGui::InputText("Material", &materialName, input_text_flags))
+						ImGui::InputText("Material", &materialName, input_text_flags);
+
+						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 						{
-							if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
 							{
-								std::string selectedUuid = editorContentBrowser_->GetTempUuid();
-								if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
-								{
-									game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.materialUuid = selectedUuid.c_str(); });
-								}
+								game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.materialUuid = selectedUuid.c_str(); });
 							}
 						}
 					}

@@ -6,6 +6,7 @@
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
 #include "MaterialEditor.h"
+#include "ComponentCreationWindow.h"
 #include "EditorUtils.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
@@ -37,6 +38,7 @@ namespace D3E
 		EditorConsole *editorConsole_;
 		EditorContentBrowser* editorContentBrowser_;
 		MaterialEditor* materialEditor_;
+		ComponentCreationWindow* componentWindow_;
 		bool hoveringOnViewport = false;
 		bool viewportFocused = false;
 		bool usingGizmo = false;
@@ -76,5 +78,6 @@ namespace D3E
 
 		friend class EditorContentBrowser;
 		friend class MaterialEditor;
+		friend class ComponentCreationWindow;
 	};
 }
