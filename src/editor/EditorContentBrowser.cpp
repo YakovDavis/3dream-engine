@@ -57,6 +57,14 @@ static std::string renamedItem = "";
 		ImGui::TextWrapped(fileNameStringNoExtension.c_str()); \
 	}
 
+#define ASSET_DRAG_N_DROP_SOURCE \
+	if (ImGui::BeginDragDropSource(dragDropFlags)) \
+		{ \
+			std::string path = directoryEntry.path().string(); \
+			ImGui::SetDragDropPayload("asset", &path[0], path.size() + sizeof(std::string::value_type)); \
+			ImGui::EndDragDropSource(); \
+		}
+
 D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 {
 	editor_ = editor;
@@ -69,12 +77,16 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 
 void D3E::EditorContentBrowser::Draw()
 {
-	ImGuiDragDropFlags dragDropFlags = ImGuiDragDropFlags_SourceNoDisableHover | ImGuiDragDropFlags_SourceAllowNullID;
-	ImGuiCond cond = ImGuiCond_Once;
+	ImGuiDragDropFlags dragDropFlags = ImGuiDragDropFlags_None;
 
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar;
 
 	ImGui::Begin("Content Browser", nullptr, windowFlags);
+
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
 
 	if (ImGui::BeginMenuBar())
 	{
@@ -105,10 +117,46 @@ void D3E::EditorContentBrowser::Draw()
 
 	if(currentDirectory_ != rootDirectory_)
 	{
+		ImGui::PushID(0);
 		if(ImGui::Button("<-"))
 		{
 			currentDirectory_ = currentDirectory_.parent_path();
 		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			auto payload = ImGui::AcceptDragDropPayload("directory");
+			if (payload)
+			{
+				auto payloadDir = (const char*)payload->Data;
+				std::filesystem::rename(payloadDir, currentDirectory_.parent_path() /
+							std::filesystem::path(payloadDir).filename());
+			}
+			else
+			{
+				payload = ImGui::AcceptDragDropPayload("asset");
+				if (payload)
+				{
+					auto payloadAsset = (const char*)payload->Data;
+					std::ifstream f(payloadAsset);
+					json j = json::parse(f);
+					f.close();
+					if (j.contains("filename"))
+					{
+						std::filesystem::path assetFilePath =
+							FilenameUtils::MetaFilenameToFilePath(
+								j.at("filename"),
+								std::filesystem::path(payloadAsset).parent_path());
+						std::filesystem::rename(assetFilePath, currentDirectory_.parent_path() /
+						                            j.at("filename"));
+					}
+					std::filesystem::rename(payloadAsset,
+						currentDirectory_.parent_path() /
+							std::filesystem::path(payloadAsset).filename());
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::PopID();
 	}
 
 	static float padding = 12.0f;
@@ -127,7 +175,7 @@ void D3E::EditorContentBrowser::Draw()
 	{
 		ImGui::Columns(columnCount, 0 , false);
 
-		int itemNum = 0;
+		int itemNum = 1;
 
 		for (auto & directoryEntry : std::filesystem::directory_iterator(currentDirectory_))
 		{
@@ -146,10 +194,10 @@ void D3E::EditorContentBrowser::Draw()
 									   "2b7db204-d914-4d33-a4e4-dc7c7f9ff216"),
 				                   {thumbnailSize, thumbnailSize}, {0, -1},
 				                   {-1, 0});
-				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+				if (ImGui::BeginDragDropSource(dragDropFlags))
 				{
-					std::filesystem::directory_entry entry = directoryEntry;
-					ImGui::SetDragDropPayload("directory", &entry, sizeof(std::filesystem::directory_entry));
+					std::string path = directoryEntry.path().string();
+					ImGui::SetDragDropPayload("directory", &path[0], path.size() + sizeof(std::string::value_type));
 					ImGui::EndDragDropSource();
 				}
 				if (ImGui::BeginDragDropTarget())
@@ -157,39 +205,38 @@ void D3E::EditorContentBrowser::Draw()
 					auto payload = ImGui::AcceptDragDropPayload("directory");
 					if (payload)
 					{
-						auto payloadDir = *(const std::filesystem::directory_entry*)payload->Data;
-						if (payloadDir != directoryEntry)
+						auto payloadDir = (const char*)payload->Data;
+						if (payloadDir != directoryEntry.path().string())
 						{
 							std::filesystem::rename(
-								payloadDir.path(),
+								payloadDir,
 								directoryEntry.path() /
-									payloadDir.path().parent_path().filename());
+									std::filesystem::path(payloadDir).filename());
 						}
 					}
 					else
 					{
-						auto payload = ImGui::AcceptDragDropPayload("directory");
+						payload = ImGui::AcceptDragDropPayload("asset");
 						if (payload)
 						{
-							auto payloadAsset =
-								(const std::filesystem::directory_entry&)
-									payload->Data;
-							std::ifstream f(payloadAsset.path());
+							auto payloadAsset = (const char*)payload->Data;
+							std::ifstream f(payloadAsset);
 							json j = json::parse(f);
+							f.close();
 							if (j.contains("filename"))
 							{
 								std::filesystem::path assetFilePath =
 									FilenameUtils::MetaFilenameToFilePath(
 										j.at("filename"),
-										payloadAsset.path().parent_path());
+										std::filesystem::path(payloadAsset).parent_path());
 								std::filesystem::rename(assetFilePath,
 								                        directoryEntry.path() /
 								                            j.at("filename"));
 							}
 							std::filesystem::rename(
-								payloadAsset.path(),
+								payloadAsset,
 								directoryEntry.path() /
-									payloadAsset.path().filename());
+									std::filesystem::path(payloadAsset).filename());
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -254,11 +301,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"20bb535f-c03d-44d5-b287-95e091bbf976"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -283,11 +328,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -314,11 +357,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -345,11 +386,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -376,11 +415,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -407,11 +444,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
@@ -436,11 +471,9 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::BeginDragDropSource(dragDropFlags))
-						{
-							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
-							ImGui::EndDragDropSource();
-						}
+
+						ASSET_DRAG_N_DROP_SOURCE
+
 						if (ImGui::IsItemHovered())
 						{
 							CONTENT_BROWSER_COMMON_ACTIONS
