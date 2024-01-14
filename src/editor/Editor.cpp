@@ -1335,6 +1335,18 @@ void D3E::Editor::DrawGizmo()
 				  tc.position = pos;
 				  tc.rotation = rot;
 				  tc.scale = scale;
+//				  if (scale.x != 1.0f)
+//				  {
+//					  tc.scale.x = scale.x;
+//				  }
+//				  if (scale.y != 1.0f)
+//				  {
+//					  tc.scale.y = scale.y;
+//				  }
+//				  if (scale.z != 1.0f)
+//				  {
+//					  tc.scale.z = scale.z;
+//				  }
 			  });
 
 	game_->CalculateGizmoTransformsOffsets();
