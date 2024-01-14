@@ -27,6 +27,9 @@ namespace D3E
 		auto matrixType = state.new_usertype<Matrix>("Martix");
 
 		matrixType["create_from_quaternion"] = &Matrix::CreateFromQuaternion;
+		matrixType["create_from_yaw_pith_roll"] = sol::overload(
+			sol::resolve<float, float, float>(Matrix::CreateFromYawPitchRoll),
+			sol::resolve<const Vector3&>(Matrix::CreateFromYawPitchRoll));
 	}
 
 	static void BindVector(sol::state& state)

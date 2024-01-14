@@ -37,7 +37,5 @@ namespace D3E
 
 		entryPoint_ = entryPoint.c_str();
 		scriptUuid_ = scriptUuid.c_str();
-
-		ScriptingEngine::GetInstance().InitScriptComponent(*this);
 	}
 } // namespace D3E

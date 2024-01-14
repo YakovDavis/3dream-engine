@@ -28,9 +28,11 @@ namespace D3E
 		ScriptingEngine& operator=(ScriptingEngine const&) = delete;
 
 		void Init(Game* g);
-		bool LoadScript(ScriptComponent& c, String scriptUuid);
+		bool LoadScript(ScriptComponent& c);
 		void InitScriptComponent(ScriptComponent& c);
-		void Start();
+		void InitScripts();
+		void StartScripts();
+		void FreeScripts();
 		void Clear();
 	};
 } // namespace D3E
