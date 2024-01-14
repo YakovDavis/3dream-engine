@@ -151,7 +151,7 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 {
 	MeshMetaData asset;
 	asset.uuid = uuidGenerator.getUUID().str();
-	asset.filename = filename.c_str();
+	asset.filename = std::filesystem::path(filename.c_str()).filename().string();
 	asset.name = name.c_str();
 
 	MeshFactory::LoadMesh(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
@@ -242,6 +242,10 @@ void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
 
 D3E::String D3E::AssetManager::GetAssetName(const D3E::String& uuid)
 {
+	if (assetMetaData_.find(uuid) == assetMetaData_.end())
+	{
+		return "";
+	}
 	return assetMetaData_.at(uuid);
 }
 
@@ -270,4 +274,10 @@ std::string D3E::AssetManager::GetPrefabFilePath(const D3E::String& uuid)
 	}
 
 	return prefabsMap_[uuid];
+}
+
+void D3E::AssetManager::RegisterExternalAssetName(const D3E::String& uuid,
+                                             const D3E::String& name)
+{
+	assetMetaData_.insert({uuid, name});
 }
