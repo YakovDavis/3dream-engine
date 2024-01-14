@@ -5,9 +5,9 @@ function Goose:init()
 end
 
 function Goose:start()
-    print('Goose init()')
+    print('Goose start()')
 end
 
 function Goose:update(dT)
-	print(string.format('Goose update(%d)', dT))
+	print(string.format('Goose update(%f)', dT))
 end
