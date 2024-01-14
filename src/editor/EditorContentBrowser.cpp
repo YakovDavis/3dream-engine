@@ -70,11 +70,15 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 void D3E::EditorContentBrowser::Draw()
 {
 	ImGuiDragDropFlags dragDropFlags = ImGuiDragDropFlags_SourceNoDisableHover | ImGuiDragDropFlags_SourceAllowNullID;
-	ImGuiCond cond = ImGuiCond_Once;
 
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar;
 
 	ImGui::Begin("Content Browser", nullptr, windowFlags);
+
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
 
 	if (ImGui::BeginMenuBar())
 	{
