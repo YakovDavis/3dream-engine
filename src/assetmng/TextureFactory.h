@@ -39,7 +39,7 @@ namespace D3E
 		static bool IsTextureUuidValid(const D3E::String& uuid);
 
 		static nvrhi::TextureHandle GetTextureHandle(const String& uuid);
-		static void LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+		static void LoadTexture(Texture2DMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		static nvrhi::SamplerHandle& GetSampler(const String& name);
 		static nvrhi::SamplerHandle& AddSampler(const String& name, nvrhi::IDevice* device, const nvrhi::SamplerDesc& desc);

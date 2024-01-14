@@ -48,7 +48,7 @@ namespace D3E
 
 		bool IsSoundUuidValid(const String& uuid) const;
 
-		void LoadSound(SoundMetaData& metadata);
+		void LoadSound(SoundMetaData& metadata, const std::string& directory);
 		void UnloadSound(const String& uuid);
 		void PlaySound3D(const eastl::string& uuid,
 		                 const DirectX::SimpleMath::Vector3 loc,

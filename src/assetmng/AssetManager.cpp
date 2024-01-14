@@ -14,6 +14,7 @@
 #include "TextureFactory.h"
 #include "json.hpp"
 #include "sound_engine/SoundEngine.h"
+#include "utils/FilenameUtils.h"
 #include "uuid_v4.h"
 
 #include <filesystem>
@@ -67,7 +68,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				Texture2DMetaData asset;
 				metadata.get_to(asset);
 				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				TextureFactory::LoadTexture(asset, false, device, commandList);
+				TextureFactory::LoadTexture(asset, folder.c_str(), false, device, commandList);
 
 				continue;
 			}
@@ -77,7 +78,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				MeshMetaData asset;
 				metadata.get_to(asset);
 				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				MeshFactory::LoadMesh(asset, false, device, commandList);
+				MeshFactory::LoadMesh(asset, folder.c_str(), false, device, commandList);
 
 				continue;
 			}
@@ -88,7 +89,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				metadata.get_to(asset);
 				assetMetaData_.insert(
 					{String(asset.uuid.c_str()), String(asset.filename.c_str())});
-				ScriptFactory::LoadScript(asset);
+				ScriptFactory::LoadScript(asset, folder.c_str());
 
 				continue;
 			}
@@ -108,7 +109,7 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				SoundMetaData asset;
 				metadata.get_to(asset);
 				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				SoundEngine::GetInstance().LoadSound(asset);
+				SoundEngine::GetInstance().LoadSound(asset, folder.c_str());
 
 				continue;
 			}
@@ -123,19 +124,13 @@ void D3E::AssetManager::CreateTexture(const D3E::String& name,
 {
 	Texture2DMetaData asset;
 	asset.uuid = uuidGenerator.getUUID().str();
-	asset.filename = filename.c_str();
+	asset.filename = std::filesystem::path(filename.c_str()).filename().string();
 	asset.name = name.c_str();
 
-	TextureFactory::LoadTexture(asset, true, device, commandList);
+	TextureFactory::LoadTexture(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
 
 	json j(asset);
-	const size_t last_slash_idx = filename.rfind('\\');
-	std::string dir = "";
-	if (std::string::npos != last_slash_idx)
-	{
-		dir = filename.substr(0, last_slash_idx).c_str();
-	}
-	std::ofstream o(dir + "\\" + asset.name + ".meta");
+	std::ofstream o(std::filesystem::path(filename.c_str()).replace_filename(asset.name + ".meta"));
 	o << std::setw(4) << j << std::endl;
 	o.close();
 }
@@ -150,16 +145,10 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 	asset.filename = filename.c_str();
 	asset.name = name.c_str();
 
-	MeshFactory::LoadMesh(asset, true, device, commandList);
+	MeshFactory::LoadMesh(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
 
 	json j(asset);
-	const size_t last_slash_idx = filename.rfind('/');
-	std::string dir = "";
-	if (std::string::npos != last_slash_idx)
-	{
-		dir = filename.substr(0, last_slash_idx).c_str();
-	}
-	std::ofstream o(dir + "/" + asset.name + ".meta");
+	std::ofstream o(std::filesystem::path(filename.c_str()).replace_filename(asset.name + ".meta"));
 	o << std::setw(4) << j << std::endl;
 	o.close();
 }
@@ -172,7 +161,7 @@ void D3E::AssetManager::CreateMaterial(D3E::Material& material,
 	MaterialFactory::AddMaterial(material);
 
 	json j(material);
-	std::ofstream o(folder + "/" + std::string(material.name.c_str()) + ".meta");
+	std::ofstream o(folder + "\\" + std::string(material.name.c_str()) + ".meta");
 	o << std::setw(4) << j << std::endl;
 	o.close();
 }
@@ -186,16 +175,10 @@ void D3E::AssetManager::CreateSound(const D3E::String& name,
 	asset.filename = filename.c_str();
 	asset.name = name.c_str();
 
-	SoundEngine::GetInstance().LoadSound(asset);
+	SoundEngine::GetInstance().LoadSound(asset, std::filesystem::path(filename.c_str()).parent_path().string());
 
 	json j(asset);
-	const size_t last_slash_idx = filename.rfind('/');
-	std::string dir = "";
-	if (std::string::npos != last_slash_idx)
-	{
-		dir = filename.substr(0, last_slash_idx).c_str();
-	}
-	std::ofstream o(dir + "/" + asset.name + ".meta");
+	std::ofstream o(std::filesystem::path(filename.c_str()).replace_filename(asset.name + ".meta"));
 	o << std::setw(4) << j << std::endl;
 	o.close();
 }

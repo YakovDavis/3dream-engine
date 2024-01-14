@@ -2,6 +2,7 @@
 
 #include "D3E/Debug.h"
 #include "EASTL/unordered_map.h"
+#include "utils/FilenameUtils.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -24,7 +25,7 @@ void ScriptFactory::Initialize(Game* game)
 	game_ = game;
 }
 
-void ScriptFactory::LoadScript(const ScriptMetaData& metaData)
+void ScriptFactory::LoadScript(const ScriptMetaData& metaData, const std::string& directory)
 {
 	using namespace std::filesystem;
 
@@ -40,7 +41,7 @@ void ScriptFactory::LoadScript(const ScriptMetaData& metaData)
 
 	scriptData.entryPoint = scriptFileName.c_str();
 
-	std::ifstream f(metaData.filename);
+	std::ifstream f(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory));
 	scriptData.scriptContent = std::string((std::istreambuf_iterator<char>(f)),
 	                                       (std::istreambuf_iterator<char>()))
 	                               .c_str();
