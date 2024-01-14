@@ -34,7 +34,7 @@ namespace D3E
 		static void DestroyResources();
 
 		static void AddMeshFromData(const String& uuid, const MeshData& meshData);
-		static void LoadMesh(const MeshMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+		static void LoadMesh(const MeshMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 		static void FillMeshBuffers(const String& uuid, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		static bool IsMeshUuidValid(const String& uuid);

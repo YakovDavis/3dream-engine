@@ -20,7 +20,7 @@ namespace D3E
 		j = json{{"type", "component"},
 		         {"class", "ObjectInfoComponent"},
 		         {"name", name.c_str()},
-		         {"id", id.c_str()},
+		         {"uuid", id.c_str()},
 		         {"visible", visible},
 		         {"serialize_entity", serializeEntity}
 		};
@@ -31,7 +31,7 @@ namespace D3E
 		std::string tmp_id;
 		std::string tmp_name;
 
-		j.at("id").get_to(tmp_id);
+		j.at("uuid").get_to(tmp_id);
 		j.at("name").get_to(tmp_name);
 		j.at("visible").get_to(visible);
 		j.at("serialize_entity").get_to(serializeEntity);
