@@ -100,6 +100,10 @@ void D3E::EditorContentBrowser::Draw()
 			{
 				AssetManager::Get().CreateDefaultMaterial(currentDirectory_.string().c_str());
 			}
+			if (ImGui::MenuItem("Prefab from selected", NULL, false, true))
+			{
+				editor_->game_->OnSaveSelectedToPrefabPressed();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Import"))

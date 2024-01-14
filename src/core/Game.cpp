@@ -798,3 +798,26 @@ void D3E::Game::SetContentBrowserFilePath(const std::string& s)
 {
 	contentBrowserFilePath_ = s;
 }
+
+void D3E::Game::OnSaveSelectedToPrefabPressed()
+{
+	if (selectedUuids.size() != 1)
+	{
+		return;
+	}
+
+	json j;
+	ComponentFactory::SerializeEntity(uuidEntityList[*selectedUuids.begin()], j, false);
+	j.emplace("uuid", UuidGenerator::NewGuidStdStr());
+	std::ofstream f(std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta");
+	f << std::setw(4) << j << std::endl;
+	f.close();
+}
+
+void D3E::Game::CreateEntityFromPrefab(const std::string& filepath)
+{
+	std::ifstream f(filepath);
+	json j = json::parse(f);
+	f.close();
+	ComponentFactory::ResolveEntity(j);
+}

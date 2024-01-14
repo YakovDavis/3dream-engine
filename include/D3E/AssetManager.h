@@ -34,12 +34,19 @@ namespace D3E
 		static bool IsExtensionSound(const std::string& name);
 
 		static String GetAssetName(const String& uuid);
+
+		static bool IsPrefabUuidValid(const String& uuid);
+
+		static std::string GetPrefabFilePath(const String& uuid);
+
 	private:
 		AssetManager() = default;
 
 		static AssetManager instance_;
 
 		static eastl::unordered_map<String, String> assetMetaData_;
+
+		static eastl::unordered_map<String, std::string> prefabsMap_;
 
 	public:
 		AssetManager(AssetManager const&) = delete;

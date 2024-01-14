@@ -94,6 +94,10 @@ namespace D3E
 
 		std::string GetContentBrowserFilePath() const { return contentBrowserFilePath_; }
 
+		void OnSaveSelectedToPrefabPressed();
+
+		void CreateEntityFromPrefab(const std::string& filepath);
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;

@@ -28,6 +28,8 @@ D3E::AssetManager D3E::AssetManager::instance_ = {};
 
 eastl::unordered_map<D3E::String, D3E::String> D3E::AssetManager::assetMetaData_ = {};
 
+eastl::unordered_map<D3E::String, std::string> D3E::AssetManager::prefabsMap_ = {};
+
 D3E::AssetManager& D3E::AssetManager::Get()
 {
 	return instance_;
@@ -110,6 +112,13 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 				metadata.get_to(asset);
 				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
 				SoundEngine::GetInstance().LoadSound(asset, folder.c_str());
+
+				continue;
+			}
+
+			if (metadata.at("type") == "entity")
+			{
+				prefabsMap_.insert({std::string(metadata.at("uuid")).c_str(), entry.path().string()});
 
 				continue;
 			}
@@ -246,4 +255,19 @@ void D3E::AssetManager::CreateDefaultMaterial(const std::string& folder)
 	m.metalnessTextureUuid = kBlackTextureUUID;
 	m.normalTextureUuid = kNormalsDefaultTextureUUID;
 	CreateMaterial(m, folder);
+}
+
+bool D3E::AssetManager::IsPrefabUuidValid(const D3E::String& uuid)
+{
+	return prefabsMap_.find(uuid) != prefabsMap_.end();
+}
+
+std::string D3E::AssetManager::GetPrefabFilePath(const D3E::String& uuid)
+{
+	if (!IsPrefabUuidValid(uuid))
+	{
+		return "";
+	}
+
+	return prefabsMap_[uuid];
 }
