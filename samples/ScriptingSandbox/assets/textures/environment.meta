@@ -1,5 +1,5 @@
 {
-    "filename": "assets/textures/environment.hdr",
+    "filename": "environment.hdr",
     "format": {
         "channels": "RGBA8",
         "type": "Texture2D",

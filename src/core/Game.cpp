@@ -45,7 +45,7 @@
 #include <filesystem>
 #include <thread>
 
-static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"filename", ""}, {"entities", {}}});
+static json currentMapSavedState = json({{"type", "world"}, {"uuid", D3E::EmptyIdStdStr}, {"filename", ""}, {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
 bool D3E::Game::KeyboardLockedByImGui = false;
@@ -778,9 +778,9 @@ void D3E::Game::OnEditorSaveMapPressed()
 	if (!isGameRunning_)
 	{
 		ComponentFactory::SerializeWorld(currentMapSavedState);
-		if (currentMapSavedState.at("id") == D3E::EmptyIdStdStr)
+		if (currentMapSavedState.at("uuid") == D3E::EmptyIdStdStr)
 		{
-			currentMapSavedState.at("id") = UuidGenerator::NewGuidStdStr();
+			currentMapSavedState.at("uuid") = UuidGenerator::NewGuidStdStr();
 			std::ofstream o(contentBrowserFilePath_ + "\\NewWorld.meta");
 			o << std::setw(4) << currentMapSavedState << std::endl;
 			o.close();

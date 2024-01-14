@@ -198,6 +198,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/MaterialEditor.h
         src/editor/ComponentCreationWindow.h
         src/editor/ComponentCreationWindow.cpp
+        src/utils/FilenameUtils.cpp
+        src/utils/FilenameUtils.h
 )
 
 add_subdirectory(libs)

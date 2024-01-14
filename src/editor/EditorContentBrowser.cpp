@@ -1,21 +1,61 @@
 #include "EditorContentBrowser.h"
 
+#include "D3E/AssetManager.h"
 #include "D3E/Debug.h"
-#include "assetmng/TextureFactory.h"
-#include "engine/ComponentFactory.h"
-#include "editor/Editor.h"
 #include "D3E/Game.h"
-#include "misc/cpp/imgui_stdlib.h"
-
-#include <assetmng/ScriptMetaData.h>
-#include <assetmng/MeshMetaData.h>
 #include "D3E/render/Material.h"
+#include "assetmng/TextureFactory.h"
+#include "editor/Editor.h"
+#include "engine/ComponentFactory.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "utils/FilenameUtils.h"
+
+#include <assetmng/MeshMetaData.h>
+#include <assetmng/ScriptMetaData.h>
 #include <assetmng/SoundMetaData.h>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 
 const std::string AssetDirectory = "assets/";
 static std::string renamedItem = "";
+
+#define CONTENT_BROWSER_COMMON_ACTIONS \
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) \
+	{ \
+		if (ImGui::IsKeyDown(ImGuiKey_LeftAlt)) \
+		{ \
+			editor_->game_->AssetDeleteDialog( \
+				directoryEntry.path().string().c_str()); \
+		} \
+		else if (ImGui::IsKeyDown(ImGuiKey_F2)) \
+		{ \
+			renamedItem = \
+				directoryEntry.path().string(); \
+		}                                    \
+		else if (metadata.contains("uuid")) \
+		{ \
+			tempUuid_ = std::string(metadata.at("uuid")).c_str(); \
+		} \
+	}
+
+#define ASSET_NAME_DISPLAY \
+	if (renamed) \
+	{ \
+		ImGui::PushItemWidth(-1); \
+		ImGui::InputText("##input_label", &fileNameStringNoExtension); \
+		ImGui::PopItemWidth(); \
+		if (ImGui::IsKeyDown(ImGuiKey_Enter)) \
+		{ \
+			std::filesystem::path newPath =  directoryEntry.path(); \
+			FilenameUtils::RenameAsset(newPath, fileNameStringNoExtension); \
+			renamedItem = ""; \
+		} \
+	} \
+	else \
+	{ \
+		ImGui::TextWrapped(fileNameStringNoExtension.c_str()); \
+	}
 
 D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 {
@@ -29,21 +69,38 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 
 void D3E::EditorContentBrowser::Draw()
 {
-	ImGui::Begin("Content Browser");
+	ImGuiDragDropFlags dragDropFlags = ImGuiDragDropFlags_SourceNoDisableHover | ImGuiDragDropFlags_SourceAllowNullID;
+	ImGuiCond cond = ImGuiCond_Once;
 
-	ImGui::Button("New folder", ImVec2(0, 0));
-	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar;
+
+	ImGui::Begin("Content Browser", nullptr, windowFlags);
+
+	if (ImGui::BeginMenuBar())
 	{
-		std::filesystem::create_directory(currentDirectory_ / std::filesystem::path("new_folder"));
-	}
-	ImGui::SameLine();
-	ImGui::Button("Import file", ImVec2(0, 0));
-	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-	{
-		editor_->game_->AssetFileImport(currentDirectory_.string().c_str());
+		if (ImGui::BeginMenu("Create"))
+		{
+			if (ImGui::MenuItem("New folder", NULL, false, true))
+			{
+				std::filesystem::create_directory(currentDirectory_ / std::filesystem::path("new_folder"));
+			}
+			if (ImGui::MenuItem("New material", NULL, false, true))
+			{
+				AssetManager::Get().CreateDefaultMaterial(currentDirectory_.string().c_str());
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Import"))
+		{
+			if (ImGui::MenuItem("Import new asset", NULL, false, true))
+			{
+				editor_->game_->AssetFileImport(currentDirectory_.string().c_str());
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
 	}
 
-	ImGui::SameLine();
 	ImGui::Text(" Alt+LMB: delete, F2+LMB: rename folder");
 
 	if(currentDirectory_ != rootDirectory_)
@@ -70,11 +127,16 @@ void D3E::EditorContentBrowser::Draw()
 	{
 		ImGui::Columns(columnCount, 0 , false);
 
+		int itemNum = 0;
+
 		for (auto & directoryEntry : std::filesystem::directory_iterator(currentDirectory_))
 		{
+			ImGui::PushID(itemNum++);
+
 			const auto& path = directoryEntry.path();
 			auto relativePath = std::filesystem::relative(path, rootDirectory_);
 			std::string fileNameString = relativePath.filename().string();
+			std::string fileNameStringNoExtension = RemoveExtension(fileNameString);
 			bool renamed = path == renamedItem;
 
 			if (directoryEntry.is_directory())
@@ -84,6 +146,54 @@ void D3E::EditorContentBrowser::Draw()
 									   "2b7db204-d914-4d33-a4e4-dc7c7f9ff216"),
 				                   {thumbnailSize, thumbnailSize}, {0, -1},
 				                   {-1, 0});
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+				{
+					std::filesystem::directory_entry entry = directoryEntry;
+					ImGui::SetDragDropPayload("directory", &entry, sizeof(std::filesystem::directory_entry));
+					ImGui::EndDragDropSource();
+				}
+				if (ImGui::BeginDragDropTarget())
+				{
+					auto payload = ImGui::AcceptDragDropPayload("directory");
+					if (payload)
+					{
+						auto payloadDir = *(const std::filesystem::directory_entry*)payload->Data;
+						if (payloadDir != directoryEntry)
+						{
+							std::filesystem::rename(
+								payloadDir.path(),
+								directoryEntry.path() /
+									payloadDir.path().parent_path().filename());
+						}
+					}
+					else
+					{
+						auto payload = ImGui::AcceptDragDropPayload("directory");
+						if (payload)
+						{
+							auto payloadAsset =
+								(const std::filesystem::directory_entry&)
+									payload->Data;
+							std::ifstream f(payloadAsset.path());
+							json j = json::parse(f);
+							if (j.contains("filename"))
+							{
+								std::filesystem::path assetFilePath =
+									FilenameUtils::MetaFilenameToFilePath(
+										j.at("filename"),
+										payloadAsset.path().parent_path());
+								std::filesystem::rename(assetFilePath,
+								                        directoryEntry.path() /
+								                            j.at("filename"));
+							}
+							std::filesystem::rename(
+								payloadAsset.path(),
+								directoryEntry.path() /
+									payloadAsset.path().filename());
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
 				if (ImGui::IsItemHovered())
 				{
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -144,59 +254,44 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"20bb535f-c03d-44d5-b287-95e091bbf976"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::BeginDragDropSource(dragDropFlags))
+						{
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
 								std::cout << std::flush;
 								std::system(("code " + scriptMetadata.filename)
 								                .c_str());
-								tempUuid_ = scriptMetadata.uuid;
 							}
 						}
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemoveExtension(fileNameString).c_str());
+						ImGui::TextWrapped(fileNameStringNoExtension.c_str());
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "world")
 					{
-
 						ImGui::ImageButton(
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::BeginDragDropSource(dragDropFlags))
+						{
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -206,8 +301,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemoveExtension(fileNameString).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "mesh")
@@ -219,37 +314,26 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::BeginDragDropSource(dragDropFlags))
+						{
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = meshMetaData.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
-
+								// TODO: mesh display logic
 							}
-
 						}
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "material")
@@ -261,25 +345,15 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::BeginDragDropSource(dragDropFlags))
+						{
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = material.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -289,8 +363,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "texture2d")
@@ -302,25 +376,15 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::BeginDragDropSource(dragDropFlags))
+						{
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = texture.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -330,8 +394,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "sound")
@@ -343,37 +407,26 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						if (ImGui::BeginDragDropSource(dragDropFlags))
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = soundMetaData.uuid.c_str();
-								}
-							}
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
+						if (ImGui::IsItemHovered())
+						{
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
-
+								// TODO: sound preview logic
 							}
 						}
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else
@@ -383,38 +436,32 @@ void D3E::EditorContentBrowser::Draw()
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
 							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
-						if (ImGui::IsItemHovered() &&
-						    ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						if (ImGui::BeginDragDropSource(dragDropFlags))
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-							}
+							ImGui::SetDragDropPayload("asset", &directoryEntry, sizeof(directoryEntry));
+							ImGui::EndDragDropSource();
+						}
+						if (ImGui::IsItemHovered())
+						{
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
 								Debug::LogMessage("Double-clicked on Asset");
-								// logic for any other asset except script and world
+								// logic for any other asset
 							}
 						}
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 				}
 			}
+			ImGui::PopID();
 		}
 	}
 	ImGui::EndChild();
