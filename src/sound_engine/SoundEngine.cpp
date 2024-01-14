@@ -5,6 +5,7 @@
 #include "EASTL/map.h"
 #include "EASTL/string.h"
 #include "SoundEngineCommon.h"
+#include "utils/FilenameUtils.h"
 
 #include <format>
 
@@ -106,7 +107,7 @@ int SoundEngine::SetDriver(int id)
 	return CheckError(system->setDriver(id));
 }
 
-void SoundEngine::LoadSound(SoundMetaData& metadata)
+void SoundEngine::LoadSound(SoundMetaData& metadata, const std::string& directory)
 {
 	auto foundIt = sounds.find(metadata.uuid.c_str());
 	if (foundIt != sounds.end())
@@ -119,7 +120,7 @@ void SoundEngine::LoadSound(SoundMetaData& metadata)
 
 	FMOD::Sound* sound = nullptr;
 
-	if (CheckError(system->createSound(metadata.filename.c_str(), mode, nullptr, &sound)))
+	if (CheckError(system->createSound(FilenameUtils::MetaFilenameToFilePath(metadata.filename, directory).string().c_str(), mode, nullptr, &sound)))
 		return;
 
 	sounds[metadata.uuid.c_str()] = sound;

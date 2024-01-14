@@ -196,6 +196,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/render/RenderUtils.h
         src/editor/MaterialEditor.cpp
         src/editor/MaterialEditor.h
+        src/utils/FilenameUtils.cpp
+        src/utils/FilenameUtils.h
 )
 
 add_subdirectory(libs)

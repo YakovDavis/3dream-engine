@@ -160,7 +160,7 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 			game_->GetRegistry().get<ObjectInfoComponent>(e).to_json(c);
 			if (!recordUuid)
 			{
-				c.at("id") = EmptyIdStdStr;
+				c.at("uuid") = EmptyIdStdStr;
 			}
 			j.at("components").emplace_back(c);
 		}
@@ -245,12 +245,12 @@ void D3E::ComponentFactory::SerializeWorld(json& j)
 {
 	std::string worldId = EmptyIdStdStr;
 
-	if (j.contains("id"))
+	if (j.contains("uuid"))
 	{
-		worldId = j.at("id");
+		worldId = j.at("uuid");
 	}
 
-	j = json({{"type", "world"}, {"id", worldId}, {"entities", {}}});
+	j = json({{"type", "world"}, {"uuid", worldId}, {"entities", {}}});
 
 	for (const auto& ent : game_->GetRegistry().storage<entt::entity>())
 	{

@@ -7,6 +7,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "utils/FilenameUtils.h"
 
 bool D3E::TextureFactory::isInitialized_ = false;
 D3E::Game* D3E::TextureFactory::activeGame_;
@@ -14,7 +15,7 @@ D3E::GBuffer* D3E::TextureFactory::gbuffer_;
 eastl::unordered_map<D3E::String, D3E::Texture> D3E::TextureFactory::textures_ {};
 eastl::unordered_map<D3E::String, nvrhi::SamplerHandle> D3E::TextureFactory::samplers_ {};
 
-void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
+void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
 	Texture texture;
 
@@ -24,7 +25,7 @@ void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, bool firstLoa
 
 	int width, height, comps;
 
-	auto imageData = stbi_load(texture.MetaData.filename.c_str(), &width, &height, &comps, 4);
+	auto imageData = stbi_load(FilenameUtils::MetaFilenameToFilePath(texture.MetaData.filename, directory).string().c_str(), &width, &height, &comps, 4);
 
 	if (!imageData)
 	{

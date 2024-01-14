@@ -4,6 +4,8 @@
 #include "D3E/Debug.h"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
+#include "utils/FilenameUtils.h"
+#include "D3E/Game.h"
 
 bool D3E::MeshFactory::isInitialized_ = false;
 D3E::Game* D3E::MeshFactory::activeGame_;
@@ -144,7 +146,7 @@ D3E::MeshData& D3E::MeshFactory::GetMeshData(const String& uuid)
 	return meshData_[uuid];
 }
 
-void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
+void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
 	meshData_.insert({ metaData.uuid.c_str(), MeshData() });
 
@@ -164,7 +166,9 @@ void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, bool firstLoa
 		aiProcess_ValidateDataStructure |
 		aiProcess_ConvertToLeftHanded;
 
-	const aiScene* pScene = importer.ReadFile(metaData.filename.c_str(), ImportFlags);
+	Debug::LogMessage(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str());
+
+	const aiScene* pScene = importer.ReadFile(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str(), ImportFlags);
 
 	ProcessNode(metaData, pScene->mRootNode, pScene);
 

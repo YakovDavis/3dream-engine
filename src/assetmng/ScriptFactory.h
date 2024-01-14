@@ -17,7 +17,7 @@ namespace D3E
 		ScriptFactory() = delete;
 
 		static void Initialize(Game* game);
-		static void LoadScript(const ScriptMetaData& metaData);
+		static void LoadScript(const ScriptMetaData& metaData, const std::string& directory);
 		static std::optional<ScriptData> GetScriptData(const String& uuid);
 		static bool IsScriptUuidValid(const String& uuid);
 
