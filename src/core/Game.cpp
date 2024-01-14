@@ -821,3 +821,13 @@ void D3E::Game::CreateEntityFromPrefab(const std::string& filepath)
 	f.close();
 	ComponentFactory::ResolveEntity(j);
 }
+
+void D3E::Game::DestroyEntity(const D3E::String& uuid)
+{
+	if (uuidEntityList.find(uuid) == uuidEntityList.end())
+	{
+		return;
+	}
+
+	registry_.destroy(uuidEntityList[uuid]);
+}

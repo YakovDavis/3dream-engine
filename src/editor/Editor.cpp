@@ -356,6 +356,10 @@ void D3E::Editor::DrawHierarchy()
 				hierarchyRenamedItemUuid = node->info.infoComponent->id;
 				hierarchyRenamedString = node->info.infoComponent->name.c_str();
 			}
+			else if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+			{
+				game_->DestroyEntity(node->info.infoComponent->id);
+			}
 			else
 			{
 				uuidClicked = node->info.infoComponent->id;
