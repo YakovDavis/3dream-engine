@@ -2,6 +2,7 @@
 
 #include "D3E/CommonCpp.h"
 #include "D3E/Debug.h"
+#include "D3E/Uuid.h"
 #include "D3E/render/Material.h"
 #include "MaterialFactory.h"
 #include "MeshFactory.h"
@@ -250,4 +251,16 @@ void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
 D3E::String D3E::AssetManager::GetAssetName(const D3E::String& uuid)
 {
 	return assetMetaData_.at(uuid);
+}
+
+void D3E::AssetManager::CreateDefaultMaterial(const std::string& folder)
+{
+	Material m = {};
+	m.type = MaterialType::Lit;
+	m.name = "NewMaterial";
+	m.albedoTextureUuid = kDebugLinesTextureUUID;
+	m.roughnessTextureUuid = kBlackTextureUUID;
+	m.metalnessTextureUuid = kBlackTextureUUID;
+	m.normalTextureUuid = kNormalsDefaultTextureUUID;
+	CreateMaterial(m, folder);
 }

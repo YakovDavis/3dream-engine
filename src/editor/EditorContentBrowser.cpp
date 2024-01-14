@@ -1,15 +1,16 @@
 #include "EditorContentBrowser.h"
 
+#include "D3E/AssetManager.h"
 #include "D3E/Debug.h"
-#include "assetmng/TextureFactory.h"
-#include "engine/ComponentFactory.h"
-#include "editor/Editor.h"
 #include "D3E/Game.h"
+#include "D3E/render/Material.h"
+#include "assetmng/TextureFactory.h"
+#include "editor/Editor.h"
+#include "engine/ComponentFactory.h"
 #include "misc/cpp/imgui_stdlib.h"
 
-#include <assetmng/ScriptMetaData.h>
 #include <assetmng/MeshMetaData.h>
-#include "D3E/render/Material.h"
+#include <assetmng/ScriptMetaData.h>
 #include <assetmng/SoundMetaData.h>
 #include <cstdlib>
 #include <iostream>
@@ -29,21 +30,35 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 
 void D3E::EditorContentBrowser::Draw()
 {
-	ImGui::Begin("Content Browser");
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar;
 
-	ImGui::Button("New folder", ImVec2(0, 0));
-	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	ImGui::Begin("Content Browser", nullptr, windowFlags);
+
+	if (ImGui::BeginMenuBar())
 	{
-		std::filesystem::create_directory(currentDirectory_ / std::filesystem::path("new_folder"));
-	}
-	ImGui::SameLine();
-	ImGui::Button("Import file", ImVec2(0, 0));
-	if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-	{
-		editor_->game_->AssetFileImport(currentDirectory_.string().c_str());
+		if (ImGui::BeginMenu("Create"))
+		{
+			if (ImGui::MenuItem("New folder", NULL, false, true))
+			{
+				std::filesystem::create_directory(currentDirectory_ / std::filesystem::path("new_folder"));
+			}
+			if (ImGui::MenuItem("New material", NULL, false, true))
+			{
+				AssetManager::Get().CreateDefaultMaterial(currentDirectory_.string().c_str());
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Import"))
+		{
+			if (ImGui::MenuItem("Import new asset", NULL, false, true))
+			{
+				editor_->game_->AssetFileImport(currentDirectory_.string().c_str());
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
 	}
 
-	ImGui::SameLine();
 	ImGui::Text(" Alt+LMB: delete, F2+LMB: rename folder");
 
 	if(currentDirectory_ != rootDirectory_)
