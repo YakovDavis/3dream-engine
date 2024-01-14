@@ -44,6 +44,30 @@ static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
 static bool boundSizing = false;
 static bool boundSizingSnap = false;
 
+#define HIERARCHY_DRAG_N_DROP \
+	if (ImGui::BeginDragDropSource()) \
+	{ \
+		std::string entityUuid = node->info.infoComponent->id.c_str(); \
+		ImGui::SetDragDropPayload("hierarchy", &entityUuid[0], entityUuid.size() + sizeof(std::string::value_type)); \
+		ImGui::EndDragDropSource(); \
+	} \
+	if (ImGui::BeginDragDropTarget()) \
+	{ \
+		auto payload = ImGui::AcceptDragDropPayload("hierarchy"); \
+		if (payload) \
+		{ \
+			auto payloadId = (const char*)payload->Data; \
+			entt::entity child; \
+			game_->FindEntityByID(child, payloadId); \
+			auto info = game_->GetRegistry().try_get<ObjectInfoComponent>(child); \
+			if (info) \
+			{ \
+				info->parentId = node->info.infoComponent->id; \
+			} \
+		} \
+		ImGui::EndDragDropTarget(); \
+	}
+
 D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
                     eastl::shared_ptr<Display> display, Game* game)
 	: display_{display}, game_{game}
@@ -325,6 +349,7 @@ void D3E::Editor::DrawHierarchy()
 		                                ImGuiTreeNodeFlags_OpenOnArrow |
 		                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
 		bool opened = false;
+		ImGui::PushID(node->info.infoComponent->editorId);
 		if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
 		{
 			ImGui::InputText("##renamed_hierarchy", &hierarchyRenamedString);
@@ -340,6 +365,7 @@ void D3E::Editor::DrawHierarchy()
 				(void*)(intptr_t)(node->info.infoComponent->editorId),
 				node_flags, "%s", node->info.infoComponent->name.c_str());
 		}
+		HIERARCHY_DRAG_N_DROP
 		if (ImGui::IsItemClicked())
 		{
 			if (ImGui::IsKeyDown(ImGuiKey_F2))
@@ -353,10 +379,7 @@ void D3E::Editor::DrawHierarchy()
 				hierarchyCarriedUuid = uuidClicked;
 			}
 		}
-		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && lmbDownLastFrame)
-		{
-			// TODO: link new parent
-		}
+		ImGui::PopID();
 		if (opened)
 		{
 			for (auto childNode : node->children)
@@ -366,6 +389,28 @@ void D3E::Editor::DrawHierarchy()
 			ImGui::TreePop();
 		}
 	}
+
+	ImGui::Separator();
+
+	ImGui::PushID(-1);
+	ImGui::Text("---Drag here to un-parent---");
+	if (ImGui::BeginDragDropTarget()) \
+	{ \
+		auto payload = ImGui::AcceptDragDropPayload("hierarchy"); \
+		if (payload) \
+		{ \
+			auto payloadId = (const char*)payload->Data; \
+			entt::entity child; \
+			game_->FindEntityByID(child, payloadId); \
+			auto info = game_->GetRegistry().try_get<ObjectInfoComponent>(child); \
+			if (info) \
+			{ \
+				info->parentId = EmptyIdString; \
+			} \
+		} \
+		ImGui::EndDragDropTarget(); \
+	}
+	ImGui::PopID();
 
 	if (!uuidClicked.empty())
 	{
@@ -1258,6 +1303,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 	ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) |
 	                                ImGuiTreeNodeFlags_OpenOnArrow |
 	                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+	ImGui::PushID(node->info.infoComponent->editorId);
 	bool opened = false;
 	if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
 	{
@@ -1274,6 +1320,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 			(void*)(intptr_t)(node->info.infoComponent->editorId),
 			node_flags, "%s", node->info.infoComponent->name.c_str());
 	}
+	HIERARCHY_DRAG_N_DROP
 	if (ImGui::IsItemClicked())
 	{
 		if (ImGui::IsKeyDown(ImGuiKey_F2))
@@ -1291,6 +1338,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 	{
 		// TODO: link new parent
 	}
+	ImGui::PopID();
 	if (opened)
 	{
 		for (auto childNode : node->children)
