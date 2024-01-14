@@ -98,6 +98,8 @@ namespace D3E
 
 		void CreateEntityFromPrefab(const std::string& filepath);
 
+		void DestroyEntity(const String& uuid);
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
