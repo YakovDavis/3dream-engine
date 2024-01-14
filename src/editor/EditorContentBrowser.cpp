@@ -32,10 +32,6 @@ static std::string renamedItem = "";
 		{ \
 			renamedItem = \
 				directoryEntry.path().string(); \
-		}                                    \
-		else if (metadata.contains("uuid")) \
-		{ \
-			tempUuid_ = std::string(metadata.at("uuid")).c_str(); \
 		} \
 	}
 
@@ -509,6 +505,7 @@ void D3E::EditorContentBrowser::Draw()
 
 	ImGui::End();
 }
+
 std::string D3E::EditorContentBrowser::RemoveExtension(std::string str)
 {
 	size_t lastDot = str.find_last_of(".");
@@ -518,6 +515,7 @@ std::string D3E::EditorContentBrowser::RemoveExtension(std::string str)
 	}
 	return str.substr(0, lastDot);
 }
+
 std::string D3E::EditorContentBrowser::RemovePath(std::string str)
 {
 	size_t lastSlash = str.find_last_of("/");
@@ -526,14 +524,4 @@ std::string D3E::EditorContentBrowser::RemovePath(std::string str)
 		return str;
 	}
 	return str.substr(lastSlash + 1, str.size());
-}
-
-std::string D3E::EditorContentBrowser::GetTempUuid()
-{
-	return tempUuid_;
-}
-
-void D3E::EditorContentBrowser::ResetTempUuid()
-{
-	tempUuid_ = "";
 }

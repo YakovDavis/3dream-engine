@@ -35,6 +35,8 @@ namespace D3E
 
 		static String GetAssetName(const String& uuid);
 
+		static void RegisterExternalAssetName(const String& uuid, const String& name);
+
 		static bool IsPrefabUuidValid(const String& uuid);
 
 		static std::string GetPrefabFilePath(const String& uuid);
