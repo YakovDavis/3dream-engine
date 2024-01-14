@@ -390,7 +390,7 @@ D3E::GameRender::GameRender(Game* parent, HINSTANCE hInstance) : parentGame(pare
 
 D3E::Display* D3E::GameRender::GetDisplay()
 {
-	return display_.get();
+	return display_ ? display_.get() : nullptr;
 }
 
 nvrhi::DeviceHandle& D3E::GameRender::GetDevice()

@@ -14,6 +14,7 @@ namespace D3E
 	private:
 		bool initialized_;
 		sol::state luaState_;
+		Game* game_;
 
 		ScriptingEngine();
 
@@ -24,11 +25,12 @@ namespace D3E
 		static ScriptingEngine& GetInstance();
 
 		ScriptingEngine(ScriptingEngine&) = delete;
-		~ScriptingEngine();
 		ScriptingEngine& operator=(ScriptingEngine const&) = delete;
 
 		void Init(Game* g);
 		bool LoadScript(ScriptComponent& c, String scriptUuid);
 		void InitScriptComponent(ScriptComponent& c);
+		void Start();
+		void Clear();
 	};
 } // namespace D3E

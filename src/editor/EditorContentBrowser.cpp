@@ -24,6 +24,7 @@ D3E::EditorContentBrowser::EditorContentBrowser(Editor* editor)
 	auto path = std::filesystem::absolute(AssetDirectory).string();
 	rootDirectory_ = path.substr(0, path.length() - 1);
 	currentDirectory_ = rootDirectory_;
+	editor_->game_->SetContentBrowserFilePath(currentDirectory_.string());
 }
 
 void D3E::EditorContentBrowser::Draw()
@@ -43,7 +44,7 @@ void D3E::EditorContentBrowser::Draw()
 	}
 
 	ImGui::SameLine();
-	ImGui::Text(" Alt-LMB: delete, F2-LMB: rename folder");
+	ImGui::Text(" Alt+LMB: delete, F2+LMB: rename folder");
 
 	if(currentDirectory_ != rootDirectory_)
 	{
@@ -100,6 +101,7 @@ void D3E::EditorContentBrowser::Draw()
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 					{
 						currentDirectory_ /= path.filename();
+						editor_->game_->SetContentBrowserFilePath(currentDirectory_.string());
 					}
 				}
 				ImGui::PopStyleColor();
@@ -255,7 +257,6 @@ void D3E::EditorContentBrowser::Draw()
 						Material material;
 						metadata.get_to(material);
 
-
 						ImGui::ImageButton(
 							TextureFactory::GetTextureHandle(
 								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
@@ -282,7 +283,48 @@ void D3E::EditorContentBrowser::Draw()
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
+								editor_->materialEditor_->OpenMaterial(directoryEntry.path().string());
+							}
+						}
 
+						ImGui::PopStyleColor();
+
+						ImGui::TextWrapped(
+							RemovePath(metadata.at("name")).c_str());
+						ImGui::NextColumn();
+					}
+					else if (metadata.at("type") == "texture2d")
+					{
+						Texture2DMetaData texture;
+						metadata.get_to(texture);
+
+						ImGui::ImageButton(
+							TextureFactory::GetTextureHandle(
+								"e204189e-5bb5-4fe3-a3b9-92fb27ab4c96"),
+							{thumbnailSize, thumbnailSize}, {0, -1}, {-1, 0});
+						if (ImGui::IsItemHovered())
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+								{
+									editor_->game_->AssetDeleteDialog(
+										directoryEntry.path().string().c_str());
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_F2))
+								{
+									renamedItem =
+										directoryEntry.path().string();
+								}
+								else
+								{
+									tempUuid_ = texture.uuid.c_str();
+								}
+							}
+							if (ImGui::IsMouseDoubleClicked(
+									ImGuiMouseButton_Left))
+							{
+								// TODO: display texture viewer
 							}
 						}
 

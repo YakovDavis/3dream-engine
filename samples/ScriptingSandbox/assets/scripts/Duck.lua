@@ -3,8 +3,10 @@ Duck = NativeScript:new()
 function Duck:init()
     self.initialized = false
 
-    print(string.format('initialized = %s', self.initialized))
+    print(string.format('initialized = %s', self.initialized))    
+end
 
+function Duck:start()
     self.transform = Component:get_component(self.owner_id, ComponentType.Transform)
     self.parent_position = Vector3.new(0, 0, 0)
     self.yaw = self.transform.rotation.y

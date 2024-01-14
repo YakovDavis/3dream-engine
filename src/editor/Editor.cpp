@@ -9,6 +9,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -21,6 +22,7 @@
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
 #include "engine/ComponentFactory.h"
+#include "assetmng/ScriptFactory.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "SimpleMath.h"
 
@@ -43,129 +45,6 @@ static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
 static bool boundSizing = false;
 static bool boundSizingSnap = false;
 
-void ShowExampleAppDockSpace(bool* p_open)
-{
-	static bool opt_fullscreen = true;
-	static bool opt_padding = false;
-	static ImGuiDockNodeFlags dockSpace_flags =
-		ImGuiDockNodeFlags_PassthruCentralNode;
-
-	ImGuiWindowFlags window_flags =
-		ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	if (opt_fullscreen)
-	{
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		window_flags |= ImGuiWindowFlags_NoTitleBar |
-		                ImGuiWindowFlags_NoCollapse |
-		                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus |
-		                ImGuiWindowFlags_NoNavFocus;
-	}
-	else
-	{
-		dockSpace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-	}
-
-	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will
-	// render our background and handle the pass-thru hole, so we ask Begin() to
-	// not render a background.
-	if (dockSpace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-
-	// Important: note that we proceed even if Begin() returns false (aka window
-	// is collapsed). This is because we want to keep our DockSpace() active. If
-	// a DockSpace() is inactive, all active windows docked into it will lose
-	// their parent and become undocked. We cannot preserve the docking
-	// relationship between an active window and an inactive docking, otherwise
-	// any change of dockspace/settings would lead to windows being stuck in
-	// limbo and never being visible.
-	if (!opt_padding)
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("DockSpace Demo", p_open, window_flags);
-	if (!opt_padding)
-		ImGui::PopStyleVar();
-
-	if (opt_fullscreen)
-		ImGui::PopStyleVar(2);
-
-	// Submit the DockSpace
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	{
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockSpace_flags);
-	}
-
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("Options"))
-		{
-			/*
-			// Disabling fullscreen would allow the window to be moved to the
-			// front of other windows, which we can't undo at the moment without
-			// finer window depth/z control.
-			ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-			ImGui::MenuItem("Padding", NULL, &opt_padding);
-			ImGui::Separator();
-
-			if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "",
-			                    (dockSpace_flags &
-			                     ImGuiDockNodeFlags_NoDockingOverCentralNode) !=
-			                        0))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode;
-			}
-			if (ImGui::MenuItem(
-					"Flag: NoDockingSplit", "",
-					(dockSpace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_NoDockingSplit;
-			}
-			if (ImGui::MenuItem(
-					"Flag: NoUndocking", "",
-					(dockSpace_flags & ImGuiDockNodeFlags_NoUndocking) != 0))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_NoUndocking;
-			}
-			if (ImGui::MenuItem(
-					"Flag: NoResize", "",
-					(dockSpace_flags & ImGuiDockNodeFlags_NoResize) != 0))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_NoResize;
-			}
-			if (ImGui::MenuItem(
-					"Flag: AutoHideTabBar", "",
-					(dockSpace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-			}
-			if (ImGui::MenuItem("Flag: PassthruCentralNode", "",
-			                    (dockSpace_flags &
-			                     ImGuiDockNodeFlags_PassthruCentralNode) != 0,
-			                    opt_fullscreen))
-			{
-				dockSpace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-			}
-			ImGui::Separator();
-
-			*/
-
-			if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
-				*p_open = false;
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
-	ImGui::End();
-}
-
 D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
                     eastl::shared_ptr<Display> display, Game* game)
 	: display_{display}, game_{game}
@@ -187,6 +66,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
 
 	editorConsole_ = new EditorConsole();
 	editorContentBrowser_ = new EditorContentBrowser(this);
+	materialEditor_ = new MaterialEditor(this);
 }
 
 void D3E::Editor::SetStyle()
@@ -220,7 +100,7 @@ void D3E::Editor::BeginDraw(float deltaTime)
 void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer)
 {
 	bool show;
-	ShowExampleAppDockSpace(&show);
+	ShowEditorApp(&show);
 
 	if (!game_->GetSelectedUuids().empty())
 	{
@@ -233,6 +113,10 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	DrawInspector();
 	editorConsole_->Draw();
 	editorContentBrowser_->Draw();
+	if (materialEditor_->open)
+	{
+		materialEditor_->Draw();
+	}
 
 	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
@@ -1344,6 +1228,42 @@ void D3E::Editor::DrawInspector()
 							}
 						}
 					}
+					else if (componentName == "ScriptComponent")
+					{
+						ImGuiInputTextFlags input_text_flags =
+							ImGuiInputTextFlags_ReadOnly;
+
+						auto& sc = game_->GetRegistry().get<ScriptComponent>(
+							currentEntity);
+						const String scriptUuid = sc.GetScriptUuid();
+						
+						std::string scriptName;
+						if (ScriptFactory::IsScriptUuidValid(scriptUuid))
+						{
+							scriptName =
+								AssetManager::GetAssetName(scriptUuid).c_str();
+						}
+						ImGui::InputText("Script", &scriptName,
+						                 input_text_flags);
+
+						if (ImGui::IsItemHovered() && lmbDownLastFrame &&
+						    !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						{
+							std::string selectedUuid =
+								editorContentBrowser_->GetTempUuid();
+							if (!selectedUuid.empty() &&
+							    ScriptFactory::IsScriptUuidValid(
+									selectedUuid.c_str()))
+							{
+								game_->GetRegistry().patch<ScriptComponent>(
+									currentEntity,
+									[selectedUuid](auto& sc) {
+										sc.SetScriptUuid(selectedUuid.c_str());
+									});
+							}
+						}
+					}
+
 					ImGui::TreePop();
 				}
 				++idx;
@@ -1544,6 +1464,89 @@ void D3E::Editor::DrawTransformEdit()
 		ImGui::SameLine();
 		ImGui::InputFloat3("Snap", boundsSnap);
 		ImGui::PopID();
+	}
+
+	ImGui::End();
+}
+
+void D3E::Editor::ShowEditorApp(bool* p_open)
+{
+	static bool opt_fullscreen = true;
+	static bool opt_padding = false;
+	static ImGuiDockNodeFlags dockSpace_flags =
+		ImGuiDockNodeFlags_PassthruCentralNode;
+
+	ImGuiWindowFlags window_flags =
+		ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen)
+	{
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar |
+		                ImGuiWindowFlags_NoCollapse |
+		                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus |
+		                ImGuiWindowFlags_NoNavFocus;
+	}
+	else
+	{
+		dockSpace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+	}
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will
+	// render our background and handle the pass-thru hole, so we ask Begin() to
+	// not render a background.
+	if (dockSpace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	// Important: note that we proceed even if Begin() returns false (aka window
+	// is collapsed). This is because we want to keep our DockSpace() active. If
+	// a DockSpace() is inactive, all active windows docked into it will lose
+	// their parent and become undocked. We cannot preserve the docking
+	// relationship between an active window and an inactive docking, otherwise
+	// any change of dockspace/settings would lead to windows being stuck in
+	// limbo and never being visible.
+	if (!opt_padding)
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace Demo", p_open, window_flags);
+	if (!opt_padding)
+		ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+
+	// Submit the DockSpace
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	{
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockSpace_flags);
+	}
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("Options"))
+		{
+			if (ImGui::MenuItem("Save map", "Ctrl+S", false, p_open != NULL))
+			{
+				game_->OnEditorSaveMapPressed();
+			}
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl))
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_S))
+		{
+			game_->OnEditorSaveMapPressed();
+		}
 	}
 
 	ImGui::End();

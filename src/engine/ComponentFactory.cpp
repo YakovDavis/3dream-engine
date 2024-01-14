@@ -87,7 +87,7 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 		}
 		else if (el.at("class") == "ScriptComponent")
 		{
-			ScriptComponent c(e);
+			ScriptComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<ScriptComponent>(e, c);
 		}
@@ -235,7 +235,6 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 
 void D3E::ComponentFactory::ResolveWorld(const json& j)
 {
-	game_->ClearWorld();
 	for (const auto& el : j.at("entities"))
 	{
 		ResolveEntity(el);
@@ -244,7 +243,14 @@ void D3E::ComponentFactory::ResolveWorld(const json& j)
 
 void D3E::ComponentFactory::SerializeWorld(json& j)
 {
-	j = json({{"type", "world"}, {"entities", {}}});
+	std::string worldId = EmptyIdStdStr;
+
+	if (j.contains("id"))
+	{
+		worldId = j.at("id");
+	}
+
+	j = json({{"type", "world"}, {"id", worldId}, {"entities", {}}});
 
 	for (const auto& ent : game_->GetRegistry().storage<entt::entity>())
 	{

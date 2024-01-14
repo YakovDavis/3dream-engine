@@ -45,7 +45,7 @@
 #include <filesystem>
 #include <thread>
 
-static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"entities", {}}});
+static json currentMapSavedState = json({{"type", "world"}, {"id", D3E::EmptyIdStdStr}, {"filename", ""}, {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
 bool D3E::Game::KeyboardLockedByImGui = false;
@@ -398,6 +398,75 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			delete[] lpb;
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
+		// WM_SIZE is sent when the user resizes the window.
+		case WM_SIZE:
+			if (GetRender() && GetDisplay())
+			{
+				// Save the new client area dimensions.
+				GetDisplay()->ClientWidth = LOWORD(lParam);
+				GetDisplay()->ClientHeight = HIWORD(lParam);
+				if (wParam == SIZE_MINIMIZED)
+				{
+					GetDisplay()->IsMinimized = true;
+					GetDisplay()->IsMaximized = false;
+				}
+				else if (wParam == SIZE_MAXIMIZED)
+				{
+					GetDisplay()->IsMinimized = false;
+					GetDisplay()->IsMaximized = true;
+					GetRender()->OnResize();
+				}
+				else if (wParam == SIZE_RESTORED)
+				{
+					// Restoring from minimized state?
+					if (GetDisplay()->IsMinimized)
+					{
+						GetDisplay()->IsMinimized = false;
+						GetRender()->OnResize();
+					}
+					// Restoring from maximized state?
+					else if (GetDisplay()->IsMaximized)
+					{
+						GetDisplay()->IsMaximized = false;
+						GetRender()->OnResize();
+					}
+					else if (GetDisplay()->IsResizing)
+					{
+						// If user is dragging the resize bars, we do not resize
+						// the buffers here because as the user continuously
+						// drags the resize bars, a stream of WM_SIZE messages are sent to the window, and it would be pointless (and slow) to resize for each WM_SIZE message received from dragging the resize bars.  So instead, we reset after the user is done resizing the window and releases the resize bars, which sends a WM_EXITSIZEMOVE message.
+					}
+					else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+					{
+						GetRender()->OnResize();
+					}
+				}
+			}
+		return 0;
+
+		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+		case WM_ENTERSIZEMOVE:
+			if (GetRender() && GetDisplay())
+			{
+				GetDisplay()->IsResizing = true;
+			}
+			return 0;
+
+		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+		// Here we reset everything based on the new window dimensions.
+		case WM_EXITSIZEMOVE:
+			if (GetRender() && GetDisplay())
+			{
+				GetDisplay()->IsResizing = false;
+				GetRender()->OnResize();
+			}
+			return 0;
+
+
+		// WM_DESTROY is sent when the window is being destroyed.
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			return 0;
 		default:
 		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -542,6 +611,7 @@ void D3E::Game::OnEditorPlayPressed()
 		ComponentFactory::SerializeWorld(currentMapSavedState);
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
+		ScriptingEngine::GetInstance().Start();
 		isGameRunning_ = true;
 	}
 }
@@ -568,7 +638,7 @@ void D3E::Game::OnEditorStopPressed()
 void D3E::Game::ClearWorld()
 {
 	RenderUtils::InvalidateWorldBuffers(registry_);
-	EditorIdManager::Get()->UnregisterAll();
+	EditorIdManager::Get()->UnregisterAll();	
 	uuidEntityList.clear();
 	registry_.clear();
 #ifdef D3E_WITH_EDITOR
@@ -701,4 +771,30 @@ bool D3E::Game::FindEntityByID(entt::entity& entity, const D3E::String& uuid)
 		entity = foundElement->second;
 		return true;
 	}
+}
+
+void D3E::Game::OnEditorSaveMapPressed()
+{
+	if (!isGameRunning_)
+	{
+		ComponentFactory::SerializeWorld(currentMapSavedState);
+		if (currentMapSavedState.at("id") == D3E::EmptyIdStdStr)
+		{
+			currentMapSavedState.at("id") = UuidGenerator::NewGuidStdStr();
+			std::ofstream o(contentBrowserFilePath_ + "\\NewWorld.meta");
+			o << std::setw(4) << currentMapSavedState << std::endl;
+			o.close();
+		}
+		else
+		{
+			std::ofstream o(contentBrowserFilePath_ + "\\" + to_string(currentMapSavedState.at("filename")) + ".meta");
+			o << std::setw(4) << currentMapSavedState << std::endl;
+			o.close();
+		}
+	}
+}
+
+void D3E::Game::SetContentBrowserFilePath(const std::string& s)
+{
+	contentBrowserFilePath_ = s;
 }

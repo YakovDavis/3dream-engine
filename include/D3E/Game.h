@@ -79,6 +79,8 @@ namespace D3E
 
 		void OnEditorStopPressed();
 
+		void OnEditorSaveMapPressed();
+
 		void ClearWorld();
 
 		HRESULT AssetFileImport(String currentDir);
@@ -87,6 +89,10 @@ namespace D3E
 
 		bool IsGameRunning() const { return isGameRunning_; }
 		bool IsGamePaused() const { return isGamePaused_; }
+
+		void SetContentBrowserFilePath(const std::string& s);
+
+		std::string GetContentBrowserFilePath() const { return contentBrowserFilePath_; }
 
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
@@ -143,5 +149,7 @@ namespace D3E
 		void HandleMessages();
 
 		eastl::hash_set<String> selectedUuids;
+
+		std::string contentBrowserFilePath_ = "";
 	};
 } // namespace D3E

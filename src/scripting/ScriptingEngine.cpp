@@ -8,7 +8,7 @@
 
 using namespace D3E;
 
-ScriptingEngine::ScriptingEngine() : initialized_(false)
+ScriptingEngine::ScriptingEngine() : game_(nullptr), initialized_(false)
 {
 }
 
@@ -19,12 +19,18 @@ ScriptingEngine& ScriptingEngine::GetInstance()
 	return instance;
 }
 
-ScriptingEngine::~ScriptingEngine()
-{
-}
-
 void ScriptingEngine::Init(Game* g)
 {
+	if (initialized_)
+	{
+		Debug::LogWarning("[ScriptingEngine] : Init(): ScriptingEngine has "
+		                  "already been initialized.");
+
+		return;
+	}
+
+	game_ = g;
+
 	Debug::LogMessage("[ScriptingEngine] Initializing...");
 
 	LoadStandardLibraries();
@@ -41,11 +47,21 @@ void ScriptingEngine::Init(Game* g)
 
 bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 {
+	if (!initialized_)
+	{
+		Debug::LogError(
+			"[ScriptingEngine] : LoadScript(): Attempted to load script before "
+			"ScriptingEngine initialization. Call "
+			"ScriptingEngine::Init() first.");
+
+		return false;
+	}
+
 	auto scriptData = ScriptFactory::GetScriptData(scriptUuid);
 
 	if (!scriptData)
 	{
-		Debug::LogError("[ScriptingEngine] LoadScript(): "
+		Debug::LogError("[ScriptingEngine] : LoadScript(): "
 		                "Script was not found. UUID: " +
 		                scriptUuid);
 
@@ -60,7 +76,7 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 		{
 			sol::error err = pfr;
 
-			Debug::LogError("[ScriptingEngine] LoadScript(): "
+			Debug::LogError("[ScriptingEngine] : LoadScript(): "
 		                    "Error accured while loading script: " +
 		                    scriptUuid + " Entry point: " + script.entryPoint +
 		                    " Error: " + err.what());
@@ -77,31 +93,41 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c, String scriptUuid)
 
 void ScriptingEngine::InitScriptComponent(ScriptComponent& c)
 {
+	if (!initialized_)
+	{
+		Debug::LogError("[ScriptingEngine] : InitScriptComponent(): Attempted "
+		                "to init script before "
+		                "ScriptingEngine initialization. Call "
+		                "ScriptingEngine::Init() first.");
+
+		return;
+	}
+
 	auto userType = luaState_[c.entryPoint_.c_str()];
 	// Calling Lua object Ctor
-	c.self = userType["new"](
+	c.self_ = userType["new"](
 		userType,
 		sol::nil); // TODO(Denis): Find a safer way to avoid Panic case
 
-	c.start = userType["start"];
-	c.start.set_error_handler(luaState_["error_handler"]);
+	c.start_ = userType["start"];
+	c.start_.set_error_handler(luaState_["error_handler"]);
 
-	c.init = userType["init"];
-	c.init.set_error_handler(luaState_["error_handler"]);
+	c.init_ = userType["init"];
+	c.init_.set_error_handler(luaState_["error_handler"]);
 
-	c.update = userType["update"];
-	c.update.set_error_handler(luaState_["error_handler"]);
+	c.update_ = userType["update"];
+	c.update_.set_error_handler(luaState_["error_handler"]);
 
-	c.onCollisionEnter = userType["on_collision_enter"];
-	c.onCollisionEnter.set_error_handler(luaState_["error_handler"]);
+	c.onCollisionEnter_ = userType["on_collision_enter"];
+	c.onCollisionEnter_.set_error_handler(luaState_["error_handler"]);
 
-	c.onCollisionStay = userType["on_collision_stay"];
-	c.onCollisionStay.set_error_handler(luaState_["error_handler"]);
+	c.onCollisionStay_ = userType["on_collision_stay"];
+	c.onCollisionStay_.set_error_handler(luaState_["error_handler"]);
 
-	c.onCollisionExit = userType["on_collision_exit"];
-	c.onCollisionExit.set_error_handler(luaState_["error_handler"]);
+	c.onCollisionExit_ = userType["on_collision_exit"];
+	c.onCollisionExit_.set_error_handler(luaState_["error_handler"]);
 
-	c.self["owner_id"] = c.ownerId_;
+	c.self_["owner_id"] = c.ownerId_;
 }
 
 bool ScriptingEngine::LoadDefaultEnvironment()
@@ -110,8 +136,9 @@ bool ScriptingEngine::LoadDefaultEnvironment()
 
 	if (!scriptData)
 	{
-		Debug::LogError("[ScriptingEngine] Init(): Default environment script "
-		                "was not found in ScriptFactory.");
+		Debug::LogError(
+			"[ScriptingEngine] : Init(): Default environment script "
+			"was not found in ScriptFactory.");
 
 		return false;
 	}
@@ -126,4 +153,28 @@ void ScriptingEngine::LoadStandardLibraries()
 	luaState_.open_libraries(sol::lib::base, sol::lib::string, sol::lib::debug,
 	                         sol::lib::math, sol::lib::package, sol::lib::os,
 	                         sol::lib::table);
+}
+
+void ScriptingEngine::Start()
+{
+	if (!initialized_)
+	{
+		Debug::LogError("[ScriptingEngine] : Start(): Attempted "
+		                "to start scripts before "
+		                "ScriptingEngine initialization. Call "
+		                "ScriptingEngine::Init() first.");
+
+		return;
+	}
+
+	game_->GetRegistry().view<ScriptComponent>().each([](auto& sc)
+	                                                  { sc.Start(); });
+}
+
+void ScriptingEngine::Clear()
+{
+	Debug::LogMessage("[ScriptingEngine] : Cleared");
+
+	initialized_ = false;
+	luaState_ = {};
 }
