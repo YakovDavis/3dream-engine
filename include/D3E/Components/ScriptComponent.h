@@ -52,7 +52,7 @@ namespace D3E
 		}
 
 		entt::entity GetOwnerId() const { return ownerId_; }
-
+		sol::table& GetSelf() { return self_; }
 		const String& GetEntryPoint() const { return entryPoint_; }
 		const String& GetScriptUuid() const { return scriptUuid_; }
 		void SetScriptUuid(const String& uuid) { scriptUuid_ = uuid; }

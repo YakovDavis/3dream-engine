@@ -71,12 +71,24 @@ sol::object LuaECSAdapter::GetComponent(entt::entity e, ComponentType type,
 }
 
 sol::object LuaECSAdapter::GetScriptComponent(entt::entity e,
-                                              const String className,
+                                              const String& className,
                                               sol::this_state s)
 {
 	sol::state_view lua(s);
 
-	return sol::make_object(lua, registry_.try_get<ScriptComponent>(e));
+	auto sc = registry_.try_get<ScriptComponent>(e);
+
+	if (!sc)
+	{
+		return sol::nil;
+	}
+
+	if (sc->GetEntryPoint() != className)
+	{
+		return sol::nil;
+	}
+
+	return sc->GetSelf();
 }
 
 sol::object LuaECSAdapter::FindWithBodyId(const JPH::BodyID& bodyId,
