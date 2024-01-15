@@ -29,6 +29,8 @@
 #include "render/systems/StaticMeshInitSystem.h"
 
 #include <assetmng/MaterialFactory.h>
+#include <sound_engine/SoundEngine.h>
+#include "misc/cpp/imgui_stdlib.h"
 #include <assetmng/MeshFactory.h>
 
 D3E::Editor* D3E::Editor::instance_;
@@ -90,6 +92,7 @@ D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
 	editorConsole_ = new EditorConsole();
 	editorContentBrowser_ = new EditorContentBrowser(this);
 	materialEditor_ = new MaterialEditor(this);
+	componentWindow_ = new ComponentCreationWindow(game_, this);
 }
 
 void D3E::Editor::SetStyle()
@@ -139,6 +142,10 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	if (materialEditor_->open)
 	{
 		materialEditor_->Draw();
+	}
+	if (componentWindow_->open)
+	{
+		componentWindow_->Draw();
 	}
 
 	ImGui::Render();
@@ -444,6 +451,89 @@ void D3E::Editor::DrawInspector()
 	}
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
+	static int createComponent = 0;
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0\0");
+	switch (createComponent)
+	{
+		case 0:
+		case 3:
+		case 4:
+		case 6:
+			creatingComponentWithDefault = true;
+			creatingComponentWithNonDefault = true;
+			break;
+		case 5:
+		case 7:
+		case 8:
+			creatingComponentWithDefault = true;
+			creatingComponentWithNonDefault = false;
+			break;
+		case 1:
+		case 2:
+			creatingComponentWithDefault = false;
+			creatingComponentWithNonDefault = true;
+			break;
+	}
+	if (creatingComponentWithNonDefault)
+	{
+		ImGui::SameLine();
+		ImGui::Button("Create", ImVec2(0, 0));
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (objectUuids.size() == 1)
+			{
+				String currentUuid = *objectUuids.begin();
+				entt::entity currentEntity = entt::null;
+				if (game_->FindEntityByID(currentEntity, currentUuid))
+				{
+					componentWindow_->componentType = createComponent;
+					componentWindow_->currentEntity = currentEntity;
+					componentWindow_->open = true;
+				}
+			}
+		}
+	}
+	if (creatingComponentWithDefault)
+	{
+		ImGui::SameLine();
+		ImGui::Button("Create Default", ImVec2(0, 0));
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (objectUuids.size() == 1)
+			{
+				String currentUuid = *objectUuids.begin();
+				entt::entity currentEntity = entt::null;
+				if (game_->FindEntityByID(currentEntity, currentUuid))
+				{
+					switch (createComponent)
+					{
+						case 0:
+							CreationSystems::CreateDefaultFPSControllerComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 3:
+							CreationSystems::CreateDefaultCameraComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 4:
+							CreationSystems::CreateDefaultLightComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 5:
+							CreationSystems::CreateDefaultStaticMeshComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 6:
+							CreationSystems::CreateDefaultSoundComponent(game_->GetRegistry(), currentEntity);
+							break;
+						case 7:
+							CreationSystems::CreateDefaultSoundListenerComponent(game_->GetRegistry(), currentEntity);
+							break;
+					}
+				}
+			}
+		}
+	}
+
+
+	ImGui::Separator();
+
 	if (objectUuids.size() == 1)
 	{
 		String currentUuid = *objectUuids.begin();
@@ -580,7 +670,6 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "FPSControllerComponent")
 					{
-						size_t fieldIdx = idx * 100;
 						float yaw, pitch, speed;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).yaw);
@@ -629,6 +718,7 @@ void D3E::Editor::DrawInspector()
 					else if (componentName == "PhysicsComponent")
 					{
 						float friction, restitution;
+						int isSensorSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string frictionInput = std::to_string(game_->GetRegistry().get<PhysicsComponent>(currentEntity).friction_);
 						if (ImGui::InputText("Friction", &frictionInput, input_text_flags))
@@ -654,6 +744,10 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 						}
+						isSensorSelection = game_->GetRegistry().get<PhysicsComponent>(currentEntity).isSensor_;
+						ImGui::RadioButton("Is Sensor Off", &isSensorSelection, 0);
+						ImGui::RadioButton("Is Sensor On", &isSensorSelection, 1);
+						game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [isSensorSelection](auto &component) { component.isSensor_ = isSensorSelection; });
 						size_t fieldIdx = idx * 100;
 						bool velocityOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Velocity");
 						if (velocityOpened)
@@ -722,6 +816,11 @@ void D3E::Editor::DrawInspector()
 							}
 							ImGui::TreePop();
 						}
+						JPH::EMotionType motionType = game_->GetRegistry().get<PhysicsComponent>(currentEntity).motionType_;
+						int selectedIdx = static_cast<int>(motionType);
+						ImGui::Combo("Motion Type", &selectedIdx, "Static\0Kinematic\0Dynamic\0\0");
+						game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [selectedIdx](auto& component) {component.motionType_ =
+																		 static_cast<JPH::EMotionType>(selectedIdx);});
 					}
 					else if (componentName == "PhysicsCharacterComponent")
 					{
@@ -952,9 +1051,8 @@ void D3E::Editor::DrawInspector()
 						int castsShadowsSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						LightType lightType = game_->GetRegistry().get<LightComponent>(currentEntity).lightType;
-						const char* const types[] = {"Directional", "Point", "Spot"};
 						int selectedIdx = lightType;
-						ImGui::ListBox("Light Type", &selectedIdx, types, IM_ARRAYSIZE(types));
+						ImGui::Combo("Light Type", &selectedIdx, "Directional\0Point\0Spot\0\0");
 						game_->GetRegistry().patch<LightComponent>(currentEntity, [selectedIdx](auto& component) {component.lightType =
 									static_cast<LightType>(selectedIdx);});
 						size_t fieldIdx = idx * 100;
@@ -1219,6 +1317,41 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 							ImGui::TreePop();
+						}
+						input_text_flags = ImGuiInputTextFlags_ReadOnly;
+						String soundUuid = game_->GetRegistry().get<SoundComponent>(currentEntity).soundUuid;
+						std::string soundName;
+						if (MeshFactory::IsMeshUuidValid(soundUuid))
+						{
+							soundName = AssetManager::GetAssetName(soundUuid).c_str();
+						}
+						ImGui::InputText("Sound Asset", &soundName, input_text_flags);
+						if(ImGui::BeginDragDropTarget())
+						{
+							auto payload = ImGui::AcceptDragDropPayload("asset");
+							if (payload)
+							{
+								auto payloadAsset = (const char*)payload->Data;
+								std::ifstream f(payloadAsset);
+								json j = json::parse(f);
+								f.close();
+								if (j.contains("uuid"))
+								{
+									std::string selectedUuid = j.at("uuid");
+									if (SoundEngine::GetInstance().IsSoundUuidValid(selectedUuid.c_str()))
+									{
+										game_->GetRegistry().patch<SoundComponent>(
+											currentEntity,
+											[selectedUuid](auto& component) {
+												component.soundUuid =
+													selectedUuid.c_str();
+											});
+
+
+									}
+								}
+							}
+							ImGui::EndDragDropTarget();
 						}
 					}
 					else if (componentName == "ScriptComponent")

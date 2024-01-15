@@ -25,7 +25,7 @@ namespace D3E
 		else
 		{
 			heightMap.reserve(1);
-			heightMap[0] = 0.0f;
+			heightMap.insert(heightMap.begin(), 0.0f);
 		}
 
 		j = json{{"type", "component"},
