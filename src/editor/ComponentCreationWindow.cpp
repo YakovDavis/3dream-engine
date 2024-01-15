@@ -128,6 +128,7 @@ void D3E::ComponentCreationWindow::Draw()
 			int selectedIdx = static_cast<int>(colliderType);
 			ImGui::Combo("Collider Type", &selectedIdx, "SphereCollider\0BoxCollider\0CapsuleCollider\0TaperedCapsuleCollider\0CylinderCollider\0\0");
 			physicsComponent.colliderType_ = static_cast<ColliderType>(selectedIdx);
+
 			size_t idx = 0;
 			bool colliderParamsOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Collider Params");
 			if (colliderParamsOpened)
@@ -172,6 +173,81 @@ void D3E::ComponentCreationWindow::Draw()
 				ImGui::TreePop();
 			}
 			++idx;
+			switch (selectedIdx)
+			{
+				case 0:
+				{
+					if (physicsComponent.colliderParams_.x <= 0.0f)
+					{
+						physicsComponent.colliderParams_.x = 1.0f;
+					}
+					break;
+				}
+				case 1:
+				{
+					if (physicsComponent.colliderParams_.x <= 0.0f)
+					{
+						physicsComponent.colliderParams_.x = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.y <= 0.0f)
+					{
+						physicsComponent.colliderParams_.y = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.z <= 0.0f)
+					{
+						physicsComponent.colliderParams_.z = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.w < 0.0f)
+					{
+						physicsComponent.colliderParams_.w = 0.0f;
+					}
+					break;
+				}
+				case 2:
+				{
+					if (physicsComponent.colliderParams_.x <= 0.0f)
+					{
+						physicsComponent.colliderParams_.x = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.y <= 0.0f)
+					{
+						physicsComponent.colliderParams_.y = 1.0f;
+					}
+					break;
+				}
+				case 3:
+				{
+					if (physicsComponent.colliderParams_.x <= 0.0f)
+					{
+						physicsComponent.colliderParams_.x = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.y <= 0.0f)
+					{
+						physicsComponent.colliderParams_.y = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.z <= 0.0f)
+					{
+						physicsComponent.colliderParams_.z = 1.0f;
+					}
+					break;
+				}
+				case 4:
+				{
+					if (physicsComponent.colliderParams_.x <= 0.0f)
+					{
+						physicsComponent.colliderParams_.x = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.y <= 0.0f)
+					{
+						physicsComponent.colliderParams_.y = 1.0f;
+					}
+					if (physicsComponent.colliderParams_.z < 0.0f)
+					{
+						physicsComponent.colliderParams_.z = 0.0f;
+					}
+					break;
+				}
+			}
 
 			std::string massInput = std::to_string(physicsComponent.mass_);
 			if (ImGui::InputText("Mass", &massInput, input_text_flags))
@@ -499,6 +575,82 @@ void D3E::ComponentCreationWindow::Draw()
 				ImGui::TreePop();
 			}
 			++idx;
+			switch (selectedIdx)
+			{
+				case 0:
+				{
+					if (characterComponent.colliderParams_.x <= 0.0f)
+					{
+						characterComponent.colliderParams_.x = 1.0f;
+					}
+					break;
+				}
+				case 1:
+				{
+					if (characterComponent.colliderParams_.x <= 0.0f)
+					{
+						characterComponent.colliderParams_.x = 1.0f;
+					}
+					if (characterComponent.colliderParams_.y <= 0.0f)
+					{
+						characterComponent.colliderParams_.y = 1.0f;
+					}
+					if (characterComponent.colliderParams_.z <= 0.0f)
+					{
+						characterComponent.colliderParams_.z = 1.0f;
+					}
+					if (characterComponent.colliderParams_.w < 0.0f)
+					{
+						characterComponent.colliderParams_.w = 0.0f;
+					}
+					break;
+				}
+				case 2:
+				{
+					if (characterComponent.colliderParams_.x <= 0.0f)
+					{
+						characterComponent.colliderParams_.x = 1.0f;
+					}
+					if (characterComponent.colliderParams_.y <= 0.0f)
+					{
+						characterComponent.colliderParams_.y = 1.0f;
+					}
+					break;
+				}
+				case 3:
+				{
+					if (characterComponent.colliderParams_.x <= 0.0f)
+					{
+						characterComponent.colliderParams_.x = 1.0f;
+					}
+					if (characterComponent.colliderParams_.y <= 0.0f)
+					{
+						characterComponent.colliderParams_.y = 1.0f;
+					}
+					if (characterComponent.colliderParams_.z <= 0.0f)
+					{
+						characterComponent.colliderParams_.z = 1.0f;
+					}
+					break;
+				}
+				case 4:
+				{
+					if (characterComponent.colliderParams_.x <= 0.0f)
+					{
+						characterComponent.colliderParams_.x = 1.0f;
+					}
+					if (characterComponent.colliderParams_.y <= 0.0f)
+					{
+						characterComponent.colliderParams_.y = 1.0f;
+					}
+					if (characterComponent.colliderParams_.z < 0.0f)
+					{
+						characterComponent.colliderParams_.z = 0.0f;
+					}
+					break;
+				}
+			}
+
 			std::string massInput = std::to_string(characterComponent.mass_);
 			if (ImGui::InputText("Mass", &massInput, input_text_flags))
 			{
@@ -621,6 +773,470 @@ void D3E::ComponentCreationWindow::Draw()
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
 				characterComponent = {};
+				open = false;
+			}
+			ImGui::End();
+			break;
+		}
+		case 3:
+		{
+			ImGui::Begin("Create CameraComponent", nullptr, flags);
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+			{
+				ImGui::SetWindowFocus();
+			}
+
+			float orthographicWidth, orthographicHeight, fov, aspectRatio, nearPlane, farPlane;
+			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+			size_t idx = 0;
+			bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Offset");
+			if (offsetOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(cameraComponent.offset.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						cameraComponent.offset.x = x;
+					}
+				}
+				std::string yInput = std::to_string(cameraComponent.offset.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						cameraComponent.offset.y = y;
+					}
+				}
+				std::string zInput = std::to_string(cameraComponent.offset.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						cameraComponent.offset.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
+			bool upOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Up");
+			if (upOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(cameraComponent.up.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						cameraComponent.up.x = x;
+					}
+				}
+				std::string yInput = std::to_string(cameraComponent.up.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						cameraComponent.up.y = y;
+					}
+				}
+				std::string zInput = std::to_string(cameraComponent.up.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						cameraComponent.up.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
+			bool forwardOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Forward");
+			if (forwardOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(cameraComponent.forward.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						cameraComponent.forward.x = x;
+					}
+				}
+				std::string yInput = std::to_string(cameraComponent.forward.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						cameraComponent.forward.y = y;
+					}
+				}
+				std::string zInput = std::to_string(cameraComponent.forward.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						cameraComponent.forward.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+
+			int isOrthographic = cameraComponent.isOrthographic;
+			ImGui::RadioButton("Is Orthographic Off", &isOrthographic, 0);
+			ImGui::RadioButton("Is Orthographic On", &isOrthographic, 1);
+			cameraComponent.isOrthographic = isOrthographic;
+
+			std::string orthographicWidthInput = std::to_string(cameraComponent.orthographicWidth);
+			if (ImGui::InputText("Orthographic Width", &orthographicWidthInput, input_text_flags))
+			{
+				if (!(orthographicWidthInput.empty()))
+				{
+					orthographicWidth = std::stof(orthographicWidthInput);
+					if (orthographicWidth > 0.0f)
+					{
+						cameraComponent.orthographicWidth = orthographicWidth;
+					}
+				}
+			}
+
+			std::string orthographicHeightInput = std::to_string(cameraComponent.orthographicHeight);
+			if (ImGui::InputText("Orthographic Height", &orthographicHeightInput, input_text_flags))
+			{
+				if (!(orthographicHeightInput.empty()))
+				{
+					orthographicHeight = std::stof(orthographicHeightInput);
+					if (orthographicHeight > 0.0f)
+					{
+						cameraComponent.orthographicHeight = orthographicHeight;
+					}
+				}
+			}
+
+			std::string fovInput = std::to_string(cameraComponent.fov);
+			if (ImGui::InputText("FOV", &fovInput, input_text_flags))
+			{
+				if (!(fovInput.empty()))
+				{
+					fov = std::stof(fovInput);
+					if (fov > 0.0f)
+					{
+						cameraComponent.fov = fov;
+					}
+				}
+			}
+
+			std::string aspectRatioInput = std::to_string(cameraComponent.aspectRatio);
+			if (ImGui::InputText("Aspect Ratio", &aspectRatioInput, input_text_flags))
+			{
+				if (!(aspectRatioInput.empty()))
+				{
+					aspectRatio = std::stof(aspectRatioInput);
+					if (aspectRatio > 0.0f)
+					{
+						cameraComponent.aspectRatio = aspectRatio;
+					}
+				}
+			}
+
+			std::string nearPlaneInput = std::to_string(cameraComponent.nearPlane);
+			if (ImGui::InputText("Near Plane", &nearPlaneInput, input_text_flags))
+			{
+				if (!(nearPlaneInput.empty()))
+				{
+					nearPlane = std::stof(nearPlaneInput);
+					if (nearPlane > 0.0f)
+					{
+						cameraComponent.nearPlane = nearPlane;
+					}
+				}
+			}
+
+			std::string farPlaneInput = std::to_string(cameraComponent.farPlane);
+			if (ImGui::InputText("Far Plane", &farPlaneInput, input_text_flags))
+			{
+				if (!(farPlaneInput.empty()))
+				{
+					farPlane = std::stof(farPlaneInput);
+					if (farPlane > 0.0f)
+					{
+						cameraComponent.farPlane = farPlane;
+					}
+				}
+			}
+
+			ImGui::Separator();
+			ImGui::Button("Create", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				game_->GetRegistry().emplace<CameraComponent>(currentEntity, cameraComponent);
+				cameraComponent = {};
+				open = false;
+			}
+			ImGui::SameLine();
+			ImGui::Button("Cancel", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				cameraComponent = {};
+				open = false;
+			}
+			ImGui::End();
+			break;
+		}
+		case 4:
+		{
+			ImGui::Begin("Create LightComponent", nullptr, flags);
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+			{
+				ImGui::SetWindowFocus();
+			}
+
+			float intensity;
+			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+			size_t idx = 0;
+			LightType lightType = lightComponent.lightType;
+			int selectedIdx = lightType;
+			ImGui::Combo("Light Type", &selectedIdx, "Directional\0Point\0Spot\0\0");
+			lightComponent.lightType = static_cast<LightType>(selectedIdx);
+			bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Offset");
+			if (offsetOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(lightComponent.offset.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						lightComponent.offset.x = x;
+					}
+				}
+				std::string yInput = std::to_string(lightComponent.offset.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						lightComponent.offset.y = y;
+					}
+				}
+				std::string zInput = std::to_string(lightComponent.offset.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						lightComponent.offset.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
+			bool directionOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Direction");
+			if (directionOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(lightComponent.direction.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						lightComponent.direction.x = x;
+					}
+				}
+				std::string yInput = std::to_string(lightComponent.direction.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						lightComponent.direction.y = y;
+					}
+				}
+				std::string zInput = std::to_string(lightComponent.direction.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						lightComponent.direction.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
+			bool colorOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Color");
+			if (colorOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(lightComponent.color.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						if (x >= 0.0f && x <= 1.0f)
+						{
+							lightComponent.color.x = x;
+						}
+					}
+				}
+				std::string yInput = std::to_string(lightComponent.color.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						if (y >= 0.0f && y <= 1.0f)
+						{
+							lightComponent.color.y = y;
+						}
+					}
+				}
+				std::string zInput = std::to_string(lightComponent.color.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						if (z >= 0.0f && z <= 1.0f)
+						{
+							lightComponent.color.z = z;
+						}
+					}
+				}
+				ImGui::TreePop();
+			}
+			std::string intensityInput = std::to_string(lightComponent.intensity);
+			if (ImGui::InputText("Intensity", &intensityInput, input_text_flags))
+			{
+				if (!(intensityInput.empty()))
+				{
+					intensity = std::stof(intensityInput);
+					if (intensity >= 0.0f)
+					{
+						lightComponent.intensity = intensity;
+					}
+				}
+			}
+			int castsShadows = lightComponent.castsShadows;
+			ImGui::RadioButton("Casts Shadows Off", &castsShadows, 0);
+			ImGui::RadioButton("Casts Shadows On", &castsShadows, 1);
+			lightComponent.castsShadows = castsShadows;
+
+			ImGui::Separator();
+			ImGui::Button("Create", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				game_->GetRegistry().emplace<LightComponent>(currentEntity, lightComponent);
+				lightComponent = {};
+				open = false;
+			}
+			ImGui::SameLine();
+			ImGui::Button("Cancel", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				lightComponent = {};
+				open = false;
+			}
+			ImGui::End();
+			break;
+		}
+		case 6:
+		{
+			ImGui::Begin("Create SoundComponent", nullptr, flags);
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+			{
+				ImGui::SetWindowFocus();
+			}
+
+			int is3D, isLooping, isStreaming;
+			float volume;
+			is3D = soundComponent.is3D;
+			ImGui::RadioButton("Is 3D Off", &is3D, 0);
+			ImGui::RadioButton("Is 3D On", &is3D, 1);
+			soundComponent.is3D = is3D;
+			isLooping = soundComponent.isLooping;
+			ImGui::RadioButton("Is Looping Off", &isLooping, 0);
+			ImGui::RadioButton("Is Looping On", &isLooping, 1);
+			soundComponent.isLooping = isLooping;
+			isStreaming = soundComponent.isStreaming;
+			ImGui::RadioButton("Is Streaming Off", &isStreaming, 0);
+			ImGui::RadioButton("Is Streaming On", &isStreaming, 1);
+			soundComponent.isStreaming = isStreaming;
+			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+			std::string volumeInput = std::to_string(soundComponent.volume);
+			if (ImGui::InputText("Volume", &volumeInput, input_text_flags))
+			{
+				if (!(volumeInput.empty()))
+				{
+					volume = std::stof(volumeInput);
+					if (volume >= 0.0f)
+					{
+						soundComponent.volume = volume;
+					}
+				}
+			}
+			size_t idx = 0;
+			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+			bool locationOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Location");
+			if (locationOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(soundComponent.location.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						soundComponent.location.x = x;
+					}
+				}
+				std::string yInput = std::to_string(soundComponent.location.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						soundComponent.location.y = y;
+					}
+				}
+				std::string zInput = std::to_string(soundComponent.location.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						soundComponent.location.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			ImGui::Separator();
+			ImGui::Button("Create", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				game_->GetRegistry().emplace<SoundComponent>(currentEntity, soundComponent);
+				soundComponent = {};
+				open = false;
+			}
+			ImGui::SameLine();
+			ImGui::Button("Cancel", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				soundComponent = {};
 				open = false;
 			}
 			ImGui::End();

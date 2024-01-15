@@ -25,7 +25,7 @@ namespace D3E
 		bool isLMBActivated_ = true;
 		JPH::BodyID bodyID_;
 		JPH::Ref<JPH::Shape> collider_;
-		ColliderType colliderType_;
+		ColliderType colliderType_ = CapsuleCollider;
 		DirectX::SimpleMath::Vector4 colliderParams_;
 		float mass_ = 0.0f;
 		float friction_ = 0.2f;

@@ -23,6 +23,9 @@ namespace D3E
 		FPSControllerComponent fpsControllerComponent;
 		PhysicsComponent physicsComponent;
 		PhysicsCharacterComponent characterComponent;
+		CameraComponent cameraComponent;
+		LightComponent lightComponent;
+		SoundComponent soundComponent;
 
 	public:
 		void Draw();
