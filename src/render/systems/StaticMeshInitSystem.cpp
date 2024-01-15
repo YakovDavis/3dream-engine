@@ -28,17 +28,22 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 						return;
 					}
 
-					auto constantBufferDesc = nvrhi::BufferDesc()
-		                                          .setByteSize(sizeof(PerObjectConstBuffer))
-		                                          .setIsConstantBuffer(true)
-		                                          .setIsVolatile(false)
-		                                          .setMaxVersions(16)
-		                                          .setKeepInitialState(true);
-
-					smc.constantBuffer = device->createBuffer(constantBufferDesc);
+					if (!smc.constantBuffer)
+					{
+						auto constantBufferDesc =
+							nvrhi::BufferDesc()
+								.setByteSize(sizeof(PerObjectConstBuffer))
+								.setIsConstantBuffer(true)
+								.setIsVolatile(false)
+								.setMaxVersions(16)
+								.setKeepInitialState(true);
+						smc.constantBuffer =
+							device->createBuffer(constantBufferDesc);
+					}
 
 					nvrhi::BindingSetDesc bindingSetDescV = {};
 					bindingSetDescV.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, smc.constantBuffer));
+					ShaderFactory::RemoveBindingSetV(info.id);
 					ShaderFactory::AddBindingSetV(info.id, bindingSetDescV, "GBufferV");
 
 					nvrhi::BindingSetDesc bindingSetDescP = {};
@@ -51,6 +56,7 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(5, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(1, TextureFactory::GetSampler("Base")));
+					ShaderFactory::RemoveBindingSetP(info.id);
 					ShaderFactory::AddBindingSetP(info.id, bindingSetDescP, "GBufferP");
 
 					smc.initialized = true;

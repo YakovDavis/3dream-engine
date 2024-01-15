@@ -370,6 +370,7 @@ void D3E::EditorContentBrowser::Draw()
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
+								editor_->game_->ClearWorld();
 								ComponentFactory::ResolveWorld(metadata);
 							}
 						}

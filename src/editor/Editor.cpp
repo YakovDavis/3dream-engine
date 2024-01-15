@@ -1,35 +1,35 @@
 #include "Editor.h"
 
-#include "D3E/Components/ObjectInfoComponent.h"
-#include "D3E/Components/TransformComponent.h"
+#include "D3E/AssetManager.h"
 #include "D3E/Components/FPSControllerComponent.h"
-#include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/PhysicsCharacterComponent.h"
+#include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
-#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
 #include "ImGuizmo.h"
+#include "SimpleMath.h"
+#include "assetmng/ScriptFactory.h"
 #include "assetmng/TextureFactory.h"
 #include "core/EngineState.h"
+#include "engine/ComponentFactory.h"
 #include "imgui_internal.h"
 #include "input/InputDevice.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "nvrhi/nvrhi.h"
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
-#include "engine/ComponentFactory.h"
-#include "assetmng/ScriptFactory.h"
-#include "misc/cpp/imgui_stdlib.h"
-#include "SimpleMath.h"
+#include "render/systems/StaticMeshInitSystem.h"
 
-#include "D3E/AssetManager.h"
-#include <assetmng/MeshFactory.h>
 #include <assetmng/MaterialFactory.h>
-#include "misc/cpp/imgui_stdlib.h"
+#include <assetmng/MeshFactory.h>
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -1145,7 +1145,11 @@ void D3E::Editor::DrawInspector()
 											[selectedUuid](auto& component) {
 												component.materialUuid =
 													selectedUuid.c_str();
+												component.initialized = false;
+												StaticMeshInitSystem::IsDirty = true;
 											});
+
+
 									}
 								}
 							}
@@ -1335,18 +1339,6 @@ void D3E::Editor::DrawGizmo()
 				  tc.position = pos;
 				  tc.rotation = rot;
 				  tc.scale = scale;
-//				  if (scale.x != 1.0f)
-//				  {
-//					  tc.scale.x = scale.x;
-//				  }
-//				  if (scale.y != 1.0f)
-//				  {
-//					  tc.scale.y = scale.y;
-//				  }
-//				  if (scale.z != 1.0f)
-//				  {
-//					  tc.scale.z = scale.z;
-//				  }
 			  });
 
 	game_->CalculateGizmoTransformsOffsets();
