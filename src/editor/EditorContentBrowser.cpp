@@ -8,6 +8,7 @@
 #include "editor/Editor.h"
 #include "engine/ComponentFactory.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "utils/FilenameUtils.h"
 
 #include <assetmng/MeshMetaData.h>
 #include <assetmng/ScriptMetaData.h>
@@ -183,9 +184,12 @@ void D3E::EditorContentBrowser::Draw()
 
 		for (auto & directoryEntry : std::filesystem::directory_iterator(currentDirectory_))
 		{
+			ImGui::PushID(itemNum++);
+
 			const auto& path = directoryEntry.path();
 			auto relativePath = std::filesystem::relative(path, rootDirectory_);
 			std::string fileNameString = relativePath.filename().string();
+			std::string fileNameStringNoExtension = RemoveExtension(fileNameString);
 			bool renamed = path == renamedItem;
 
 			if (directoryEntry.is_directory())
@@ -309,23 +313,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = scriptMetadata.uuid;
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -338,8 +327,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemoveExtension(fileNameString).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "world")
@@ -354,19 +343,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -377,8 +355,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemoveExtension(fileNameString).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "mesh")
@@ -395,23 +373,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = meshMetaData.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -420,8 +383,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "material")
@@ -438,23 +401,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = material.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -465,8 +413,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "texture2d")
@@ -483,23 +431,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						if (ImGui::IsItemHovered())
 						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
-								{
-									editor_->game_->AssetDeleteDialog(
-										directoryEntry.path().string().c_str());
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_F2))
-								{
-									renamedItem =
-										directoryEntry.path().string();
-								}
-								else
-								{
-									tempUuid_ = texture.uuid.c_str();
-								}
-							}
+							CONTENT_BROWSER_COMMON_ACTIONS
+
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
@@ -509,8 +442,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else if (metadata.at("type") == "sound")
@@ -537,8 +470,8 @@ void D3E::EditorContentBrowser::Draw()
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 					else
@@ -559,19 +492,19 @@ void D3E::EditorContentBrowser::Draw()
 									ImGuiMouseButton_Left))
 							{
 								Debug::LogMessage("Double-clicked on Asset");
-								// logic for any other asset except script and
-								// world
+								// logic for any other asset
 							}
 						}
 
 						ImGui::PopStyleColor();
 
-						ImGui::TextWrapped(
-							RemovePath(metadata.at("name")).c_str());
+						ASSET_NAME_DISPLAY
+
 						ImGui::NextColumn();
 					}
 				}
 			}
+			ImGui::PopID();
 		}
 	}
 	ImGui::EndChild();
