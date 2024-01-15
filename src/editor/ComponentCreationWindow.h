@@ -21,6 +21,8 @@ namespace D3E
 		Game* game_;
 		Editor* editor_;
 		FPSControllerComponent fpsControllerComponent;
+		PhysicsComponent physicsComponent;
+		PhysicsCharacterComponent characterComponent;
 
 	public:
 		void Draw();

@@ -381,7 +381,7 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0\0");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0\0");
 	switch (createComponent)
 	{
 		case 0:
@@ -393,6 +393,7 @@ void D3E::Editor::DrawInspector()
 			break;
 		case 5:
 		case 7:
+		case 8:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = false;
 			break;
@@ -745,9 +746,8 @@ void D3E::Editor::DrawInspector()
 							ImGui::TreePop();
 						}
 						JPH::EMotionType motionType = game_->GetRegistry().get<PhysicsComponent>(currentEntity).motionType_;
-						const char* const types[] = {"Static", "Kinematic", "Dynamic"};
 						int selectedIdx = static_cast<int>(motionType);
-						ImGui::ListBox("Motion Type", &selectedIdx, types, IM_ARRAYSIZE(types));
+						ImGui::Combo("Motion Type", &selectedIdx, "Static\0Kinematic\0Dynamic\0\0");
 						game_->GetRegistry().patch<PhysicsComponent>(currentEntity, [selectedIdx](auto& component) {component.motionType_ =
 																		 static_cast<JPH::EMotionType>(selectedIdx);});
 					}
@@ -980,9 +980,8 @@ void D3E::Editor::DrawInspector()
 						int castsShadowsSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						LightType lightType = game_->GetRegistry().get<LightComponent>(currentEntity).lightType;
-						const char* const types[] = {"Directional", "Point", "Spot"};
 						int selectedIdx = lightType;
-						ImGui::ListBox("Light Type", &selectedIdx, types, IM_ARRAYSIZE(types));
+						ImGui::Combo("Light Type", &selectedIdx, "Directional\0Point\0Spot\0\0");
 						game_->GetRegistry().patch<LightComponent>(currentEntity, [selectedIdx](auto& component) {component.lightType =
 									static_cast<LightType>(selectedIdx);});
 						size_t fieldIdx = idx * 100;

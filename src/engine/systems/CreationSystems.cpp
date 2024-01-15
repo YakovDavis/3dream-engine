@@ -7,6 +7,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -350,4 +351,10 @@ void D3E::CreationSystems::CreateDefaultSoundListenerComponent(entt::registry& r
 {
 	SoundListenerComponent component = {};
 	registry.emplace<SoundListenerComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity)
+{
+	ScriptComponent component(entity, EmptyIdString);
+	registry.emplace<ScriptComponent>(entity, component);
 }

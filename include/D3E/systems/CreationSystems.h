@@ -32,5 +32,6 @@ namespace D3E
 		static void CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity);
 		static void CreateDefaultSoundComponent(entt::registry& registry, entt::entity& entity);
 		static void CreateDefaultSoundListenerComponent(entt::registry& registry, entt::entity& entity);
+		static void CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity);
 	};
 }
