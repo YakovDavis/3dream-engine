@@ -17,6 +17,8 @@ eastl::unordered_map<D3E::String, nvrhi::SamplerHandle> D3E::TextureFactory::sam
 
 void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
+	UnloadTexture(metaData.uuid.c_str());
+
 	Texture texture;
 
 	texture.MetaData = metaData;
@@ -107,4 +109,24 @@ nvrhi::SamplerHandle& D3E::TextureFactory::AddSampler(const String& name, nvrhi:
 bool D3E::TextureFactory::IsTextureUuidValid(const D3E::String& uuid)
 {
 	return textures_.find(uuid) != textures_.end();
+}
+
+void D3E::TextureFactory::UnloadTexture(const D3E::String& uuid)
+{
+	if (textures_.find(uuid) == textures_.end())
+	{
+		return;
+	}
+	textures_[uuid].Handle.Reset();
+	textures_.erase(uuid);
+}
+
+void D3E::TextureFactory::RenameTexture(const D3E::String& uuid,
+                                        const D3E::String& name)
+{
+	if (textures_.find(uuid) == textures_.end())
+	{
+		return;
+	}
+	textures_[uuid].MetaData.name = name.c_str();
 }

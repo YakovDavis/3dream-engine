@@ -184,4 +184,6 @@ void D3E::MaterialEditor::SaveMaterial()
 	std::ofstream f(filename);
 	f << std::setw(4) << j << std::endl;
 	f.close();
+
+	AssetManager::Get().LoadMaterial(j);
 }

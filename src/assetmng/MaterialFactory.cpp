@@ -14,7 +14,14 @@ void D3E::MaterialFactory::Initialize(D3E::Game* game)
 
 void D3E::MaterialFactory::AddMaterial(const D3E::Material& m)
 {
-	materials_.insert({m.uuid, m});
+	if (materials_.find(m.uuid) == materials_.end())
+	{
+		materials_.insert({m.uuid, m});
+	}
+	else
+	{
+		materials_[m.uuid] = m;
+	}
 }
 
 const D3E::Material& D3E::MaterialFactory::GetMaterial(const D3E::String& uuid)
@@ -30,4 +37,25 @@ const D3E::Material& D3E::MaterialFactory::GetMaterial(const D3E::String& uuid)
 bool D3E::MaterialFactory::IsMaterialUuidValid(const D3E::String& uuid)
 {
 	return materials_.find(uuid) != materials_.end();
+}
+
+void D3E::MaterialFactory::RemoveMaterial(const D3E::String& uuid)
+{
+	if (materials_.find(uuid) == materials_.end())
+	{
+		return;
+	}
+
+	materials_.erase(uuid);
+}
+
+void D3E::MaterialFactory::RenameMaterial(const D3E::String& uuid,
+                                          const D3E::String& name)
+{
+	if (materials_.find(uuid) == materials_.end())
+	{
+		return;
+	}
+
+	materials_[uuid].name = name;
 }

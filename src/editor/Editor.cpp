@@ -418,7 +418,7 @@ void D3E::Editor::DrawHierarchy()
 					std::string selectedUuid = j.at("uuid");
 					if (AssetManager::IsPrefabUuidValid(selectedUuid.c_str()))
 					{
-						game_->CreateEntityFromPrefab(AssetManager::GetPrefabFilePath(selectedUuid.c_str()));
+						ComponentFactory::ResolveEntity(AssetManager::GetPrefab(selectedUuid.c_str()));
 					}
 				}
 			}

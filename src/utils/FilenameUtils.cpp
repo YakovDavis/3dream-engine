@@ -1,6 +1,10 @@
 #include "FilenameUtils.h"
-#include <fstream>
+
+#include "D3E/AssetManager.h"
+#include "assetmng/MaterialFactory.h"
+#include "assetmng/TextureFactory.h"
 #include "json.hpp"
+#include <fstream>
 
 std::string D3E::FilenameUtils::FilePathToMetaFilename(const std::string& filePath)
 {
@@ -36,6 +40,24 @@ bool D3E::FilenameUtils::RenameAsset(std::filesystem::path& metaFilePath,
 		std::string assetExtension = assetFile.extension().string();
 		rename(assetFile, assetFile.parent_path() / std::filesystem::path(newName + assetExtension));
 		j.at("filename") = newName + assetExtension;
+	}
+	if (j.contains("name"))
+	{
+		j.at("name") = newName;
+	}
+
+	if (j.contains("type") && j.contains("uuid"))
+	{
+		AssetManager::InsertOrReplaceAssetName(std::string(j.at("uuid")).c_str(), newName.c_str());
+
+		if (j.at("type") == "texture2d")
+		{
+			TextureFactory::RenameTexture(std::string(j.at("uuid")).c_str(), newName.c_str());
+		}
+		if (j.at("type") == "material")
+		{
+			MaterialFactory::RenameMaterial(std::string(j.at("uuid")).c_str(), newName.c_str());
+		}
 	}
 	rename(metaFilePath, metaFilePath.parent_path() / std::filesystem::path(newName + ".meta"));
 	metaFilePath.replace_filename(newName + ".meta");

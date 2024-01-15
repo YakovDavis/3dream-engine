@@ -40,6 +40,8 @@ namespace D3E
 
 		static nvrhi::TextureHandle GetTextureHandle(const String& uuid);
 		static void LoadTexture(Texture2DMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+		static void UnloadTexture(const String& uuid);
+		static void RenameTexture(const String& uuid, const String& name);
 
 		static nvrhi::SamplerHandle& GetSampler(const String& name);
 		static nvrhi::SamplerHandle& AddSampler(const String& name, nvrhi::IDevice* device, const nvrhi::SamplerDesc& desc);
