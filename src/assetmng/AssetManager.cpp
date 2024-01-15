@@ -28,7 +28,7 @@ D3E::AssetManager D3E::AssetManager::instance_ = {};
 
 eastl::unordered_map<D3E::String, D3E::String> D3E::AssetManager::assetMetaData_ = {};
 
-eastl::unordered_map<D3E::String, std::string> D3E::AssetManager::prefabsMap_ = {};
+eastl::unordered_map<D3E::String, json> D3E::AssetManager::prefabsMap_ = {};
 
 D3E::AssetManager& D3E::AssetManager::Get()
 {
@@ -67,59 +67,37 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 
 			if (metadata.at("type") == "texture2d")
 			{
-				Texture2DMetaData asset;
-				metadata.get_to(asset);
-				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				TextureFactory::LoadTexture(asset, folder.c_str(), false, device, commandList);
-
+				LoadTexture(metadata, folder, device, commandList);
 				continue;
 			}
 
 			if (metadata.at("type") == "mesh")
 			{
-				MeshMetaData asset;
-				metadata.get_to(asset);
-				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				MeshFactory::LoadMesh(asset, folder.c_str(), false, device, commandList);
-
+				LoadMesh(metadata, folder, device, commandList);
 				continue;
 			}
 
 			if (metadata.at("type") == "script")
 			{
-				ScriptMetaData asset;
-				metadata.get_to(asset);
-				assetMetaData_.insert(
-					{String(asset.uuid.c_str()), String(asset.filename.c_str())});
-				ScriptFactory::LoadScript(asset, folder.c_str());
-
+				LoadScript(metadata, folder);
 				continue;
 			}
 
 			if (metadata.at("type") == "material")
 			{
-				Material asset;
-				metadata.get_to(asset);
-				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				MaterialFactory::AddMaterial(asset);
-
+				LoadMaterial(metadata);
 				continue;
 			}
 
 			if (metadata.at("type") == "sound")
 			{
-				SoundMetaData asset;
-				metadata.get_to(asset);
-				assetMetaData_.insert({String(asset.uuid.c_str()), String(asset.name.c_str())});
-				SoundEngine::GetInstance().LoadSound(asset, folder.c_str());
-
+				LoadSound(metadata, folder);
 				continue;
 			}
 
 			if (metadata.at("type") == "entity")
 			{
-				prefabsMap_.insert({std::string(metadata.at("uuid")).c_str(), entry.path().string()});
-
+				LoadPrefab(metadata, entry.path().string());
 				continue;
 			}
 		}
@@ -136,6 +114,7 @@ void D3E::AssetManager::CreateTexture(const D3E::String& name,
 	asset.filename = std::filesystem::path(filename.c_str()).filename().string();
 	asset.name = name.c_str();
 
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
 	TextureFactory::LoadTexture(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
 
 	json j(asset);
@@ -154,6 +133,7 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 	asset.filename = std::filesystem::path(filename.c_str()).filename().string();
 	asset.name = name.c_str();
 
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
 	MeshFactory::LoadMesh(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
 
 	json j(asset);
@@ -167,6 +147,7 @@ void D3E::AssetManager::CreateMaterial(D3E::Material& material,
 {
 	material.uuid = uuidGenerator.getUUID().str().c_str();
 
+	InsertOrReplaceAssetName(material.uuid.c_str(), material.name.c_str());
 	MaterialFactory::AddMaterial(material);
 
 	json j(material);
@@ -184,6 +165,7 @@ void D3E::AssetManager::CreateSound(const D3E::String& name,
 	asset.filename = filename.c_str();
 	asset.name = name.c_str();
 
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
 	SoundEngine::GetInstance().LoadSound(asset, std::filesystem::path(filename.c_str()).parent_path().string());
 
 	json j(asset);
@@ -232,9 +214,40 @@ void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
 	json metadata = json::parse(f);
 	f.close();
 
+	if (metadata.contains("type") && metadata.contains("uuid"))
+	{
+		if (metadata.at("type") == "texture2d")
+		{
+			TextureFactory::UnloadTexture(std::string(metadata.at("uuid")).c_str());
+		}
+		if (metadata.at("type") == "mesh")
+		{
+			MeshFactory::UnloadMesh(std::string(metadata.at("uuid")).c_str());
+		}
+		if (metadata.at("type") == "script")
+		{
+			// TODO
+		}
+		if (metadata.at("type") == "material")
+		{
+			MaterialFactory::RemoveMaterial(std::string(metadata.at("uuid")).c_str());
+		}
+		if (metadata.at("type") == "sound")
+		{
+			SoundEngine::GetInstance().UnloadSound(std::string(metadata.at("uuid")).c_str());
+		}
+		if (metadata.at("type") == "entity")
+		{
+			if (prefabsMap_.find(std::string(metadata.at("uuid")).c_str()) != prefabsMap_.end())
+			{
+				prefabsMap_.erase(std::string(metadata.at("uuid")).c_str());
+			}
+		}
+	}
+
 	if (metadata.contains("filename"))
 	{
-		std::filesystem::remove(metadata.at("filename"));
+		std::filesystem::remove(FilenameUtils::MetaFilenameToFilePath(metadata.at("filename"), std::filesystem::path(filename.c_str()).parent_path().string()));
 	}
 
 	std::filesystem::remove(filename.c_str());
@@ -266,7 +279,7 @@ bool D3E::AssetManager::IsPrefabUuidValid(const D3E::String& uuid)
 	return prefabsMap_.find(uuid) != prefabsMap_.end();
 }
 
-std::string D3E::AssetManager::GetPrefabFilePath(const D3E::String& uuid)
+const json& D3E::AssetManager::GetPrefab(const D3E::String& uuid)
 {
 	if (!IsPrefabUuidValid(uuid))
 	{
@@ -280,4 +293,78 @@ void D3E::AssetManager::RegisterExternalAssetName(const D3E::String& uuid,
                                              const D3E::String& name)
 {
 	assetMetaData_.insert({uuid, name});
+}
+
+void D3E::AssetManager::LoadTexture(const json& meta, const D3E::String& folder,
+                                    nvrhi::IDevice* device,
+                                    nvrhi::ICommandList* commandList)
+{
+	Texture2DMetaData asset;
+	meta.get_to(asset);
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
+	TextureFactory::LoadTexture(asset, folder.c_str(), false, device, commandList);
+}
+
+void D3E::AssetManager::LoadMesh(const json& meta, const D3E::String& folder,
+                                 nvrhi::IDevice* device,
+                                 nvrhi::ICommandList* commandList)
+{
+	MeshMetaData asset;
+	meta.get_to(asset);
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
+	MeshFactory::LoadMesh(asset, folder.c_str(), false, device, commandList);
+}
+
+void D3E::AssetManager::LoadMaterial(const json& meta)
+{
+	Material asset;
+	meta.get_to(asset);
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
+	MaterialFactory::AddMaterial(asset);
+}
+
+void D3E::AssetManager::LoadSound(const json& meta, const String& folder)
+{
+	SoundMetaData asset;
+	meta.get_to(asset);
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.name.c_str());
+	SoundEngine::GetInstance().LoadSound(asset, folder.c_str());
+}
+
+void D3E::AssetManager::LoadPrefab(const json& meta, const std::string& path)
+{
+	String uuid = std::string(meta.at("uuid")).c_str();
+	std::ifstream f(path);
+	json j = json::parse(f);
+	f.close();
+	if (prefabsMap_.find(std::string(meta.at("uuid")).c_str()) == prefabsMap_.end())
+	{
+		prefabsMap_.insert(uuid);
+		prefabsMap_[uuid] = j;
+	}
+	else
+	{
+		prefabsMap_[uuid] = j;
+	}
+}
+
+void D3E::AssetManager::LoadScript(const json& meta, const D3E::String& folder)
+{
+	ScriptMetaData asset;
+	meta.get_to(asset);
+	InsertOrReplaceAssetName(asset.uuid.c_str(), asset.filename.c_str());
+	ScriptFactory::LoadScript(asset, folder.c_str());
+}
+
+void D3E::AssetManager::InsertOrReplaceAssetName(const D3E::String& uuid,
+                                                 const D3E::String& name)
+{
+	if (assetMetaData_.find(uuid) == assetMetaData_.end())
+	{
+		assetMetaData_.insert({uuid, name});
+	}
+	else
+	{
+		assetMetaData_[uuid] = name;
+	}
 }

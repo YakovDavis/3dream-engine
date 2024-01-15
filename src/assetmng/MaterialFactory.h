@@ -15,6 +15,8 @@ namespace D3E
 
 		static void Initialize(Game* game);
 		static void AddMaterial(const Material& m);
+		static void RenameMaterial(const String& uuid, const String& name);
+		static void RemoveMaterial(const String& uuid);
 		static const Material& GetMaterial(const String& uuid);
 		static bool IsMaterialUuidValid(const String& uuid);
 

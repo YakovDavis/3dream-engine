@@ -821,17 +821,12 @@ void D3E::Game::OnSaveSelectedToPrefabPressed()
 	json j;
 	ComponentFactory::SerializeEntity(uuidEntityList[*selectedUuids.begin()], j, false);
 	j.emplace("uuid", UuidGenerator::NewGuidStdStr());
-	std::ofstream f(std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta");
+	std::filesystem::path filepath = std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta";
+	std::ofstream f(filepath);
 	f << std::setw(4) << j << std::endl;
 	f.close();
-}
 
-void D3E::Game::CreateEntityFromPrefab(const std::string& filepath)
-{
-	std::ifstream f(filepath);
-	json j = json::parse(f);
-	f.close();
-	ComponentFactory::ResolveEntity(j);
+	AssetManager::Get().LoadPrefab(j, filepath.string());
 }
 
 void D3E::Game::DestroyEntity(const D3E::String& uuid)

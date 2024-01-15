@@ -148,6 +148,8 @@ D3E::MeshData& D3E::MeshFactory::GetMeshData(const String& uuid)
 
 void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
+	UnloadMesh(metaData.uuid.c_str());
+
 	meshData_.insert({ metaData.uuid.c_str(), MeshData() });
 
 	Debug::LogMessage("[MeshFactory] Loading mesh file " + eastl::string(metaData.filename.c_str()));
@@ -241,4 +243,19 @@ void D3E::MeshFactory::ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* me
 bool D3E::MeshFactory::IsMeshUuidValid(const D3E::String& uuid)
 {
 	return meshData_.find(uuid) != meshData_.end();
+}
+
+void D3E::MeshFactory::UnloadMesh(const D3E::String& uuid)
+{
+	if (meshData_.find(uuid) == meshData_.end())
+	{
+		return;
+	}
+	vBuffers_[uuid].Reset();
+	vBuffers_.erase(uuid);
+	vbBindings_.erase(uuid);
+	iBuffers_[uuid].Reset();
+	iBuffers_.erase(uuid);
+	ibBindings_.erase(uuid);
+	meshData_.erase(uuid);
 }

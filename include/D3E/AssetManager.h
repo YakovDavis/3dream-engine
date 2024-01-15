@@ -15,6 +15,18 @@ namespace D3E
 
 		void LoadAssetsInFolder(const String& folder, bool recursive, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
+		void LoadTexture(const json& meta, const String& folder, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+
+		void LoadMesh(const json& meta, const String& folder, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+
+		void LoadMaterial(const json& meta);
+
+		void LoadSound(const json& meta, const String& folder);
+
+		void LoadPrefab(const json& meta, const std::string& path);
+
+		void LoadScript(const json& meta, const String& folder);
+
 		void CreateTexture(const String& name, const String& filename, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		void CreateMesh(const String& name, const String& filename, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
@@ -39,7 +51,9 @@ namespace D3E
 
 		static bool IsPrefabUuidValid(const String& uuid);
 
-		static std::string GetPrefabFilePath(const String& uuid);
+		static const json& D3E::AssetManager::GetPrefab(const String& uuid);
+
+		static void InsertOrReplaceAssetName(const String& uuid, const String& name);
 
 	private:
 		AssetManager() = default;
@@ -48,7 +62,7 @@ namespace D3E
 
 		static eastl::unordered_map<String, String> assetMetaData_;
 
-		static eastl::unordered_map<String, std::string> prefabsMap_;
+		static eastl::unordered_map<String, json> prefabsMap_;
 
 	public:
 		AssetManager(AssetManager const&) = delete;
