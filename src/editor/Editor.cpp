@@ -1,36 +1,37 @@
 #include "Editor.h"
 
-#include "D3E/Components/ObjectInfoComponent.h"
-#include "D3E/Components/TransformComponent.h"
+#include "D3E/AssetManager.h"
 #include "D3E/Components/FPSControllerComponent.h"
-#include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/PhysicsCharacterComponent.h"
+#include "D3E/Components/PhysicsComponent.h"
+#include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
-#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
 #include "ImGuizmo.h"
+#include "SimpleMath.h"
+#include "assetmng/ScriptFactory.h"
 #include "assetmng/TextureFactory.h"
 #include "core/EngineState.h"
+#include "engine/ComponentFactory.h"
 #include "imgui_internal.h"
 #include "input/InputDevice.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "nvrhi/nvrhi.h"
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
-#include "engine/ComponentFactory.h"
-#include "assetmng/ScriptFactory.h"
-#include "misc/cpp/imgui_stdlib.h"
-#include "SimpleMath.h"
+#include "render/systems/StaticMeshInitSystem.h"
 
-#include "D3E/AssetManager.h"
-#include <assetmng/MeshFactory.h>
 #include <assetmng/MaterialFactory.h>
 #include <sound_engine/SoundEngine.h>
 #include "misc/cpp/imgui_stdlib.h"
+#include <assetmng/MeshFactory.h>
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -44,6 +45,30 @@ static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
 static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
 static bool boundSizing = false;
 static bool boundSizingSnap = false;
+
+#define HIERARCHY_DRAG_N_DROP \
+	if (ImGui::BeginDragDropSource()) \
+	{ \
+		std::string entityUuid = node->info.infoComponent->id.c_str(); \
+		ImGui::SetDragDropPayload("hierarchy", &entityUuid[0], entityUuid.size() + sizeof(std::string::value_type)); \
+		ImGui::EndDragDropSource(); \
+	} \
+	if (ImGui::BeginDragDropTarget()) \
+	{ \
+		auto payload = ImGui::AcceptDragDropPayload("hierarchy"); \
+		if (payload) \
+		{ \
+			auto payloadId = (const char*)payload->Data; \
+			entt::entity child; \
+			game_->FindEntityByID(child, payloadId); \
+			auto info = game_->GetRegistry().try_get<ObjectInfoComponent>(child); \
+			if (info) \
+			{ \
+				info->parentId = node->info.infoComponent->id; \
+			} \
+		} \
+		ImGui::EndDragDropTarget(); \
+	}
 
 D3E::Editor::Editor(const nvrhi::DeviceHandle& device,
                     eastl::shared_ptr<Display> display, Game* game)
@@ -121,11 +146,6 @@ void D3E::Editor::EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFrame
 	if (componentWindow_->open)
 	{
 		componentWindow_->Draw();
-	}
-
-	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-	{
-		editorContentBrowser_->ResetTempUuid();
 	}
 
 	ImGui::Render();
@@ -269,6 +289,11 @@ void D3E::Editor::DrawHierarchy()
 {
 	ImGui::Begin("Hierarchy");
 
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && lmbDownLastFrame)
+	{
+		ImGui::SetWindowFocus();
+	}
+
 	static int createItem = 0;
 	ImGui::Combo("##create_combo", &createItem, "Empty\0Plane\0Cube\0Sphere\0Light\0\0");
 	ImGui::SameLine();
@@ -314,6 +339,7 @@ void D3E::Editor::DrawHierarchy()
 		                                ImGuiTreeNodeFlags_OpenOnArrow |
 		                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
 		bool opened = false;
+		ImGui::PushID(node->info.infoComponent->editorId);
 		if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
 		{
 			ImGui::InputText("##renamed_hierarchy", &hierarchyRenamedString);
@@ -329,6 +355,7 @@ void D3E::Editor::DrawHierarchy()
 				(void*)(intptr_t)(node->info.infoComponent->editorId),
 				node_flags, "%s", node->info.infoComponent->name.c_str());
 		}
+		HIERARCHY_DRAG_N_DROP
 		if (ImGui::IsItemClicked())
 		{
 			if (ImGui::IsKeyDown(ImGuiKey_F2))
@@ -336,16 +363,17 @@ void D3E::Editor::DrawHierarchy()
 				hierarchyRenamedItemUuid = node->info.infoComponent->id;
 				hierarchyRenamedString = node->info.infoComponent->name.c_str();
 			}
+			else if (ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+			{
+				game_->DestroyEntity(node->info.infoComponent->id);
+			}
 			else
 			{
 				uuidClicked = node->info.infoComponent->id;
 				hierarchyCarriedUuid = uuidClicked;
 			}
 		}
-		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && lmbDownLastFrame)
-		{
-			// TODO: link new parent
-		}
+		ImGui::PopID();
 		if (opened)
 		{
 			for (auto childNode : node->children)
@@ -355,6 +383,49 @@ void D3E::Editor::DrawHierarchy()
 			ImGui::TreePop();
 		}
 	}
+
+	ImGui::Separator();
+
+	ImGui::PushID(-1);
+	ImGui::Text("---Drag here to import/un-parent---");
+	if (ImGui::BeginDragDropTarget())
+	{
+		{
+			auto payload = ImGui::AcceptDragDropPayload("hierarchy");
+			if (payload)
+			{
+				auto payloadId = (const char*)payload->Data;
+				entt::entity child;
+				game_->FindEntityByID(child, payloadId);
+				auto info =
+					game_->GetRegistry().try_get<ObjectInfoComponent>(child);
+				if (info)
+				{
+					info->parentId = EmptyIdString;
+				}
+			}
+		}
+		{
+			auto payload = ImGui::AcceptDragDropPayload("asset");
+			if (payload)
+			{
+				auto payloadAsset = (const char*)payload->Data;
+				std::ifstream f(payloadAsset);
+				json j = json::parse(f);
+				f.close();
+				if (j.contains("uuid"))
+				{
+					std::string selectedUuid = j.at("uuid");
+					if (AssetManager::IsPrefabUuidValid(selectedUuid.c_str()))
+					{
+						game_->CreateEntityFromPrefab(AssetManager::GetPrefabFilePath(selectedUuid.c_str()));
+					}
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+	ImGui::PopID();
 
 	if (!uuidClicked.empty())
 	{
@@ -1125,13 +1196,25 @@ void D3E::Editor::DrawInspector()
 							meshName = AssetManager::GetAssetName(meshUuid).c_str();
 						}
 						ImGui::InputText("Mesh", &meshName, input_text_flags);
-						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						if(ImGui::BeginDragDropTarget())
 						{
-							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
-							if (!selectedUuid.empty() && MeshFactory::IsMeshUuidValid(selectedUuid.c_str()))
+							auto payload = ImGui::AcceptDragDropPayload("asset");
+							if (payload)
 							{
-								game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.meshUuid = selectedUuid.c_str(); });
+								auto payloadAsset = (const char*)payload->Data;
+								std::ifstream f(payloadAsset);
+								json j = json::parse(f);
+								f.close();
+								if (j.contains("uuid"))
+								{
+									std::string selectedUuid = j.at("uuid");
+									if (MeshFactory::IsMeshUuidValid(selectedUuid.c_str()))
+									{
+										game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.meshUuid = selectedUuid.c_str(); });
+									}
+								}
 							}
+							ImGui::EndDragDropTarget();
 						}
 
 						String materialUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).materialUuid;
@@ -1141,14 +1224,34 @@ void D3E::Editor::DrawInspector()
 							materialName = MaterialFactory::GetMaterial(materialUuid).name.c_str();
 						}
 						ImGui::InputText("Material", &materialName, input_text_flags);
-
-						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						if(ImGui::BeginDragDropTarget())
 						{
-							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
-							if (!selectedUuid.empty() && MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
+							auto payload = ImGui::AcceptDragDropPayload("asset");
+							if (payload)
 							{
-								game_->GetRegistry().patch<StaticMeshComponent>(currentEntity, [selectedUuid](auto &component) { component.materialUuid = selectedUuid.c_str(); });
+								auto payloadAsset = (const char*)payload->Data;
+								std::ifstream f(payloadAsset);
+								json j = json::parse(f);
+								f.close();
+								if (j.contains("uuid"))
+								{
+									std::string selectedUuid = j.at("uuid");
+									if (MaterialFactory::IsMaterialUuidValid(selectedUuid.c_str()))
+									{
+										game_->GetRegistry().patch<StaticMeshComponent>(
+											currentEntity,
+											[selectedUuid](auto& component) {
+												component.materialUuid =
+													selectedUuid.c_str();
+												component.initialized = false;
+												StaticMeshInitSystem::IsDirty = true;
+											});
+
+
+									}
+								}
 							}
+							ImGui::EndDragDropTarget();
 						}
 					}
 					else if (componentName == "SoundComponent")
@@ -1223,13 +1326,32 @@ void D3E::Editor::DrawInspector()
 							soundName = AssetManager::GetAssetName(soundUuid).c_str();
 						}
 						ImGui::InputText("Sound Asset", &soundName, input_text_flags);
-						if (ImGui::IsItemHovered() && lmbDownLastFrame && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						if(ImGui::BeginDragDropTarget())
 						{
-							std::string selectedUuid = editorContentBrowser_->GetTempUuid();
-							if (!selectedUuid.empty() && SoundEngine::GetInstance().IsSoundUuidValid(selectedUuid.c_str()))
+							auto payload = ImGui::AcceptDragDropPayload("asset");
+							if (payload)
 							{
-								game_->GetRegistry().patch<SoundComponent>(currentEntity, [selectedUuid](auto &component) { component.soundUuid = selectedUuid.c_str(); });
+								auto payloadAsset = (const char*)payload->Data;
+								std::ifstream f(payloadAsset);
+								json j = json::parse(f);
+								f.close();
+								if (j.contains("uuid"))
+								{
+									std::string selectedUuid = j.at("uuid");
+									if (SoundEngine::GetInstance().IsSoundUuidValid(selectedUuid.c_str()))
+									{
+										game_->GetRegistry().patch<SoundComponent>(
+											currentEntity,
+											[selectedUuid](auto& component) {
+												component.soundUuid =
+													selectedUuid.c_str();
+											});
+
+
+									}
+								}
 							}
+							ImGui::EndDragDropTarget();
 						}
 					}
 					else if (componentName == "ScriptComponent")
@@ -1250,21 +1372,29 @@ void D3E::Editor::DrawInspector()
 						ImGui::InputText("Script", &scriptName,
 						                 input_text_flags);
 
-						if (ImGui::IsItemHovered() && lmbDownLastFrame &&
-						    !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+						if(ImGui::BeginDragDropTarget())
 						{
-							std::string selectedUuid =
-								editorContentBrowser_->GetTempUuid();
-							if (!selectedUuid.empty() &&
-							    ScriptFactory::IsScriptUuidValid(
-									selectedUuid.c_str()))
+							auto payload = ImGui::AcceptDragDropPayload("asset");
+							if (payload)
 							{
-								game_->GetRegistry().patch<ScriptComponent>(
-									currentEntity,
-									[selectedUuid](auto& sc) {
-										sc.SetScriptUuid(selectedUuid.c_str());
-									});
+								auto payloadAsset = (const char*)payload->Data;
+								std::ifstream f(payloadAsset);
+								json j = json::parse(f);
+								f.close();
+								if (j.contains("uuid"))
+								{
+									std::string selectedUuid = j.at("uuid");
+									if (ScriptFactory::IsScriptUuidValid(selectedUuid.c_str()))
+									{
+										game_->GetRegistry().patch<ScriptComponent>(
+											currentEntity,
+											[selectedUuid](auto& sc) {
+												sc.SetScriptUuid(selectedUuid.c_str());
+											});
+									}
+								}
 							}
+							ImGui::EndDragDropTarget();
 						}
 					}
 
@@ -1353,6 +1483,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 	ImGuiTreeNodeFlags node_flags = (node->info.selected ? ImGuiTreeNodeFlags_Selected : 0) |
 	                                ImGuiTreeNodeFlags_OpenOnArrow |
 	                                (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+	ImGui::PushID(node->info.infoComponent->editorId);
 	bool opened = false;
 	if (node->info.infoComponent->id == hierarchyRenamedItemUuid)
 	{
@@ -1369,6 +1500,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 			(void*)(intptr_t)(node->info.infoComponent->editorId),
 			node_flags, "%s", node->info.infoComponent->name.c_str());
 	}
+	HIERARCHY_DRAG_N_DROP
 	if (ImGui::IsItemClicked())
 	{
 		if (ImGui::IsKeyDown(ImGuiKey_F2))
@@ -1382,10 +1514,7 @@ void D3E::Editor::DrawHierarchyNode(D3E::Editor::HierarchiNode* node,
 			hierarchyCarriedUuid = uuidClicked;
 		}
 	}
-	if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && lmbDownLastFrame)
-	{
-		// TODO: link new parent
-	}
+	ImGui::PopID();
 	if (opened)
 	{
 		for (auto childNode : node->children)

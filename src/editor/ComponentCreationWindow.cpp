@@ -612,7 +612,7 @@ void D3E::ComponentCreationWindow::Draw()
 			ImGui::Button("Create", ImVec2(0, 0));
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				game_->GetRegistry().emplace<PhysicsComponent>(currentEntity, characterComponent);
+				game_->GetRegistry().emplace<PhysicsCharacterComponent>(currentEntity, characterComponent);
 				characterComponent = {};
 				open = false;
 			}

@@ -1,5 +1,6 @@
 #include "DefaultAssetLoader.h"
 
+#include "D3E/AssetManager.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/render/Material.h"
 #include "MaterialFactory.h"
@@ -22,32 +23,38 @@ void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 	MeshFactory::AddMeshFromData(kCubeUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kCubeUUID, "Cube");
 
 	GeometryGenerator::CreateQuad(sm, 0, 0, 1.0f, 1.0f, 0.0f);
 	MeshFactory::AddMeshFromData(kPlaneUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kPlaneUUID, "Plane");
 
 	GeometryGenerator::CreateCylinder(sm, 1.0f, 1.0f,
 	                                  1.0f, 16, 1);
 	MeshFactory::AddMeshFromData(kCyllinderUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kCyllinderUUID, "Cyllinder");
 
 	GeometryGenerator::CreateSphere(sm, 1.0f, 16, 16);
 	MeshFactory::AddMeshFromData(kSphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kSphereUUID, "Sphere");
 
 	GeometryGenerator::CreateGeosphere(sm, 1, 0);
 	MeshFactory::AddMeshFromData(kGeosphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kGeosphereUUID, "Geosphere");
 
 	GeometryGenerator::CreateGrid(sm, 128.0f, 128.0f, 128, 128);
 	MeshFactory::AddMeshFromData(kGridUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kGridUUID, "Grid");
 }
 
 void D3E::DefaultAssetLoader::FillPrimitiveMeshBuffers(

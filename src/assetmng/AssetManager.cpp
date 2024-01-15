@@ -28,6 +28,8 @@ D3E::AssetManager D3E::AssetManager::instance_ = {};
 
 eastl::unordered_map<D3E::String, D3E::String> D3E::AssetManager::assetMetaData_ = {};
 
+eastl::unordered_map<D3E::String, std::string> D3E::AssetManager::prefabsMap_ = {};
+
 D3E::AssetManager& D3E::AssetManager::Get()
 {
 	return instance_;
@@ -113,6 +115,13 @@ void D3E::AssetManager::LoadAssetsInFolder(const String& folder, bool recursive,
 
 				continue;
 			}
+
+			if (metadata.at("type") == "entity")
+			{
+				prefabsMap_.insert({std::string(metadata.at("uuid")).c_str(), entry.path().string()});
+
+				continue;
+			}
 		}
 	}
 }
@@ -142,7 +151,7 @@ void D3E::AssetManager::CreateMesh(const D3E::String& name,
 {
 	MeshMetaData asset;
 	asset.uuid = uuidGenerator.getUUID().str();
-	asset.filename = filename.c_str();
+	asset.filename = std::filesystem::path(filename.c_str()).filename().string();
 	asset.name = name.c_str();
 
 	MeshFactory::LoadMesh(asset, std::filesystem::path(filename.c_str()).parent_path().string(), true, device, commandList);
@@ -233,6 +242,10 @@ void D3E::AssetManager::DeleteAsset(const D3E::String& filename)
 
 D3E::String D3E::AssetManager::GetAssetName(const D3E::String& uuid)
 {
+	if (assetMetaData_.find(uuid) == assetMetaData_.end())
+	{
+		return "";
+	}
 	return assetMetaData_.at(uuid);
 }
 
@@ -246,4 +259,25 @@ void D3E::AssetManager::CreateDefaultMaterial(const std::string& folder)
 	m.metalnessTextureUuid = kBlackTextureUUID;
 	m.normalTextureUuid = kNormalsDefaultTextureUUID;
 	CreateMaterial(m, folder);
+}
+
+bool D3E::AssetManager::IsPrefabUuidValid(const D3E::String& uuid)
+{
+	return prefabsMap_.find(uuid) != prefabsMap_.end();
+}
+
+std::string D3E::AssetManager::GetPrefabFilePath(const D3E::String& uuid)
+{
+	if (!IsPrefabUuidValid(uuid))
+	{
+		return "";
+	}
+
+	return prefabsMap_[uuid];
+}
+
+void D3E::AssetManager::RegisterExternalAssetName(const D3E::String& uuid,
+                                             const D3E::String& name)
+{
+	assetMetaData_.insert({uuid, name});
 }

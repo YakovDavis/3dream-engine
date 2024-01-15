@@ -553,7 +553,12 @@ const eastl::hash_set<D3E::String>& D3E::Game::GetSelectedUuids() const
 
 void D3E::Game::CalculateGizmoTransformsOffsets()
 {
-	Vector3 gizmoPosition;
+	if (selectedUuids.empty())
+	{
+		return;
+	}
+	Vector3 gizmoPosition, gizmoScale;
+	Quaternion gizmoRotation;
 	for (const auto& uuid : selectedUuids)
 	{
 		auto tc = registry_.try_get<TransformComponent>(uuidEntityList[uuid]);
@@ -562,8 +567,12 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 			continue;
 		}
 		gizmoPosition += tc->position;
+		gizmoRotation *= tc->rotation;
+		gizmoScale += tc->scale;
 	}
-	gizmoTransform_ = DirectX::SimpleMath::Matrix::CreateTranslation(gizmoPosition);
+	gizmoRotation.Normalize();
+	gizmoScale /= selectedUuids.size();
+	gizmoTransform_ = DirectX::SimpleMath::Matrix::CreateScale(gizmoScale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(gizmoRotation) * DirectX::SimpleMath::Matrix::CreateTranslation(gizmoPosition);
 	DirectX::SimpleMath::Matrix invGizmoTransform = gizmoTransform_.Invert();
 	gizmoOffsets_.clear();
 	for (const auto& uuid : selectedUuids)
@@ -611,7 +620,9 @@ void D3E::Game::OnEditorPlayPressed()
 		ComponentFactory::SerializeWorld(currentMapSavedState);
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
-		ScriptingEngine::GetInstance().Start();
+		ScriptingEngine::GetInstance().Init(this);
+		ScriptingEngine::GetInstance().InitScripts();
+		ScriptingEngine::GetInstance().StartScripts();
 		isGameRunning_ = true;
 	}
 }
@@ -632,6 +643,7 @@ void D3E::Game::OnEditorStopPressed()
 		isGamePaused_ = false;
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
+		ScriptingEngine::GetInstance().Clear();
 	}
 }
 
@@ -797,4 +809,37 @@ void D3E::Game::OnEditorSaveMapPressed()
 void D3E::Game::SetContentBrowserFilePath(const std::string& s)
 {
 	contentBrowserFilePath_ = s;
+}
+
+void D3E::Game::OnSaveSelectedToPrefabPressed()
+{
+	if (selectedUuids.size() != 1)
+	{
+		return;
+	}
+
+	json j;
+	ComponentFactory::SerializeEntity(uuidEntityList[*selectedUuids.begin()], j, false);
+	j.emplace("uuid", UuidGenerator::NewGuidStdStr());
+	std::ofstream f(std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta");
+	f << std::setw(4) << j << std::endl;
+	f.close();
+}
+
+void D3E::Game::CreateEntityFromPrefab(const std::string& filepath)
+{
+	std::ifstream f(filepath);
+	json j = json::parse(f);
+	f.close();
+	ComponentFactory::ResolveEntity(j);
+}
+
+void D3E::Game::DestroyEntity(const D3E::String& uuid)
+{
+	if (uuidEntityList.find(uuid) == uuidEntityList.end())
+	{
+		return;
+	}
+
+	registry_.destroy(uuidEntityList[uuid]);
 }

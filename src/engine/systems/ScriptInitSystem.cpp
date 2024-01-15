@@ -25,7 +25,7 @@ ScriptInitSystem::~ScriptInitSystem()
 
 void ScriptInitSystem::ScriptCreated(entt::registry& registry, entt::entity e)
 {
-	registry.get<ScriptComponent>(e).Init();
+	// registry.get<ScriptComponent>(e).Init(); TODO(Denis): Get rid of this
 }
 
 void ScriptInitSystem::ScriptDestroyed(entt::registry& registry, entt::entity e)

@@ -27,9 +27,9 @@ namespace D3E
 		JPH::Ref<JPH::Shape> collider_;
 		ColliderType colliderType_;
 		DirectX::SimpleMath::Vector4 colliderParams_;
-		float mass_;
-		float friction_;
-		float restitution_;
+		float mass_ = 0.0f;
+		float friction_ = 0.2f;
+		float restitution_ = 0.0f;
 		bool hasOffsetCenterOfMass_ = false;
 		DirectX::SimpleMath::Vector3 centerOfMassOffset_;
 		DirectX::SimpleMath::Vector3 velocity_;
