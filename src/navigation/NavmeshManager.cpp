@@ -1,11 +1,14 @@
 #include "NavmeshManager.h"
 
+#include "D3E/Components/NavmeshComponent.h"
 #include "D3E/Debug.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
+#include "EASTL/vector.h"
 #include "NavmeshCore.h"
 #include "Recast.h"
 #include "RecastDump.h"
+#include "assetmng/MeshData.h"
 
 #include <cmath>
 #include <format>
@@ -14,7 +17,15 @@ using namespace D3E;
 
 NavmeshManager::NavmeshManager()
 	: cfg_(), heightField_(nullptr), compactHeightField_(nullptr),
-	  contourSet_(nullptr), polyMesh_(nullptr), polyMeshDetail_(nullptr)
+	  contourSet_(nullptr), polyMesh_(nullptr), polyMeshDetail_(nullptr),
+	  meshData_(nullptr)
+{
+}
+
+NavmeshManager::NavmeshManager(MeshData* meshData, const NavmeshConfig& cfg)
+	: meshData_(meshData), cfg_(cfg), heightField_(nullptr),
+	  compactHeightField_(nullptr), contourSet_(nullptr), polyMesh_(nullptr),
+	  polyMeshDetail_(nullptr)
 {
 }
 
@@ -22,12 +33,33 @@ bool NavmeshManager::Build()
 {
 	Clear();
 
-	const float* bmin;
-	const float* bmax;
-	const float* vertices;
-	const int vertexCount = 0;
-	const int* tris;
-	const int ntris = 0;
+	if (!meshData_)
+	{
+		Debug::LogError("[NavmeshManager] : Build(): meshData is null.");
+
+		return false;
+	}
+
+	float* bmin = nullptr;
+	float* bmax = nullptr;
+	eastl::vector<float> vertices;
+	eastl::vector<int> triangles;
+	const int vertexCount = meshData_->points.size();
+	const int triangleCount = meshData_->indices.size() / 3;
+
+	for (auto& v : meshData_->points)
+	{
+		vertices.push_back(v.pos.x);
+		vertices.push_back(v.pos.y);
+		vertices.push_back(v.pos.z);
+	}
+
+	for (auto i : meshData_->indices)
+	{
+		triangles.push_back(i);
+	}
+
+	rcCalcBounds(vertices.data(), meshData_->points.size(), bmin, bmax);
 
 	rcConfig cfg{};
 	cfg.cs = cfg_.cellSize;
@@ -74,7 +106,7 @@ bool NavmeshManager::Build()
 		return false;
 	}
 
-	triAreas_ = new unsigned char[ntris];
+	triAreas_ = new unsigned char[triangleCount];
 
 	if (!triAreas_)
 	{
@@ -83,12 +115,14 @@ bool NavmeshManager::Build()
 		return false;
 	}
 
-	memset(triAreas_, 0, sizeof(unsigned char) * ntris);
-	rcMarkWalkableTriangles(&ctx_, cfg.walkableSlopeAngle, vertices,
-	                        vertexCount, tris, ntris, triAreas_);
+	memset(triAreas_, 0, sizeof(unsigned char) * triangleCount);
+	rcMarkWalkableTriangles(&ctx_, cfg.walkableSlopeAngle, vertices.data(),
+	                        vertexCount, triangles.data(), triangleCount,
+	                        triAreas_);
 
-	r = rcRasterizeTriangles(&ctx_, vertices, vertexCount, tris, triAreas_,
-	                         ntris, *heightField_, cfg.walkableClimb);
+	r = rcRasterizeTriangles(&ctx_, vertices.data(), vertexCount,
+	                         triangles.data(), triAreas_, triangleCount,
+	                         *heightField_, cfg.walkableClimb);
 
 	if (!r)
 	{
@@ -303,13 +337,6 @@ bool NavmeshManager::Build()
 		params.detailVertsCount = polyMeshDetail_->nverts;
 		params.detailTris = polyMeshDetail_->tris;
 		params.detailTriCount = polyMeshDetail_->ntris;
-		params.offMeshConVerts = m_geom->getOffMeshConnectionVerts();
-		params.offMeshConRad = m_geom->getOffMeshConnectionRads();
-		params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
-		params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
-		params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
-		params.offMeshConUserID = m_geom->getOffMeshConnectionId();
-		params.offMeshConCount = m_geom->getOffMeshConnectionCount();
 		params.walkableHeight = cfg_.agentHeight;
 		params.walkableRadius = cfg_.agentRadius;
 		params.walkableClimb = cfg_.agentMaxClimb;
@@ -369,6 +396,8 @@ bool NavmeshManager::Build()
 
 void NavmeshManager::Clear()
 {
+	cfg_ = {};
+
 	rcFreeHeightField(heightField_);
 	rcFreeCompactHeightfield(compactHeightField_);
 	rcFreeContourSet(contourSet_);
@@ -382,4 +411,5 @@ void NavmeshManager::Clear()
 	polyMesh_ = nullptr;
 	polyMeshDetail_ = nullptr;
 	navMesh_ = nullptr;
+	meshData_ = nullptr;
 }

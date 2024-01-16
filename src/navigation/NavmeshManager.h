@@ -6,6 +6,7 @@
 #include "DetourNavMeshQuery.h"
 #include "NavmeshConfig.h"
 #include "Recast.h"
+#include "assetmng/MeshData.h"
 
 namespace D3E
 {
@@ -13,19 +14,20 @@ namespace D3E
 	{
 	public:
 		NavmeshManager();
+		NavmeshManager(MeshData* meshData, const NavmeshConfig& cfg);
 
 		bool Build();
 		void Clear();
 
 	private:
 		NavmeshConfig cfg_;
+		MeshData* meshData_;
 		rcHeightfield* heightField_;
 		rcCompactHeightfield* compactHeightField_;
 		rcContourSet* contourSet_;
 		rcPolyMesh* polyMesh_;
 		rcPolyMeshDetail* polyMeshDetail_;
 		Context ctx_;
-		NavmeshConfig cfg_;
 		dtNavMesh* navMesh_;
 		dtNavMeshQuery* navQuery_;
 		dtCrowd* crowd_;

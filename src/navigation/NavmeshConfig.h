@@ -6,23 +6,23 @@ namespace D3E
 {
 	struct NavmeshConfig
 	{
-		float cellSize;
-		float cellHeight;
-		float walkableSlopeAngle;
-		float agentHeight;
-		float agentRadius;
-		float agentMaxClimb;
-		float maxEdgeLen;
-		float maxSimplificationError;
-		float minRegionSize;
-		float regionMergeSize;
-		int maxVertsPerPoly;
-		float detailSampleDist;
-		float detailSampleMaxError;
-		bool filterLowHangingObstacles;
-		bool filterLedgeSpans;
-		bool filterWalkableLowHeightSpans;
+		float cellSize = 0.3f;
+		float cellHeight = 0.2f;
+		float walkableSlopeAngle = 45.0f;
+		float agentHeight = 2.0f;
+		float agentRadius = 0.6f;
+		float agentMaxClimb = 0.9f;
+		float maxEdgeLen = 12.0f;
+		float maxSimplificationError = 1.3f;
+		float minRegionSize = 8.0f;
+		float regionMergeSize = 20.0f;
+		int maxVertsPerPoly = 6;
+		float detailSampleDist = 6.0f;
+		float detailSampleMaxError = 1.0f;
+		bool filterLowHangingObstacles = true;
+		bool filterLedgeSpans = true;
+		bool filterWalkableLowHeightSpans = true;
 
-		PartitionType partitionType;
+		PartitionType partitionType = PartitionType::kWatershed;
 	};
 } // namespace D3E
