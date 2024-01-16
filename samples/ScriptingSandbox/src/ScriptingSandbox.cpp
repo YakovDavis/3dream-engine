@@ -26,6 +26,13 @@ void ScriptingSandbox::Init()
 		GetRegistry(), info, tc, "5bfb3a8a-46c0-4125-83cb-e031a263e91a",
 		"ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
 
+	info.internalObject = true;
+	info.name = "InternalObject";
+	tc.position = Vector3(20, 0, 50);
+	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc,
+	                               "5bfb3a8a-46c0-4125-83cb-e031a263e91a",
+	                               "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+
 	D3E::String scriptUuid = "72d4a952-074c-4223-8ded-40c09c182061";
 	auto scriptComponent = D3E::ScriptComponent(duckId, scriptUuid);
 
