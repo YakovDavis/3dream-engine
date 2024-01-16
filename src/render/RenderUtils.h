@@ -12,5 +12,7 @@ namespace D3E
 		RenderUtils() = delete;
 
 		static void InvalidateWorldBuffers(entt::registry& reg);
+
+		static void GenerateMips(nvrhi::ITexture* texture, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 	};
 }

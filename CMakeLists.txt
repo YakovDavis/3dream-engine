@@ -200,6 +200,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/ComponentCreationWindow.cpp
         src/utils/FilenameUtils.cpp
         src/utils/FilenameUtils.h
+        src/render/PbrUtils.cpp
+        src/render/PbrUtils.h
 )
 
 add_subdirectory(libs)

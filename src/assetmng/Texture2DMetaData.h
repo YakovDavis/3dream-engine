@@ -10,7 +10,8 @@ namespace D3E
 {
 	enum TextureChannels
 	{
-		RGBA8
+		RGBA8,
+		RGBA16
 	};
 	enum TextureType
 	{
@@ -23,6 +24,7 @@ namespace D3E
 		std::string uuid;
 		std::string name;
 		std::string filename;
+		bool lockResourceState = true;
 		struct Texture2DFormat
 		{
 			TextureChannels channels = TextureChannels::RGBA8;

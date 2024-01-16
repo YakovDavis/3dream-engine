@@ -28,5 +28,9 @@ namespace D3E
 	const String kNormalsDefaultTextureUUID = "c2346e38-a332-4c9f-bb91-f22591ce5f52";
 	const String kDefaultGridMaterialUUID = "cf251109-d50a-49cb-912a-bbdfb5345c97";
 	const String kEnvironmentScriptId = "591a9f8c-b5b7-4ce0-a9af-8bc809066222";
+
+	const String kEnvTextureUUID = "4642c92a-a667-4df2-bf7a-b5f9cacfe281";
+	const String kIrMapTextureUUID = "1029c59b-3ecb-4d88-b6a9-2cb0f7d65314";
+	const String kSpBrdfLutTextureUUID = "75ed1f4e-e768-48ab-93b6-d911747f3136";
 } // namespace D3E
 #endif // COMMON_HEADER_H
