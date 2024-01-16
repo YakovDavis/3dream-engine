@@ -15,6 +15,8 @@ namespace D3E
 
 		void LoadAssetsInFolder(const String& folder, bool recursive, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
+		void LoadScripts(const String& folder);
+
 		void LoadTexture(const json& meta, const String& folder, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		void LoadMesh(const json& meta, const String& folder, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);

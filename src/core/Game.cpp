@@ -620,9 +620,12 @@ void D3E::Game::OnEditorPlayPressed()
 		ComponentFactory::SerializeWorld(currentMapSavedState);
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
+
+		AssetManager::Get().LoadScripts("assets/");
 		ScriptingEngine::GetInstance().Init(this);
 		ScriptingEngine::GetInstance().InitScripts();
 		ScriptingEngine::GetInstance().StartScripts();
+
 		isGameRunning_ = true;
 	}
 }
