@@ -214,21 +214,61 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		case SphereCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
 			characterComponent.collider_ = new SphereShape(characterComponent.colliderParams_.x);
 			break;
 		}
 		case BoxCollider:
 		{
-			characterComponent.collider_ = new BoxShape(Vec3Arg(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z));
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z <= 0.0f)
+			{
+				characterComponent.colliderParams_.z = 1.0f;
+			}
+			if (characterComponent.colliderParams_.w < 0.0f)
+			{
+				characterComponent.colliderParams_.w = 0.0f;
+			}
+			characterComponent.collider_ = new BoxShape(Vec3Arg(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z), characterComponent.colliderParams_.w);
 			break;
 		}
 		case CapsuleCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
 			characterComponent.collider_ = new CapsuleShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
 			break;
 		}
 		case TaperedCapsuleCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z <= 0.0f)
+			{
+				characterComponent.colliderParams_.z = 1.0f;
+			}
 			TaperedCapsuleShapeSettings taperedCapsuleSettings(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z);
 			ShapeSettings::ShapeResult shapeResult = taperedCapsuleSettings.Create();
 			characterComponent.collider_ = new TaperedCapsuleShape(taperedCapsuleSettings, shapeResult);
@@ -236,7 +276,19 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		}
 		case CylinderCollider:
 		{
-			characterComponent.collider_ = new CylinderShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z < 0.0f)
+			{
+				characterComponent.colliderParams_.z = 0.0f;
+			}
+			characterComponent.collider_ = new CylinderShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z);
 			break;
 		}
 			/*case ConvexHullCollider:

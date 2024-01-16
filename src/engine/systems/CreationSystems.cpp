@@ -7,6 +7,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -131,7 +132,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	infoComponent.id = UuidGenerator::NewGuidString();
 
 	SoundComponent sound;
-	sound.fileName = "sfx.mp3";
+	//sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
@@ -315,4 +316,45 @@ entt::entity D3E::CreationSystems::CreateDefaultLight(entt::registry& registry)
 	LightInitSystem::IsDirty = true;
 
 	return e;
+}
+
+void D3E::CreationSystems::CreateDefaultFPSControllerComponent(entt::registry& registry, entt::entity& entity)
+{
+	FPSControllerComponent component = {};
+	registry.emplace<FPSControllerComponent>(entity, component);
+}
+void D3E::CreationSystems::CreateDefaultCameraComponent(entt::registry& registry, entt::entity& entity)
+{
+	CameraComponent component = {};
+	registry.emplace<CameraComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry, entt::entity& entity)
+{
+	LightComponent component = {};
+	registry.emplace<LightComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity)
+{
+	StaticMeshComponent component = {};
+	registry.emplace<StaticMeshComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundComponent component = {};
+	registry.emplace<SoundComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundListenerComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundListenerComponent component = {};
+	registry.emplace<SoundListenerComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity)
+{
+	ScriptComponent component(entity, EmptyIdString);
+	registry.emplace<ScriptComponent>(entity, component);
 }

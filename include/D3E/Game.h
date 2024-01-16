@@ -96,8 +96,6 @@ namespace D3E
 
 		void OnSaveSelectedToPrefabPressed();
 
-		void CreateEntityFromPrefab(const std::string& filepath);
-
 		void DestroyEntity(const String& uuid);
 
 	protected:

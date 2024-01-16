@@ -48,6 +48,8 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 				if (lock.Succeeded())
 				{
 					Body& body = lock.GetBody();
+					body.SetMotionType(component.motionType_);
+					body.SetIsSensor(component.isSensor_);
 					if (component.friction_ >= 0.0f)
 					{
 						body.SetFriction(component.friction_);
@@ -78,21 +80,65 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		case SphereCollider:
 		{
+			if (physicsComponent.colliderParams_.x <= 0.0f)
+			{
+				physicsComponent.colliderParams_.x = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.y < 0.0f)
+			{
+				physicsComponent.colliderParams_.y = 0.0f;
+			}
 			physicsComponent.collider_ = new SphereShape(physicsComponent.colliderParams_.x);
 			break;
 		}
 		case BoxCollider:
 		{
-			physicsComponent.collider_ = new BoxShape(Vec3Arg(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y, physicsComponent.colliderParams_.z));
+			if (physicsComponent.colliderParams_.x <= 0.0f)
+			{
+				physicsComponent.colliderParams_.x = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.y <= 0.0f)
+			{
+				physicsComponent.colliderParams_.y = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.z <= 0.0f)
+			{
+				physicsComponent.colliderParams_.z = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.w < 0.0f)
+			{
+				physicsComponent.colliderParams_.w = 0.0f;
+			}
+			physicsComponent.collider_ = new BoxShape(Vec3Arg(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y, physicsComponent.colliderParams_.z), physicsComponent.colliderParams_.w);
 			break;
 		}
 		case CapsuleCollider:
 		{
+			if (physicsComponent.colliderParams_.x <= 0.0f)
+			{
+				physicsComponent.colliderParams_.x = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.y <= 0.0f)
+			{
+				physicsComponent.colliderParams_.y = 1.0f;
+			}
 			physicsComponent.collider_ = new CapsuleShape(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y);
 			break;
 		}
 		case TaperedCapsuleCollider:
 		{
+			if (physicsComponent.colliderParams_.x <= 0.0f)
+			{
+				physicsComponent.colliderParams_.x = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.y <= 0.0f)
+			{
+				physicsComponent.colliderParams_.y = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.z <= 0.0f)
+			{
+				physicsComponent.colliderParams_.z = 1.0f;
+			}
 			TaperedCapsuleShapeSettings taperedCapsuleSettings(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y, physicsComponent.colliderParams_.z);
 			ShapeSettings::ShapeResult shapeResult = taperedCapsuleSettings.Create();
 			physicsComponent.collider_ = new TaperedCapsuleShape(taperedCapsuleSettings, shapeResult);
@@ -100,7 +146,19 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		}
 		case CylinderCollider:
 		{
-			physicsComponent.collider_ = new CylinderShape(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y);
+			if (physicsComponent.colliderParams_.x <= 0.0f)
+			{
+				physicsComponent.colliderParams_.x = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.y <= 0.0f)
+			{
+				physicsComponent.colliderParams_.y = 1.0f;
+			}
+			if (physicsComponent.colliderParams_.z < 0.0f)
+			{
+				physicsComponent.colliderParams_.z = 0.0f;
+			}
+			physicsComponent.collider_ = new CylinderShape(physicsComponent.colliderParams_.x, physicsComponent.colliderParams_.y, physicsComponent.colliderParams_.z);
 			break;
 		}
 		/*case ConvexHullCollider:

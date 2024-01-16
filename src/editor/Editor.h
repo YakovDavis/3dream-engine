@@ -6,6 +6,7 @@
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
 #include "MaterialEditor.h"
+#include "ComponentCreationWindow.h"
 #include "EditorUtils.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
@@ -37,12 +38,15 @@ namespace D3E
 		EditorConsole *editorConsole_;
 		EditorContentBrowser* editorContentBrowser_;
 		MaterialEditor* materialEditor_;
+		ComponentCreationWindow* componentWindow_;
 		bool hoveringOnViewport = false;
 		bool viewportFocused = false;
 		bool usingGizmo = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
 		bool lmbDownLastFrame = false;
+		bool creatingComponentWithDefault = false;
+		bool creatingComponentWithNonDefault = false;
 
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
@@ -74,5 +78,6 @@ namespace D3E
 
 		friend class EditorContentBrowser;
 		friend class MaterialEditor;
+		friend class ComponentCreationWindow;
 	};
 }
