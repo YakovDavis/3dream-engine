@@ -194,10 +194,10 @@ void D3E::Game::Init()
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	systems_.push_back(
-		new PhysicsInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
+		new PhysicsInitSystem(registry_, this, physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(
 		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
-	systems_.push_back(new CharacterInitSystem(registry_, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new CharacterInitSystem(registry_, this, physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
@@ -624,6 +624,11 @@ void D3E::Game::OnEditorPlayPressed()
 		ScriptingEngine::GetInstance().InitScripts();
 		ScriptingEngine::GetInstance().StartScripts();
 		isGameRunning_ = true;
+		for (auto& sys : systems_)
+		{
+			sys->Play(registry_, this);
+		}
+		//physicsInfo_->setIsPaused(false);
 	}
 }
 
@@ -632,6 +637,7 @@ void D3E::Game::OnEditorPausePressed()
 	if (isGameRunning_)
 	{
 		isGamePaused_ = !isGamePaused_;
+		//physicsInfo_->setIsPaused(!(physicsInfo_->getIsPaused()));
 	}
 }
 
@@ -641,9 +647,14 @@ void D3E::Game::OnEditorStopPressed()
 	{
 		isGameRunning_ = false;
 		isGamePaused_ = false;
+		for (auto& sys : systems_)
+		{
+			sys->Stop(registry_, this);
+		}
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
 		ScriptingEngine::GetInstance().Clear();
+		//physicsInfo_->setIsPaused(true);
 	}
 }
 
