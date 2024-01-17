@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc /bigobj")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+add_compile_options(/bigobj)
+
 add_library("${PROJECT_NAME}" SHARED
         include/D3E/CommonHeader.h
         include/D3E/EntryPoint.h

@@ -116,12 +116,14 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	LoadDefaultInputLayouts();
 
 	ShaderFactory::AddVertexShader("LightPass", "LightPass.hlsl", "VSMain");
+	ShaderFactory::AddVertexShader("Tonemap", "Tonemap.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("DebugDraw", "DebugDraw.hlsl", "VSMain");
 
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("LightPass", "LightPass.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("Tonemap", "Tonemap.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("DebugDraw", "DebugDraw.hlsl", "PSMain");
 
@@ -143,6 +145,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	nvrhi::BindingLayoutDesc layoutDescVNull = {};
 	layoutDescVNull.setVisibility(nvrhi::ShaderType::Vertex);
 	ShaderFactory::AddBindingLayout("LightPassV", layoutDescVNull);
+	ShaderFactory::AddBindingLayout("TonemapV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("EditorHighlightPassV", layoutDescVNull);
 
 	nvrhi::BindingLayoutDesc layoutDescPNull = {};
@@ -183,6 +186,12 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(1));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(2));
 	ShaderFactory::AddBindingLayout("LightPassP", layoutDescLight);
+
+	nvrhi::BindingLayoutDesc layoutDescTonemap = {};
+	layoutDescTonemap.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	ShaderFactory::AddBindingLayout("TonemapP", layoutDescTonemap);
 
 	nvrhi::BindingLayoutDesc pickLayoutDesc = {};
 	pickLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
@@ -293,6 +302,20 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassPipelineDesc.setRenderState(renderState);
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
+
+	nvrhi::GraphicsPipelineDesc tonemapPipelineDesc = {};
+	tonemapPipelineDesc.setInputLayout(nullptr);
+	tonemapPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("Tonemap"));
+	tonemapPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("Tonemap"));
+	tonemapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("TonemapV"));
+	tonemapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("TonemapP"));
+	renderState.depthStencilState = nullDepthStencilState;
+	rasterState.setCullNone();
+	renderState.rasterState = rasterState;
+	tonemapPipelineDesc.setRenderState(renderState);
+	tonemapPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
+	ShaderFactory::AddGraphicsPipeline("Tonemap", tonemapPipelineDesc, fb);
+	rasterState.setCullBack();
 
 	auto ppDepthStencilState = depthStencilState;
 	nvrhi::GraphicsPipelineDesc editorHighlightPipelineDesc = {};
@@ -419,9 +442,9 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 
 	auto sampler2Desc = nvrhi::SamplerDesc();
 	sampler2Desc.setMaxAnisotropy(16.0f);
-	sampler2Desc.minFilter = false;
-	sampler2Desc.magFilter = false;
-	sampler2Desc.mipFilter = false;
+	sampler2Desc.minFilter = true;
+	sampler2Desc.magFilter = true;
+	sampler2Desc.mipFilter = true;
 	sampler2Desc.addressU = nvrhi::SamplerAddressMode::Wrap;
 	sampler2Desc.addressV = nvrhi::SamplerAddressMode::Wrap;
 	sampler2Desc.addressW = nvrhi::SamplerAddressMode::Wrap;

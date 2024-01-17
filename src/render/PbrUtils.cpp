@@ -91,7 +91,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			// Copy 0th mipmap level into destination environment map.
 			for(int arraySlice=0; arraySlice<6; ++arraySlice)
 			{
-				auto currentSlice = nvrhi::TextureSlice().setMipLevel(0);
+				auto currentSlice = nvrhi::TextureSlice().setMipLevel(0).setArraySlice(arraySlice);
 				commandList->copyTexture(m_envTexture, currentSlice, envTextureUnfiltered, currentSlice);
 			}
 
@@ -174,7 +174,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		spBrdfTexturDesc.setArraySize(1);
 		spBrdfTexturDesc.setWidth(256);
 		spBrdfTexturDesc.setHeight(256);
-		spBrdfTexturDesc.setMipLevels(8);
+		spBrdfTexturDesc.setMipLevels(1);
 		spBrdfTexturDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		spBrdfTexturDesc.setIsUAV(true);
 		spBrdfTexturDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
