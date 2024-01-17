@@ -37,10 +37,9 @@ void CharacterGame::Init()
 
 	auto e = D3E::CreationSystems::CreatePhysicalCharacter(GetRegistry(), info,
 	                                                       tc, character);
-	auto scriptComponent = D3E::ScriptComponent(e);
 
-	D3E::ScriptingEngine::GetInstance().LoadScript(
-		scriptComponent, "72d4a952-074c-4223-8ded-40c09c182061");
+	D3E::String scriptId = "72d4a952-074c-4223-8ded-40c09c182061";
+	auto scriptComponent = D3E::ScriptComponent(e, scriptId);
 
 	GetRegistry().emplace<D3E::ScriptComponent>(e, scriptComponent);
 

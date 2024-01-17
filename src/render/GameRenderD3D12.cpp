@@ -1,15 +1,15 @@
 #include "GameRenderD3D12.h"
 
 #include "D3E/CommonCpp.h"
-#include "D3E/Game.h"
 #include "D3E/Debug.h"
+#include "D3E/Game.h"
 #include "DisplayWin32.h"
+#include "ShaderFactory.h"
+#include "core/EngineState.h"
 
 #include <iostream>
 #include <nvrhi/d3d12.h>
 #include <nvrhi/validation.h>
-
-#include "ShaderFactory.h"
 
 void D3E::GameRenderD3D12::CreateCommandQueues()
 {
@@ -29,22 +29,21 @@ void D3E::GameRenderD3D12::CreateCommandQueues()
 
 void D3E::GameRenderD3D12::CreateNativeSwapChain()
 {
-	mSwapChain.Reset();
-
 	assert(displayWin32_->hWnd != nullptr);
 
 	Debug::LogMessage("[GameRenderD3D12] Creating native swapchain");
 
-	DXGI_SWAP_CHAIN_DESC1 sd = {};
-	sd.Width = displayWin32_->ClientWidth;
-	sd.Height = displayWin32_->ClientHeight;
-	sd.SampleDesc.Count = 1;
-	sd.SampleDesc.Quality = 0;
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = SwapChainBufferCount;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	mSwapChainDesc = {};
+	mSwapChainDesc.Width = displayWin32_->ClientWidth;
+	mSwapChainDesc.Height = displayWin32_->ClientHeight;
+	mSwapChainDesc.SampleDesc.Count = 1;
+	mSwapChainDesc.SampleDesc.Quality = 0;
+	mSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	mSwapChainDesc.BufferCount = SwapChainBufferCount;
+	mSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	mSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	mSwapChainDesc.Format = mBackBufferFormat;
+	mSwapChainDesc.Scaling = DXGI_SCALING_NONE;
 
 	nvrhi::RefCountPtr<IDXGIFactory5> pDxgiFactory5;
 	if (SUCCEEDED(mdxgiFactory->QueryInterface(IID_PPV_ARGS(&pDxgiFactory5))))
@@ -56,18 +55,17 @@ void D3E::GameRenderD3D12::CreateNativeSwapChain()
 
 	if (mTearingSupported)
 	{
-		sd.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+		mSwapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 	}
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC mFullScreenDesc = {};
+	mFullScreenDesc = {};
 	mFullScreenDesc.RefreshRate.Numerator = 60;
 	mFullScreenDesc.RefreshRate.Denominator = 1;
 	mFullScreenDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
 	mFullScreenDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	mFullScreenDesc.Windowed = true;
 
-	nvrhi::RefCountPtr<IDXGISwapChain1> pSwapChain1;
-	HRESULT hres = mdxgiFactory->CreateSwapChainForHwnd(mCommandQueue, displayWin32_->hWnd, &sd, &mFullScreenDesc, nullptr, &pSwapChain1);
+	HRESULT hres = mdxgiFactory->CreateSwapChainForHwnd(mCommandQueue, displayWin32_->hWnd, &mSwapChainDesc, &mFullScreenDesc, nullptr, &pSwapChain1);
 
 	if (FAILED(hres))
 	{
@@ -96,9 +94,11 @@ void D3E::GameRenderD3D12::Init(eastl::vector<GameSystem*>& systems)
 
 	InitD3D();
 
-	Debug::LogMessage("[GameRenderD3D12] Init finished");
+	OnResize();
 
-	//OnResize();
+	CreateNvrhiSwapChain();
+
+	Debug::LogMessage("[GameRenderD3D12] Init finished");
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentGame));
 
@@ -187,32 +187,32 @@ void D3E::GameRenderD3D12::InitD3D()
 		mFrameFenceEvents.push_back( CreateEvent(nullptr, false, true, nullptr) );
 	}
 
-	//mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	//mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-	//mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
 	CreateNativeSwapChain();
-	CreateNvrhiSwapChain();
-	//CreateRtvAndDsvDescriptorHeaps();
 }
 
 void D3E::GameRenderD3D12::OnResize()
 {
 	D3E::GameRender::OnResize();
 
+	return;
+
 	Debug::Assert(md3dDevice, "[GameRenderD3D12] OnResize failed - invalid device");
 	Debug::Assert(mSwapChain, "[GameRenderD3D12] OnResize failed - invalid swap chain");
 	assert(mSwapChain);
 
+	// Make sure that all frames have finished rendering
+	device_->waitForIdle();
+
+	// Release all in-flight references to the render targets
+	device_->runGarbageCollection();
+
 	// Flush before changing any resources.
 	FlushCommandQueue();
 
-	// Release the previous resources we will be recreating.
-	for (auto & i : mSwapChainBuffer)
-	{
-		i.Reset();
-	}
-	mDepthStencilBuffer[0].Reset();
+	// Release the old buffers because ResizeBuffers requires that
+	nvrhiFramebuffer.clear();
+	mSwapChainBuffer.clear();
+	nvrhiSwapChain.clear();
 
 	// Resize the swap chain.
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
@@ -222,52 +222,6 @@ void D3E::GameRenderD3D12::OnResize()
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 	mCurrBackBuffer = 0;
-
-	// Create the depth/stencil buffer and view.
-	D3D12_RESOURCE_DESC depthStencilDesc;
-	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = displayWin32_->ClientWidth;
-	depthStencilDesc.Height = displayWin32_->ClientHeight;
-	depthStencilDesc.DepthOrArraySize = 1;
-	depthStencilDesc.MipLevels = 1;
-
-	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from
-	// the depth buffer.  Therefore, because we need to create two views to the same resource:
-	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
-	// we need to create the depth buffer resource with a typeless format.
-	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-
-	depthStencilDesc.SampleDesc.Count = 1;
-	depthStencilDesc.SampleDesc.Quality = 0;
-	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = mDepthStencilFormat;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
-
-	auto defaultProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-
-	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&defaultProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&depthStencilDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		IID_PPV_ARGS(mDepthStencilBuffer[0].GetAddressOf())));
-
-	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Format = mDepthStencilFormat;
-	dsvDesc.Texture2D.MipSlice = 0;
-	//md3dDevice->CreateDepthStencilView(mDepthStencilBuffer[0].Get(), &dsvDesc, DepthStencilView());
-
-	auto defaultTransition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer[0].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 	// Wait until resize is complete.
 	FlushCommandQueue();
@@ -281,6 +235,15 @@ void D3E::GameRenderD3D12::OnResize()
 	mScreenViewport.MaxDepth = 1.0f;
 
 	mScissorRect = {0, 0, displayWin32_->ClientWidth, displayWin32_->ClientHeight};
+
+	nvrhiFramebuffer.resize(SwapChainBufferCount);
+	for (uint32_t index = 0; index < SwapChainBufferCount; index++)
+	{
+		nvrhiFramebuffer[index] = GetDevice()->createFramebuffer(
+			nvrhi::FramebufferDesc().addColorAttachment(nvrhiSwapChain[index]));
+	}
+
+	EngineState::isViewportDirty = true;
 }
 
 ID3D12Resource* D3E::GameRenderD3D12::CurrentBackBuffer() const
@@ -428,13 +391,13 @@ void D3E::GameRenderD3D12::Present()
 	mFrameCount++;
 }
 
-void D3E::GameRenderD3D12::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRenderD3D12::PrepareFrame()
 {
 	auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForSingleObject(mFrameFenceEvents[bufferIndex], INFINITE);
 
-	GameRender::PrepareDraw(registry, systems, renderPPSystems);
+	GameRender::PrepareFrame();
 }
 
 UINT D3E::GameRenderD3D12::GetCurrentFrameBuffer()

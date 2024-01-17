@@ -7,7 +7,9 @@
 #include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "D3E/engine/ConsoleManager.h"
+#include "DebugRenderer.h"
 #include "DisplayWin32.h"
+#include "PbrUtils.h"
 #include "PerObjectConstBuffer.h"
 #include "PickConstBuffer.h"
 #include "ShaderFactory.h"
@@ -18,7 +20,6 @@
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
-#include "DebugRenderer.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -111,97 +112,6 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	ConsoleManager::getInstance()->registerConsoleVariable("displayGrid", 1);
 	ConsoleManager::getInstance()->registerConsoleVariable("visualizeBounds", 0);
 
-	/*
-
-	{
-		// Unfiltered environment cube map (temporary).
-		TextureFactory::GetTextureHandle("environment");
-
-
-		// Load & convert equirectangular environment map to a cubemap texture.
-		{
-			ComputeProgram equirectToCubeProgram = createComputeProgram(compileShader("shaders/hlsl/equirect2cube.hlsl", "main", "cs_5_0"));
-			Texture envTextureEquirect = createTexture(Image::fromFile("environment.hdr"), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
-
-			m_context->CSSetShaderResources(0, 1, envTextureEquirect.srv.GetAddressOf());
-			m_context->CSSetUnorderedAccessViews(0, 1, envTextureUnfiltered.uav.GetAddressOf(), nullptr);
-			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-			m_context->CSSetShader(equirectToCubeProgram.computeShader.Get(), nullptr, 0);
-			m_context->Dispatch(envTextureUnfiltered.width/32, envTextureUnfiltered.height/32, 6);
-			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-		}
-
-		m_context->GenerateMips(envTextureUnfiltered.srv.Get());
-
-		// Compute pre-filtered specular environment map.
-		{
-			struct SpecularMapFilterSettingsCB
-			{
-				float roughness;
-				float padding[3];
-			};
-			ComputeProgram spmapProgram = createComputeProgram(compileShader("shaders/hlsl/spmap.hlsl", "main", "cs_5_0"));
-			ComPtr<ID3D11Buffer> spmapCB = createConstantBuffer<SpecularMapFilterSettingsCB>();
-
-			m_envTexture = createTextureCube(1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
-
-			// Copy 0th mipmap level into destination environment map.
-			for(int arraySlice=0; arraySlice<6; ++arraySlice) {
-				const UINT subresourceIndex = D3D11CalcSubresource(0, arraySlice, m_envTexture.levels);
-				m_context->CopySubresourceRegion(m_envTexture.texture.Get(), subresourceIndex, 0, 0, 0, envTextureUnfiltered.texture.Get(), subresourceIndex, nullptr);
-			}
-
-			m_context->CSSetShaderResources(0, 1, envTextureUnfiltered.srv.GetAddressOf());
-			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-			m_context->CSSetShader(spmapProgram.computeShader.Get(), nullptr, 0);
-
-			// Pre-filter rest of the mip chain.
-			const float deltaRoughness = 1.0f / glm::max(float(m_envTexture.levels-1), 1.0f);
-			for(UINT level=1, size=512; level<m_envTexture.levels; ++level, size/=2) {
-				const UINT numGroups = glm::max<UINT>(1, size/32);
-				createTextureUAV(m_envTexture, level);
-
-				const SpecularMapFilterSettingsCB spmapConstants = { level * deltaRoughness };
-				m_context->UpdateSubresource(spmapCB.Get(), 0, nullptr, &spmapConstants, 0, 0);
-
-				m_context->CSSetConstantBuffers(0, 1, spmapCB.GetAddressOf());
-				m_context->CSSetUnorderedAccessViews(0, 1, m_envTexture.uav.GetAddressOf(), nullptr);
-				m_context->Dispatch(numGroups, numGroups, 6);
-			}
-			m_context->CSSetConstantBuffers(0, 1, nullBuffer);
-			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-		}
-	}
-
-	// Compute diffuse irradiance cubemap.
-	{
-		ComputeProgram irmapProgram = createComputeProgram(compileShader("shaders/hlsl/irmap.hlsl", "main", "cs_5_0"));
-
-		m_irmapTexture = createTextureCube(32, 32, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
-		createTextureUAV(m_irmapTexture, 0);
-
-		m_context->CSSetShaderResources(0, 1, m_envTexture.srv.GetAddressOf());
-		m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-		m_context->CSSetUnorderedAccessViews(0, 1, m_irmapTexture.uav.GetAddressOf(), nullptr);
-		m_context->CSSetShader(irmapProgram.computeShader.Get(), nullptr, 0);
-		m_context->Dispatch(m_irmapTexture.width/32, m_irmapTexture.height/32, 6);
-		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-	}
-
-	// Compute Cook-Torrance BRDF 2D LUT for split-sum approximation.
-	{
-		ComputeProgram spBRDFProgram = createComputeProgram(compileShader("shaders/hlsl/spbrdf.hlsl", "main", "cs_5_0"));
-
-		m_spBRDF_LUT = createTexture(256, 256, DXGI_FORMAT_R16G16_FLOAT, 1);
-		m_spBRDF_Sampler = createSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-		createTextureUAV(m_spBRDF_LUT, 0);
-
-		m_context->CSSetUnorderedAccessViews(0, 1, m_spBRDF_LUT.uav.GetAddressOf(), nullptr);
-		m_context->CSSetShader(spBRDFProgram.computeShader.Get(), nullptr, 0);
-		m_context->Dispatch(m_spBRDF_LUT.width/32, m_spBRDF_LUT.height/32, 1);
-		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-	}*/
-
 	auto pickingCBDesc = nvrhi::BufferDesc()
 	                         .setByteSize(sizeof(PickConstBuffer))
 	                         .setIsConstantBuffer(true)
@@ -236,103 +146,11 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	pickingBSC.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, pickCb));
 	pickingBSC.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gbuffer_.editorIdsBuffer));
 	pickingBSC.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pickedIdBuffer_));
-
 	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
 
 	nvrhi::BindingSetDesc nullBindingSetDesc = {};
 	ShaderFactory::AddBindingSetV("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassV");
 	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
-
-	/*
-
-	{
-		// Unfiltered environment cube map (temporary).
-		TextureFactory::GetTextureHandle("environment");
-
-
-		// Load & convert equirectangular environment map to a cubemap texture.
-		{
-			ComputeProgram equirectToCubeProgram = createComputeProgram(compileShader("shaders/hlsl/equirect2cube.hlsl", "main", "cs_5_0"));
-			Texture envTextureEquirect = createTexture(Image::fromFile("environment.hdr"), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
-
-			m_context->CSSetShaderResources(0, 1, envTextureEquirect.srv.GetAddressOf());
-			m_context->CSSetUnorderedAccessViews(0, 1, envTextureUnfiltered.uav.GetAddressOf(), nullptr);
-			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-			m_context->CSSetShader(equirectToCubeProgram.computeShader.Get(), nullptr, 0);
-			m_context->Dispatch(envTextureUnfiltered.width/32, envTextureUnfiltered.height/32, 6);
-			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-		}
-
-		m_context->GenerateMips(envTextureUnfiltered.srv.Get());
-
-		// Compute pre-filtered specular environment map.
-		{
-			struct SpecularMapFilterSettingsCB
-			{
-				float roughness;
-				float padding[3];
-			};
-			ComputeProgram spmapProgram = createComputeProgram(compileShader("shaders/hlsl/spmap.hlsl", "main", "cs_5_0"));
-			ComPtr<ID3D11Buffer> spmapCB = createConstantBuffer<SpecularMapFilterSettingsCB>();
-
-			m_envTexture = createTextureCube(1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
-
-			// Copy 0th mipmap level into destination environment map.
-			for(int arraySlice=0; arraySlice<6; ++arraySlice) {
-				const UINT subresourceIndex = D3D11CalcSubresource(0, arraySlice, m_envTexture.levels);
-				m_context->CopySubresourceRegion(m_envTexture.texture.Get(), subresourceIndex, 0, 0, 0, envTextureUnfiltered.texture.Get(), subresourceIndex, nullptr);
-			}
-
-			m_context->CSSetShaderResources(0, 1, envTextureUnfiltered.srv.GetAddressOf());
-			m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-			m_context->CSSetShader(spmapProgram.computeShader.Get(), nullptr, 0);
-
-			// Pre-filter rest of the mip chain.
-			const float deltaRoughness = 1.0f / glm::max(float(m_envTexture.levels-1), 1.0f);
-			for(UINT level=1, size=512; level<m_envTexture.levels; ++level, size/=2) {
-				const UINT numGroups = glm::max<UINT>(1, size/32);
-				createTextureUAV(m_envTexture, level);
-
-				const SpecularMapFilterSettingsCB spmapConstants = { level * deltaRoughness };
-				m_context->UpdateSubresource(spmapCB.Get(), 0, nullptr, &spmapConstants, 0, 0);
-
-				m_context->CSSetConstantBuffers(0, 1, spmapCB.GetAddressOf());
-				m_context->CSSetUnorderedAccessViews(0, 1, m_envTexture.uav.GetAddressOf(), nullptr);
-				m_context->Dispatch(numGroups, numGroups, 6);
-			}
-			m_context->CSSetConstantBuffers(0, 1, nullBuffer);
-			m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-		}
-	}
-
-	// Compute diffuse irradiance cubemap.
-	{
-		ComputeProgram irmapProgram = createComputeProgram(compileShader("shaders/hlsl/irmap.hlsl", "main", "cs_5_0"));
-
-		m_irmapTexture = createTextureCube(32, 32, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
-		createTextureUAV(m_irmapTexture, 0);
-
-		m_context->CSSetShaderResources(0, 1, m_envTexture.srv.GetAddressOf());
-		m_context->CSSetSamplers(0, 1, m_computeSampler.GetAddressOf());
-		m_context->CSSetUnorderedAccessViews(0, 1, m_irmapTexture.uav.GetAddressOf(), nullptr);
-		m_context->CSSetShader(irmapProgram.computeShader.Get(), nullptr, 0);
-		m_context->Dispatch(m_irmapTexture.width/32, m_irmapTexture.height/32, 6);
-		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-	}
-
-	// Compute Cook-Torrance BRDF 2D LUT for split-sum approximation.
-	{
-		ComputeProgram spBRDFProgram = createComputeProgram(compileShader("shaders/hlsl/spbrdf.hlsl", "main", "cs_5_0"));
-
-		m_spBRDF_LUT = createTexture(256, 256, DXGI_FORMAT_R16G16_FLOAT, 1);
-		m_spBRDF_Sampler = createSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-		createTextureUAV(m_spBRDF_LUT, 0);
-
-		m_context->CSSetUnorderedAccessViews(0, 1, m_spBRDF_LUT.uav.GetAddressOf(), nullptr);
-		m_context->CSSetShader(spBRDFProgram.computeShader.Get(), nullptr, 0);
-		m_context->Dispatch(m_spBRDF_LUT.width/32, m_spBRDF_LUT.height/32, 1);
-		m_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-	}*/
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -390,7 +208,7 @@ D3E::GameRender::GameRender(Game* parent, HINSTANCE hInstance) : parentGame(pare
 
 D3E::Display* D3E::GameRender::GetDisplay()
 {
-	return display_.get();
+	return display_ ? display_.get() : nullptr;
 }
 
 nvrhi::DeviceHandle& D3E::GameRender::GetDevice()
@@ -403,77 +221,75 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 	return commandList_;
 }
 
-void D3E::GameRender::Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
-	// Obtain the current framebuffer from the graphics API
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
 
 	commandList_->open();
+	for (auto& sys : systems)
+	{
+		sys->Draw(registry, frameGBuffer, commandList_, device_);
+	}
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+}
 
-	// Clear the primary render target
+void D3E::GameRender::PrepareFrame()
+{
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	commandList_->open();
 	nvrhi::utils::ClearColorAttachment(commandList_, currentFramebuffer, 0, nvrhi::Color(0.2f));
-	//nvrhi::utils::ClearColorAttachment(commandList_, frameGBuffer, 0, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.albedoBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.positionBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.normalBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureFloat(gbuffer_.metalRoughnessBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureUInt(gbuffer_.editorIdsBuffer, nvrhi::AllSubresources, 0);
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, true, 0U);
-
-	for (auto& sys : systems)
-	{
-		sys->Draw(registry, frameGBuffer, commandList_, device_);
-	}
-
 #ifdef D3E_WITH_EDITOR
 	nvrhi::utils::ClearColorAttachment(commandList_, gameFramebuffer_, 0, nvrhi::Color(0.2f));
-	for (auto& sys : renderPPSystems)
-	{
-		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
-	}
-#else
-	for (auto& sys : renderPPSystems)
-	{
-		sys->Draw(registry, currentFramebuffer, commandList_, device_);
-	}
 #endif
-
-	debugRenderer_->Begin(commandList_, currentFramebuffer);
-	debugRenderer_->ProcessQueue();
-	debugRenderer_->End();
-
-	// Close and execute the command list
 	commandList_->close();
 	device_->executeCommandList(commandList_);
 }
 
-void D3E::GameRender::PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::DrawPostProcess(entt::registry& registry,
+                                      eastl::vector<GameSystem*>& systems)
 {
+	commandList_->open();
+#ifdef D3E_WITH_EDITOR
 	for (auto& sys : systems)
 	{
-		sys->PreDraw(registry, commandList_, device_);
+		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
+	debugRenderer_->Begin(commandList_, gameFramebuffer_);
+#else
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	for (auto& sys : systems)
+	{
+		sys->Draw(registry, currentFramebuffer, commandList_, device_);
+	}
+	debugRenderer_->Begin(commandList_, currentFramebuffer);
+#endif
+	debugRenderer_->ProcessQueue();
+	debugRenderer_->End();
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+}
 
-	for (auto& sys : renderPPSystems)
+void D3E::GameRender::BeginDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
+{
+	for (auto& sys : systems)
 	{
 		sys->PreDraw(registry, commandList_, device_);
 	}
 }
 
-void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems)
+void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
 	for (auto& sys : systems)
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
-
-	for (auto& sys : renderPPSystems)
-	{
-		sys->PostDraw(registry, commandList_, device_);
-	}
-#ifdef USE_IMGUI
-	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
-#endif // USE_IMGUI
 }
 
 //void D3E::GameRender::LoadTexture(const String& name,
@@ -521,4 +337,16 @@ uint32_t D3E::GameRender::EditorPick(int x, int y)
 D3E::DebugRenderer* D3E::GameRender::GetDebugRenderer()
 {
 	return debugRenderer_;
+}
+
+void D3E::GameRender::DrawGUI()
+{
+#ifdef USE_IMGUI
+	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
+#endif // USE_IMGUI
+}
+
+void D3E::GameRender::PostAssetLoadInit()
+{
+	PbrUtils::Setup(device_, commandList_);
 }

@@ -5,6 +5,8 @@
 #include "EASTL/string.h"
 #include "EditorConsole.h"
 #include "EditorContentBrowser.h"
+#include "MaterialEditor.h"
+#include "ComponentCreationWindow.h"
 #include "EditorUtils.h"
 #include "imgui.h"
 #include "imgui_backend/imgui_nvrhi.h"
@@ -34,10 +36,17 @@ namespace D3E
 		eastl::shared_ptr<Display> display_;
 		float color_[4] = {0.f, 0.f, 0.f, 0.f};
 		EditorConsole *editorConsole_;
-		EditorContentBrowser *editorContentBrowser_;
+		EditorContentBrowser* editorContentBrowser_;
+		MaterialEditor* materialEditor_;
+		ComponentCreationWindow* componentWindow_;
 		bool hoveringOnViewport = false;
+		bool viewportFocused = false;
+		bool usingGizmo = false;
 		ImRect viewportInnerRect;
 		ImVec2 viewportDimensions;
+		bool lmbDownLastFrame = false;
+		bool creatingComponentWithDefault = false;
+		bool creatingComponentWithNonDefault = false;
 
 	private:
 		Editor(const nvrhi::DeviceHandle& device, eastl::shared_ptr<Display> display, Game *game);
@@ -50,6 +59,8 @@ namespace D3E
 			eastl::vector<HierarchiNode*> children;
 		};
 
+		void ShowEditorApp(bool* p_open);
+
 		void DrawViewport(nvrhi::IFramebuffer* gameFramebuffer);
 		void DrawHeader();
 		void DrawPlay();
@@ -58,9 +69,15 @@ namespace D3E
 		void DrawInspector();
 		void DrawGizmo();
 		void DrawTransformEdit();
+
+		void AlignForWidth(float width, float alignment = 0.5f);
 	public:
 		void BeginDraw(float deltaTime);
 		void EndDraw(nvrhi::IFramebuffer* currentFramebuffer, nvrhi::IFramebuffer* gameFramebuffer);
 		void Release();
+
+		friend class EditorContentBrowser;
+		friend class MaterialEditor;
+		friend class ComponentCreationWindow;
 	};
 }

@@ -190,6 +190,21 @@ add_library("${PROJECT_NAME}" SHARED
         src/engine/ComponentFactory.cpp
         src/engine/ComponentFactory.h
         include/D3E/Components/BaseComponent.h
+        src/assetmng/CDialogEventHandler.cpp
+        src/assetmng/CDialogEventHandler.h
+        src/render/RenderUtils.cpp
+        src/render/RenderUtils.h
+        src/editor/MaterialEditor.cpp
+        src/editor/MaterialEditor.h
+        src/editor/ComponentCreationWindow.h
+        src/editor/ComponentCreationWindow.cpp
+        src/utils/FilenameUtils.cpp
+        src/utils/FilenameUtils.h
+        src/render/PbrUtils.cpp
+        src/render/PbrUtils.h
+        src/tinyexr/miniz.c
+        src/tinyexr/miniz.h
+        src/tinyexr/tinyexr.h
         include/D3E/Components/NavmeshComponent.h 
         src/navigation/Context.h 
         src/navigation/Context.cpp 
@@ -220,6 +235,8 @@ endif()
 
 target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_WITH_EDITOR)
 
+set(WIN_FILE_LIBS "comctl32.lib propsys.lib shlwapi.lib")
+
 target_link_libraries("${PROJECT_NAME}" PUBLIC
         assimp
         nvrhi
@@ -231,6 +248,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         EASTL
         Jolt        
         lua_static
+        ${WIN_FILE_LIBS}
         DebugUtils
         Detour
         DetourCrowd
@@ -285,7 +303,15 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         COMMENT "Copying D3Engined.dll to build folder"
 )
 
+add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/D3Engined.dll"
+        "${CMAKE_BINARY_DIR}/samples/EmptyProject"
+        COMMENT "Copying D3Engined.dll to build folder"
+)
+
 add_subdirectory(samples/ducks)
 add_subdirectory(samples/scriptingsandbox)
 add_subdirectory(samples/NewCube)
 add_subdirectory(samples/Character)
+add_subdirectory(samples/EmptyProject)

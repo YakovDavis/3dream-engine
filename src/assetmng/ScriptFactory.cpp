@@ -2,6 +2,7 @@
 
 #include "D3E/Debug.h"
 #include "EASTL/unordered_map.h"
+#include "utils/FilenameUtils.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -24,28 +25,39 @@ void ScriptFactory::Initialize(Game* game)
 	game_ = game;
 }
 
-void ScriptFactory::LoadScript(const ScriptMetaData& metaData)
+void ScriptFactory::LoadScript(const ScriptMetaData& metaData,
+                               const std::string& directory)
 {
 	using namespace std::filesystem;
 
 	Debug::LogMessage("[ScriptFactory] Loading script file " +
 	                  eastl::string(metaData.filename.c_str()));
 
+	UnloadScript(metaData.uuid.c_str());
+
 	auto scriptData = ScriptData();
 	auto scriptFileName = path(metaData.filename).stem().string();
 
-	/*std::transform(scriptFileName.begin(), scriptFileName.end(),
-	               scriptFileName.begin(),
-	               [](unsigned char c) { return std::tolower(c); });*/
-
 	scriptData.entryPoint = scriptFileName.c_str();
 
-	std::ifstream f(metaData.filename);
+	auto path =
+		FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory);
+	std::ifstream f(path);
 	scriptData.scriptContent = std::string((std::istreambuf_iterator<char>(f)),
 	                                       (std::istreambuf_iterator<char>()))
 	                               .c_str();
 
 	scriptsData_.insert({metaData.uuid.c_str(), scriptData});
+}
+
+void ScriptFactory::UnloadScript(const String& uuid)
+{
+	if (scriptsData_.find(uuid) == scriptsData_.end())
+	{
+		return;
+	}
+
+	scriptsData_.erase(uuid);
 }
 
 std::optional<ScriptData> ScriptFactory::GetScriptData(const String& uuid)
@@ -58,4 +70,9 @@ std::optional<ScriptData> ScriptFactory::GetScriptData(const String& uuid)
 	}
 
 	return scriptsData_[uuid];
+}
+
+bool ScriptFactory::IsScriptUuidValid(const String& uuid)
+{
+	return scriptsData_.find(uuid) != scriptsData_.end();
 }

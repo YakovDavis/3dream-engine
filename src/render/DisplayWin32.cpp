@@ -10,7 +10,7 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 
 	hInstance = hInst;
 
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_CLASSDC;
 	wc.lpfnWndProc = D3E::App::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
@@ -29,10 +29,10 @@ D3E::DisplayWin32::DisplayWin32(LPCWSTR applicationName, HINSTANCE hInst, int sc
 		Debug::HandleLastWindowsError("DisplayWin32");
 	}
 
-	RECT windowRect = { 0, 0, static_cast<LONG>(ClientWidth), static_cast<LONG>(ClientHeight) };
-	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
+	auto dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
-	auto dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+	RECT windowRect = { 0, 0, static_cast<LONG>(ClientWidth), static_cast<LONG>(ClientHeight) };
+	AdjustWindowRect(&windowRect, dwStyle, FALSE);
 
 	auto posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;
 	auto posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) / 2;

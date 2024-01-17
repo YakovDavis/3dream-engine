@@ -1,5 +1,6 @@
 #include "CharacterInitSystem.h"
 
+#include "D3E/Game.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/TransformComponent.h"
@@ -28,13 +29,56 @@
 
 using namespace JPH;
 
-D3E::CharacterInitSystem::CharacterInitSystem(entt::registry& registry, JPH::PhysicsSystem* physicsSystem) :
+D3E::CharacterInitSystem::CharacterInitSystem(entt::registry& registry, Game* game, JPH::PhysicsSystem* physicsSystem) :
 	  updateObserver_{registry, entt::collector.update<PhysicsCharacterComponent>().where<PhysicsComponent>()},
+	  game_(game),
 	  physicsSystem_(physicsSystem)
 {
 	registry.on_construct<PhysicsCharacterComponent>()
 		.connect<&CharacterInitSystem::ComponentCreatedHandler>(
 			this);
+
+	registry.on_destroy<PhysicsCharacterComponent>()
+		.connect<
+			&CharacterInitSystem::ComponentDestroyedHandler>(
+			this);
+
+}
+
+void D3E::CharacterInitSystem::Update(entt::registry& reg, Game* game, float dT)
+{
+	updateObserver_.each(
+		[&](const auto entity)
+		{
+			auto& component = reg.get<PhysicsCharacterComponent>(entity);
+			const BodyLockInterfaceLocking& lockInterface = physicsSystem_->GetBodyLockInterface();
+			{
+				BodyLockWrite lock(lockInterface, component.bodyID_);
+				if (lock.Succeeded())
+				{
+					Body& body = lock.GetBody();
+					if (component.friction_ >= 0.0f)
+					{
+						body.SetFriction(component.friction_);
+					}
+					if (component.restitution_ >= 0.0f)
+					{
+						body.SetRestitution(component.restitution_);
+					}
+					body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+					body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+				}
+			}
+			while (component.yaw_ < -DirectX::XM_2PI)
+				component.yaw_ += DirectX::XM_2PI;
+			while (component.yaw_ > DirectX::XM_2PI)
+				component.yaw_ -= DirectX::XM_2PI;
+			while (component.pitch_ < -DirectX::XM_2PI)
+				component.pitch_ += DirectX::XM_2PI;
+			while (component.pitch_ > DirectX::XM_2PI)
+				component.pitch_ -= DirectX::XM_2PI;
+		}
+	);
 
 }
 
@@ -170,6 +214,22 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
                                                      entt::entity entity)
 {
+	if (game_->IsGameRunning())
+	{
+		OnCreateComponent(registry, entity);
+	}
+}
+
+void D3E::CharacterInitSystem::ComponentDestroyedHandler(entt::registry& registry, entt::entity entity)
+{
+	if (game_->IsGameRunning())
+	{
+		OnDestroyComponent(registry, entity);
+	}
+}
+
+void D3E::CharacterInitSystem::OnCreateComponent(entt::registry& registry, entt::entity entity)
+{
 	auto& characterComponent = registry.get<PhysicsCharacterComponent>(entity);
 	const auto& transformComponent = registry.get<TransformComponent>(entity);
 	BodyInterface &body_interface = physicsSystem_->GetBodyInterface();
@@ -177,21 +237,61 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	{
 		case SphereCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
 			characterComponent.collider_ = new SphereShape(characterComponent.colliderParams_.x);
 			break;
 		}
 		case BoxCollider:
 		{
-			characterComponent.collider_ = new BoxShape(Vec3Arg(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z));
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z <= 0.0f)
+			{
+				characterComponent.colliderParams_.z = 1.0f;
+			}
+			if (characterComponent.colliderParams_.w < 0.0f)
+			{
+				characterComponent.colliderParams_.w = 0.0f;
+			}
+			characterComponent.collider_ = new BoxShape(Vec3Arg(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z), characterComponent.colliderParams_.w);
 			break;
 		}
 		case CapsuleCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
 			characterComponent.collider_ = new CapsuleShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
 			break;
 		}
 		case TaperedCapsuleCollider:
 		{
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z <= 0.0f)
+			{
+				characterComponent.colliderParams_.z = 1.0f;
+			}
 			TaperedCapsuleShapeSettings taperedCapsuleSettings(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z);
 			ShapeSettings::ShapeResult shapeResult = taperedCapsuleSettings.Create();
 			characterComponent.collider_ = new TaperedCapsuleShape(taperedCapsuleSettings, shapeResult);
@@ -199,7 +299,19 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 		}
 		case CylinderCollider:
 		{
-			characterComponent.collider_ = new CylinderShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y);
+			if (characterComponent.colliderParams_.x <= 0.0f)
+			{
+				characterComponent.colliderParams_.x = 1.0f;
+			}
+			if (characterComponent.colliderParams_.y <= 0.0f)
+			{
+				characterComponent.colliderParams_.y = 1.0f;
+			}
+			if (characterComponent.colliderParams_.z < 0.0f)
+			{
+				characterComponent.colliderParams_.z = 0.0f;
+			}
+			characterComponent.collider_ = new CylinderShape(characterComponent.colliderParams_.x, characterComponent.colliderParams_.y, characterComponent.colliderParams_.z);
 			break;
 		}
 			/*case ConvexHullCollider:
@@ -230,20 +342,20 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 
 	/*switch (physicsComponent.colliderType_)
 	{
-		case CapsuleCollider:
-			characterComponent.standingShape_ = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightStanding, cCharacterRadiusStanding)).Create().Get();
-			mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightCrouching, cCharacterRadiusCrouching)).Create().Get();
-			break;
+	    case CapsuleCollider:
+	        characterComponent.standingShape_ = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightStanding, cCharacterRadiusStanding)).Create().Get();
+	        mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightCrouching, cCharacterRadiusCrouching)).Create().Get();
+	        break;
 
-		case CylinderCollider:
-			mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding)).Create().Get();
-			mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching)).Create().Get();
-			break;
+	    case CylinderCollider:
+	        mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding)).Create().Get();
+	        mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching)).Create().Get();
+	        break;
 
-		case EType::Box:
-			mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusStanding, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding))).Create().Get();
-			mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusCrouching, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching))).Create().Get();
-			break;
+	    case EType::Box:
+	        mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusStanding, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding))).Create().Get();
+	        mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusCrouching, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching))).Create().Get();
+	        break;
 	}*/
 	Ref<CharacterSettings> settings = new CharacterSettings();
 	settings->mMaxSlopeAngle = characterComponent.maxSlopeAngle_;
@@ -252,8 +364,63 @@ void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	settings->mFriction = characterComponent.friction_;
 	settings->mSupportingVolume = characterComponent.supportingVolume_;
 	characterComponent.character_ = new Character(settings, RVec3(transformComponent.position.x, transformComponent.position.y, transformComponent.position.z),
-	                           Quat(transformComponent.rotation.x, transformComponent.rotation.y, transformComponent.rotation.z, transformComponent.rotation.w), 0, physicsSystem_);
+	                                              Quat(transformComponent.rotation.x, transformComponent.rotation.y, transformComponent.rotation.z, transformComponent.rotation.w), 0, physicsSystem_);
 	//characterComponent.character_ = new Character(settings, RVec3::sZero(), Quat::sIdentity(), 0, physicsSystem_);
 	characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
 	characterComponent.bodyID_ = characterComponent.character_->GetBodyID();
+}
+
+void D3E::CharacterInitSystem::OnDestroyComponent(entt::registry& registry, entt::entity entity)
+{
+	auto& characterComponent = registry.get<PhysicsCharacterComponent>(entity);
+	characterComponent.character_->RemoveFromPhysicsSystem();
+}
+
+void D3E::CharacterInitSystem::Play(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsCharacterComponent>();
+
+	view.each(
+		[&](const auto entity, auto& characterComponent)
+		{
+			OnCreateComponent(reg, entity);
+		});
+}
+
+void D3E::CharacterInitSystem::Stop(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsCharacterComponent>();
+	view.each(
+		[&](const auto entity, auto& characterComponent)
+		{
+			OnDestroyComponent(reg, entity);
+		});
+}
+
+void D3E::CharacterInitSystem::Pause(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsCharacterComponent>();
+
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+	if (game_->IsGamePaused())
+	{
+		view.each(
+			[&](const auto entity, auto& characterComponent)
+			{
+				//characterComponent.character_->RemoveFromPhysicsSystem();
+				bodyInterface.DeactivateBody(characterComponent.bodyID_);
+			});
+	}
+	else
+	{
+		view.each(
+			[&](const auto entity, auto& characterComponent)
+			{
+				//characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
+				bodyInterface.ActivateBody(characterComponent.bodyID_);
+			});
+	}
 }

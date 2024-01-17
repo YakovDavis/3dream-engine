@@ -5,16 +5,16 @@
 #include "EASTL/map.h"
 #include "EASTL/string.h"
 #include "SoundEngineCommon.h"
+#include "utils/FilenameUtils.h"
 
 #include <format>
 
 using namespace D3E;
 using eastl::map;
-using eastl::string;
 
-FMOD::Sound* SoundEngine::GetSound(const string& name)
+FMOD::Sound* SoundEngine::GetSound(const String& uuid)
 {
-	auto foundIt = sounds.find(name);
+	auto foundIt = sounds.find(uuid);
 
 	if (foundIt == sounds.end())
 		return nullptr;
@@ -107,27 +107,26 @@ int SoundEngine::SetDriver(int id)
 	return CheckError(system->setDriver(id));
 }
 
-void SoundEngine::LoadSound(const string& path, bool is3d, bool isLooping,
-                            bool stream)
+void SoundEngine::LoadSound(SoundMetaData& metadata, const std::string& directory)
 {
-	auto foundIt = sounds.find(path);
+	auto foundIt = sounds.find(metadata.uuid.c_str());
 	if (foundIt != sounds.end())
 		return;
 
 	FMOD_MODE mode = FMOD_DEFAULT;
-	mode |= is3d ? FMOD_3D : FMOD_2D;
-	mode |= isLooping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
-	mode |= stream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
+	mode |= metadata.is3d ? FMOD_3D : FMOD_2D;
+	mode |= metadata.isLooping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
+	mode |= metadata.stream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
 
 	FMOD::Sound* sound = nullptr;
 
-	if (CheckError(system->createSound(path.c_str(), mode, nullptr, &sound)))
+	if (CheckError(system->createSound(FilenameUtils::MetaFilenameToFilePath(metadata.filename, directory).string().c_str(), mode, nullptr, &sound)))
 		return;
 
-	sounds[path] = sound;
+	sounds[metadata.uuid.c_str()] = sound;
 }
 
-void SoundEngine::UnloadSound(const string& soundName)
+void SoundEngine::UnloadSound(const String& soundName)
 {
 	auto foundIt = sounds.find(soundName);
 
@@ -140,7 +139,7 @@ void SoundEngine::UnloadSound(const string& soundName)
 	sounds.erase(foundIt);
 }
 
-void SoundEngine::PlaySound3D(const string& soundName,
+void SoundEngine::PlaySound3D(const String& soundName,
                               const DirectX::SimpleMath::Vector3 loc,
                               float dbVolume)
 {
@@ -176,7 +175,7 @@ void SoundEngine::PlaySound3D(const string& soundName,
 	CheckError(channel->setPaused(false));
 }
 
-void SoundEngine::PlaySound2D(const string& soundName, float dbVolume)
+void SoundEngine::PlaySound2D(const String& soundName, float dbVolume)
 {
 	const DirectX::SimpleMath::Vector3 v = {0.f, 0.f, 0.f};
 	PlaySound3D(soundName, v, dbVolume);
@@ -214,4 +213,9 @@ void D3E::SoundEngine::SetListenerTransform(
 bool SoundEngine::IsPlaying(int channelId) const
 {
 	return false;
+}
+
+bool SoundEngine::IsSoundUuidValid(const String& uuid) const
+{
+	return sounds.find(uuid) != sounds.end();
 }

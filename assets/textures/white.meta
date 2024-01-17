@@ -1,5 +1,5 @@
 {
-    "filename": "assets/textures/white.png",
+    "filename": "white.png",
     "format": {
         "channels": "RGBA8",
         "type": "Texture2D",

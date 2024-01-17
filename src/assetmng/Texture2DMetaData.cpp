@@ -10,6 +10,7 @@ namespace D3E
 		         {"uuid", t.uuid},
 		         {"name", t.name},
 		         {"filename", t.filename},
+		         {"lock_resource_state", t.lockResourceState},
 		         {"format", {
 								{"channels", magic_enum::enum_name(t.format.channels)},
 								{"type", magic_enum::enum_name(t.format.type)},
@@ -31,6 +32,15 @@ namespace D3E
 		j.at("format").at("type").get_to(type);
 		j.at("format").at("dimensions")[0].get_to(t.format.dimensions[0]);
 		j.at("format").at("dimensions")[1].get_to(t.format.dimensions[1]);
+
+		if (j.contains("lock_resource_state"))
+		{
+			j.at("lock_resource_state").get_to(t.lockResourceState);
+		}
+		else
+		{
+			t.lockResourceState = true;
+		}
 
 		auto c = magic_enum::enum_cast<TextureChannels>(channels);
 		if (c.has_value())

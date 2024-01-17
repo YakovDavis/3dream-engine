@@ -1,5 +1,6 @@
 #include "DefaultAssetLoader.h"
 
+#include "D3E/AssetManager.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/render/Material.h"
 #include "MaterialFactory.h"
@@ -22,32 +23,38 @@ void D3E::DefaultAssetLoader::LoadPrimitiveMeshes()
 	MeshFactory::AddMeshFromData(kCubeUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kCubeUUID, "Cube");
 
 	GeometryGenerator::CreateQuad(sm, 0, 0, 1.0f, 1.0f, 0.0f);
 	MeshFactory::AddMeshFromData(kPlaneUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kPlaneUUID, "Plane");
 
 	GeometryGenerator::CreateCylinder(sm, 1.0f, 1.0f,
 	                                  1.0f, 16, 1);
 	MeshFactory::AddMeshFromData(kCyllinderUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kCyllinderUUID, "Cyllinder");
 
 	GeometryGenerator::CreateSphere(sm, 1.0f, 16, 16);
 	MeshFactory::AddMeshFromData(kSphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kSphereUUID, "Sphere");
 
 	GeometryGenerator::CreateGeosphere(sm, 1, 0);
 	MeshFactory::AddMeshFromData(kGeosphereUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kGeosphereUUID, "Geosphere");
 
 	GeometryGenerator::CreateGrid(sm, 128.0f, 128.0f, 128, 128);
 	MeshFactory::AddMeshFromData(kGridUUID, sm);
 	sm.points.clear();
 	sm.indices.clear();
+	AssetManager::RegisterExternalAssetName(kGridUUID, "Grid");
 }
 
 void D3E::DefaultAssetLoader::FillPrimitiveMeshBuffers(
@@ -119,6 +126,13 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddPixelShader("DebugDraw", "DebugDraw.hlsl", "PSMain");
 
 	ShaderFactory::AddComputeShader("Pick", "Pick.hlsl", "CSMain");
+	ShaderFactory::AddComputeShader("Equirect2Cube", "Equirect2Cube.hlsl", "CSMain");
+	ShaderFactory::AddComputeShader("DownsampleLinear", "Downsample.hlsl", "DownsampleLinear");
+	ShaderFactory::AddComputeShader("DownsampleGamma", "Downsample.hlsl", "DownsampleGamma");
+	ShaderFactory::AddComputeShader("DownsampleArray", "DownsampleArray.hlsl", "DownsampleLinear");
+	ShaderFactory::AddComputeShader("SpMap", "SpMap.hlsl", "CSMain");
+	ShaderFactory::AddComputeShader("IrMap", "IrMap.hlsl", "CSMain");
+	ShaderFactory::AddComputeShader("SpBrdf", "SpBrdf.hlsl", "CSMain");
 
 	nvrhi::BindingLayoutDesc layoutDescVDefault = {};
 	layoutDescVDefault.setVisibility(nvrhi::ShaderType::Vertex);
@@ -176,6 +190,39 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
 	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_UAV(0));
 	ShaderFactory::AddBindingLayout("PickC", pickLayoutDesc);
+
+	nvrhi::BindingLayoutDesc equirect2CubeLayoutDesc = {};
+	equirect2CubeLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	equirect2CubeLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	equirect2CubeLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
+	equirect2CubeLayoutDesc.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	ShaderFactory::AddBindingLayout("Equirect2CubeC", equirect2CubeLayoutDesc);
+
+	nvrhi::BindingLayoutDesc downsampleLayoutDesc = {};
+	downsampleLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	downsampleLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	downsampleLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
+	ShaderFactory::AddBindingLayout("DownsampleC", downsampleLayoutDesc);
+
+	nvrhi::BindingLayoutDesc spMapLayoutDesc = {};
+	spMapLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	spMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	spMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	spMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
+	spMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Sampler(0));;
+	ShaderFactory::AddBindingLayout("SpMapC", spMapLayoutDesc);
+
+	nvrhi::BindingLayoutDesc irMapLayoutDesc = {};
+	irMapLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	irMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	irMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
+	irMapLayoutDesc.addItem(nvrhi::BindingLayoutItem::Sampler(0));;
+	ShaderFactory::AddBindingLayout("IrMapC", irMapLayoutDesc);
+
+	nvrhi::BindingLayoutDesc spBrdfLayoutDesc = {};
+	spBrdfLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
+	spBrdfLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
+	ShaderFactory::AddBindingLayout("SpBrdfC", spBrdfLayoutDesc);
 
 	nvrhi::DepthStencilState depthStencilState = {};
 	depthStencilState.setDepthTestEnable(true);
@@ -288,6 +335,41 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	pickingPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("PickC"));
 	ShaderFactory::AddComputePipeline("Pick", pickingPipelineDesc);
 
+	nvrhi::ComputePipelineDesc equirect2CubePipelineDesc = {};
+	equirect2CubePipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("Equirect2Cube"));
+	equirect2CubePipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("Equirect2CubeC"));
+	ShaderFactory::AddComputePipeline("Equirect2Cube", equirect2CubePipelineDesc);
+
+	nvrhi::ComputePipelineDesc downsampleLinearPipelineDesc = {};
+	downsampleLinearPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("DownsampleLinear"));
+	downsampleLinearPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("DownsampleC"));
+	ShaderFactory::AddComputePipeline("DownsampleLinear", downsampleLinearPipelineDesc);
+
+	nvrhi::ComputePipelineDesc downsampleGammaPipelineDesc = {};
+	downsampleGammaPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("DownsampleGamma"));
+	downsampleGammaPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("DownsampleC"));
+	ShaderFactory::AddComputePipeline("DownsampleGamma", downsampleGammaPipelineDesc);
+
+	nvrhi::ComputePipelineDesc downsampleArrayPipelineDesc = {};
+	downsampleArrayPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("DownsampleArray"));
+	downsampleArrayPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("DownsampleC"));
+	ShaderFactory::AddComputePipeline("DownsampleArray", downsampleArrayPipelineDesc);
+
+	nvrhi::ComputePipelineDesc spMapPipelineDesc = {};
+	spMapPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("SpMap"));
+	spMapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SpMapC"));
+	ShaderFactory::AddComputePipeline("SpMap", spMapPipelineDesc);
+
+	nvrhi::ComputePipelineDesc irMapPipelineDesc = {};
+	irMapPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("IrMap"));
+	irMapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("IrMapC"));
+	ShaderFactory::AddComputePipeline("IrMap", irMapPipelineDesc);
+
+	nvrhi::ComputePipelineDesc spBrdfPipelineDesc = {};
+	spBrdfPipelineDesc.setComputeShader(ShaderFactory::GetComputeShader("SpBrdf"));
+	spBrdfPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SpBrdfC"));
+	ShaderFactory::AddComputePipeline("SpBrdf", spBrdfPipelineDesc);
+
 	nvrhi::BindingLayoutDesc layoutDescVDebugDraw = {};
 	layoutDescVDebugDraw.setVisibility(nvrhi::ShaderType::Vertex);
 	layoutDescVDebugDraw.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
@@ -330,8 +412,20 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 	samplerDesc.minFilter = true;
 	samplerDesc.magFilter = true;
 	samplerDesc.mipFilter = true;
-	samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
-	TextureFactory::AddSampler("Base", device, samplerDesc);
+	samplerDesc.addressU = nvrhi::SamplerAddressMode::Wrap;
+	samplerDesc.addressV = nvrhi::SamplerAddressMode::Wrap;
+	samplerDesc.addressW = nvrhi::SamplerAddressMode::Wrap;
+	TextureFactory::AddSampler("BaseCompute", device, samplerDesc);
+
+	auto sampler2Desc = nvrhi::SamplerDesc();
+	sampler2Desc.setMaxAnisotropy(16.0f);
+	sampler2Desc.minFilter = false;
+	sampler2Desc.magFilter = false;
+	sampler2Desc.mipFilter = false;
+	sampler2Desc.addressU = nvrhi::SamplerAddressMode::Wrap;
+	sampler2Desc.addressV = nvrhi::SamplerAddressMode::Wrap;
+	sampler2Desc.addressW = nvrhi::SamplerAddressMode::Wrap;
+	TextureFactory::AddSampler("BaseGraphics", device, sampler2Desc);
 }
 
 void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
@@ -352,7 +446,7 @@ void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
 
 	nvrhi::BindingSetDesc bindingSetDescP = {};
 	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle(kWhiteTextureUUID)));
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseGraphics")));
 	ShaderFactory::AddBindingSetP(kDebugLineBindingSetUUID, bindingSetDescP, "SimpleForwardP");
 }
 

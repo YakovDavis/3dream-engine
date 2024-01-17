@@ -14,6 +14,8 @@
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Game.h"
 #include "json.hpp"
+#include "render/systems/LightInitSystem.h"
+#include "render/systems/StaticMeshInitSystem.h"
 
 bool D3E::ComponentFactory::isInitialized_ = false;
 D3E::Game* D3E::ComponentFactory::game_;
@@ -100,12 +102,14 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			LightComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<LightComponent>(e, c);
+			LightInitSystem::IsDirty = true;
 		}
 		else if (el.at("class") == "StaticMeshComponent")
 		{
 			StaticMeshComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<StaticMeshComponent>(e, c);
+			StaticMeshInitSystem::IsDirty = true;
 		}
 		else if (el.at("class") == "SoundComponent")
 		{
@@ -156,7 +160,7 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 			game_->GetRegistry().get<ObjectInfoComponent>(e).to_json(c);
 			if (!recordUuid)
 			{
-				c.at("id") = EmptyIdStdStr;
+				c.at("uuid") = EmptyIdStdStr;
 			}
 			j.at("components").emplace_back(c);
 		}
@@ -226,5 +230,43 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 			game_->GetRegistry().get<SoundListenerComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
+	}
+}
+
+void D3E::ComponentFactory::ResolveWorld(const json& j)
+{
+	for (const auto& el : j.at("entities"))
+	{
+		ResolveEntity(el);
+	}
+}
+
+void D3E::ComponentFactory::SerializeWorld(json& j)
+{
+	std::string worldId = EmptyIdStdStr;
+
+	if (j.contains("uuid"))
+	{
+		worldId = j.at("uuid");
+	}
+
+	j = json({{"type", "world"}, {"uuid", worldId}, {"entities", {}}});
+
+	for (const auto& ent : game_->GetRegistry().storage<entt::entity>())
+	{
+		if (game_->GetRegistry().all_of<ObjectInfoComponent>(ent))
+		{
+			if (!game_->GetRegistry().get<ObjectInfoComponent>(ent).serializeEntity)
+			{
+				continue;
+			}
+		}
+		else
+		{
+			continue;
+		}
+		json c;
+		SerializeEntity(ent, c, true);
+		j.at("entities").emplace_back(c);
 	}
 }

@@ -60,6 +60,8 @@ namespace D3E
 
 		size_t GetFrameCount();
 
+		bool FindEntityByID(entt::entity& entity, const D3E::String& uuid);
+
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 		std::mutex consoleCommandQueueMutex;
@@ -68,23 +70,56 @@ namespace D3E
 
 		bool isQuitRequested_ = false;
 
+		static bool MouseLockedByImGui;
+		static bool KeyboardLockedByImGui;
+
+		void OnEditorPlayPressed();
+
+		void OnEditorPausePressed();
+
+		void OnEditorStopPressed();
+
+		void OnEditorSaveMapPressed();
+
+		void ClearWorld();
+
+		HRESULT AssetFileImport(String currentDir);
+
+		void AssetDeleteDialog(String filename);
+
+		bool IsGameRunning() const { return isGameRunning_; }
+		bool IsGamePaused() const { return isGamePaused_; }
+
+		void SetContentBrowserFilePath(const std::string& s);
+
+		std::string GetContentBrowserFilePath() const { return contentBrowserFilePath_; }
+
+		void OnSaveSelectedToPrefabPressed();
+
+		void DestroyEntity(const String& uuid);
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
 
 		entt::registry registry_;
 
-		eastl::vector<GameSystem*> systems_;
+		eastl::vector<GameSystem*> editorSystems_;
 
+		eastl::vector<GameSystem*> systems_;
 		eastl::vector<GameSystem*> renderPPsystems_;
 
 		virtual void OnRegisterCustomComponents() {}
 
 		virtual void Init();
 
+		void EditorUpdate(float deltaTime);
+
 		virtual void Update(float deltaTime);
 
 		void Pick();
+
+		void EditorDraw();
 
 		virtual void Draw();
 
@@ -110,11 +145,15 @@ namespace D3E
 
 		eastl::unordered_map<String, entt::entity> uuidEntityList;
 
+		bool isGameRunning_ = false;
+
+		bool isGamePaused_ = false;
+
 	private:
 		void HandleMessages();
 
 		eastl::hash_set<String> selectedUuids;
 
-		void RegisterDefaultComponents();
+		std::string contentBrowserFilePath_ = "";
 	};
 } // namespace D3E

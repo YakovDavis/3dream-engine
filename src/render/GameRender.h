@@ -32,6 +32,7 @@ namespace D3E
 	{
 	public:
 		virtual void Init(eastl::vector<GameSystem*>& systems);
+		virtual void PostAssetLoadInit();
 		virtual void OnResize();
 
 		virtual void PrimitiveBatchStart() {}
@@ -47,9 +48,12 @@ namespace D3E
 
 		virtual void UpdateAnimations(float dT);
 
-		virtual void PrepareDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
-		virtual void Draw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
-		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems, eastl::vector<GameSystem*>& renderPPSystems);
+		virtual void PrepareFrame();
+		virtual void BeginDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawPostProcess(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawGUI();
 
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;

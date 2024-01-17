@@ -7,8 +7,6 @@
 static const float PI = 3.141592f;
 static const float Epsilon = 0.00001f;
 
-static const uint NumLights = 3;
-
 // Constant normal incidence Fresnel factor for all dielectrics.
 static const float3 Fdielectric = 0.04;
 
@@ -17,7 +15,6 @@ struct PS_IN
 	float4 pos : SV_POSITION;
  	float2 tex : TEXCOORD;
 };
-
 cbuffer cbPerScene : register(b0)
 {
 	float4 gLightDir; // w = type
@@ -165,10 +162,9 @@ float4 PSMain(PS_IN input) : SV_Target
 	float metalness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).r;
 	float roughness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).g;
 	float3 worldPos = PositionBuffer.Load(int3(input.pos.xy, 0)).xyz;
-	//float3 norm = normalize(NormalBuffer.Load(int3(input.pos.xy, 0)));
 
 	// Outgoing light direction (vector from world-space fragment position to the "eye").
-	float3 Lo = float3(0.0f, 0.0f, -1.0f); //normalize(gEyePosition.xyz - worldPos);
+	float3 Lo = normalize(gEyePosition.xyz - worldPos);
 	
 	// Angle between surface normal and outgoing light direction.
 	float cosLo = max(0.0, dot(norm, Lo));
@@ -233,8 +229,8 @@ float4 PSMain(PS_IN input) : SV_Target
 		float3 diffuseIBL = kd * albedo * irradiance;
 
 		// Sample pre-filtered specular reflection environment at correct mipmap level.
-		//uint specularTextureLevels = querySpecularTextureLevels();
-		float3 specularIrradiance = float3(0.03f, 0.03f, 0.03f);//SpecularTexture.SampleLevel(DefaultSampler, Lr, roughness * specularTextureLevels).rgb;
+		uint specularTextureLevels = querySpecularTextureLevels();
+		float3 specularIrradiance = SpecularTexture.SampleLevel(DefaultSampler, Lr, roughness * specularTextureLevels).rgb;
 
 		// Split-sum approximation factors for Cook-Torrance specular BRDF.
 		float2 specularBRDF = SpecularBRDF_LUT.Sample(spBRDF_Sampler, float2(cosLo, roughness)).rg;

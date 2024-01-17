@@ -7,47 +7,14 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/ScriptComponent.h"
+#include "D3E/Debug.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "editor/EditorIdManager.h"
 #include "render/components/GridComponent.h"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
-
-entt::entity D3E::CreationSystems::CreateCubeSM(entt::registry& registry,
-                                                const ObjectInfoComponent& info,
-                                                const TransformComponent& tc)
-{
-	const auto e = registry.create();
-	StaticMeshComponent sm;
-	sm.meshUuid = kCubeUUID;
-	sm.pipelineName = "SimpleForward";
-
-	ObjectInfoComponent infoComponent;
-	infoComponent.name = info.name;
-	infoComponent.id = UuidGenerator::NewGuidString();
-	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
-
-	TransformComponent transform(tc);
-	transform.position = tc.position;
-	transform.rotation = tc.rotation;
-	transform.scale = tc.scale;
-
-	SoundComponent sound;
-	sound.fileName = "sfx.mp3";
-	sound.is3D = true;
-	sound.isLooping = true;
-	sound.isStreaming = false;
-	sound.location = transform.position;
-
-	registry.emplace<ObjectInfoComponent>(e, info);
-	registry.emplace<TransformComponent>(e, tc);
-	registry.emplace<StaticMeshComponent>(e, sm);
-	StaticMeshInitSystem::IsDirty = true;
-	registry.emplace<SoundComponent>(e, sound);
-
-	return e;
-}
 
 entt::entity
 D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
@@ -86,9 +53,7 @@ entt::entity D3E::CreationSystems::CreateSM(
 	sm.pipelineName = "GBuffer";
 	sm.materialUuid = materialUuid;
 
-	ObjectInfoComponent infoComponent;
-	infoComponent.name = info.name;
-	infoComponent.parentId = info.parentId;
+	ObjectInfoComponent infoComponent = info;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
@@ -138,6 +103,7 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	ObjectInfoComponent info;
 	info.name = "EditorDebugRenderObject";
 	info.id = UuidGenerator::NewGuidString();
+	info.serializeEntity = false;
 	info.editorId = EditorIdManager::Get()->RegisterUuid(info.id);
 
 	GridComponent grid;
@@ -164,7 +130,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	infoComponent.id = UuidGenerator::NewGuidString();
 
 	SoundComponent sound;
-	sound.fileName = "sfx.mp3";
+	//sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
@@ -219,4 +185,176 @@ entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& re
 	registry.emplace<PhysicsComponent>(e, physc);
 
 	return e;
+}
+
+entt::entity D3E::CreationSystems::OnCreateObjectButtonPressed(entt::registry& registry, int item)
+{
+	switch (item)
+	{
+		case 0:
+			return CreateDefaultEmpty(registry);
+		case 1:
+			return CreateDefaultPlane(registry);
+		case 2:
+			return CreateDefaultCube(registry);
+		case 3:
+			return CreateDefaultSphere(registry);
+		case 4:
+			return CreateDefaultLight(registry);
+		default:
+			Debug::LogWarning("[CreationSystems] Unknown CreateButton item, creating Empty instead");
+			return CreateDefaultEmpty(registry);
+	}
+}
+entt::entity D3E::CreationSystems::CreateDefaultEmpty(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "NewEmpty";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = EditorIdManager::Get()->RegisterUuid(ic.id);
+
+	TransformComponent tc = {};
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateDefaultPlane(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "NewPlane";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = EditorIdManager::Get()->RegisterUuid(ic.id);
+
+	TransformComponent tc = {};
+
+	StaticMeshComponent smc;
+	smc.meshUuid = kPlaneUUID;
+	smc.pipelineName = "GBuffer";
+	smc.materialUuid = kDefaultGridMaterialUUID;
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<StaticMeshComponent>(e, smc);
+	StaticMeshInitSystem::IsDirty = true;
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateDefaultCube(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "NewCube";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = EditorIdManager::Get()->RegisterUuid(ic.id);
+
+	TransformComponent tc = {};
+
+	StaticMeshComponent smc;
+	smc.meshUuid = kCubeUUID;
+	smc.pipelineName = "GBuffer";
+	smc.materialUuid = kDefaultGridMaterialUUID;
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<StaticMeshComponent>(e, smc);
+	StaticMeshInitSystem::IsDirty = true;
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateDefaultSphere(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "NewSphere";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = EditorIdManager::Get()->RegisterUuid(ic.id);
+
+	TransformComponent tc = {};
+
+	StaticMeshComponent smc;
+	smc.meshUuid = kSphereUUID;
+	smc.pipelineName = "GBuffer";
+	smc.materialUuid = kDefaultGridMaterialUUID;
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<StaticMeshComponent>(e, smc);
+	StaticMeshInitSystem::IsDirty = true;
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateDefaultLight(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "NewLight";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = EditorIdManager::Get()->RegisterUuid(ic.id);
+
+	TransformComponent tc = {};
+
+	LightComponent lc = {};
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<LightComponent>(e, lc);
+	LightInitSystem::IsDirty = true;
+
+	return e;
+}
+
+void D3E::CreationSystems::CreateDefaultFPSControllerComponent(entt::registry& registry, entt::entity& entity)
+{
+	FPSControllerComponent component = {};
+	registry.emplace<FPSControllerComponent>(entity, component);
+}
+void D3E::CreationSystems::CreateDefaultCameraComponent(entt::registry& registry, entt::entity& entity)
+{
+	CameraComponent component = {};
+	registry.emplace<CameraComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry, entt::entity& entity)
+{
+	LightInitSystem::IsDirty = true;
+	LightComponent component = {};
+	registry.emplace<LightComponent>(entity, component);
+
+}
+
+void D3E::CreationSystems::CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity)
+{
+	StaticMeshComponent component = {};
+	registry.emplace<StaticMeshComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundComponent component = {};
+	registry.emplace<SoundComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultSoundListenerComponent(entt::registry& registry, entt::entity& entity)
+{
+	SoundListenerComponent component = {};
+	registry.emplace<SoundListenerComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity)
+{
+	ScriptComponent component(entity, EmptyIdString);
+	registry.emplace<ScriptComponent>(entity, component);
 }

@@ -1,9 +1,11 @@
 #pragma once
 
-#include "SimpleMath.h"
+#include "D3E/CommonHeader.h"
 #include "EASTL/map.h"
 #include "EASTL/string.h"
+#include "SimpleMath.h"
 #include "SoundEngineCommon.h"
+#include "assetmng/SoundMetaData.h"
 #include "fmod.h"
 #include "fmod_studio.hpp"
 
@@ -11,7 +13,7 @@ namespace D3E
 {
 	class SoundEngine
 	{
-		typedef eastl::map<eastl::string, FMOD::Sound*> SoundMap;
+		typedef eastl::map<String, FMOD::Sound*> SoundMap;
 		typedef eastl::map<int, FMOD::Channel*> ChannelMap;
 
 	private:
@@ -24,7 +26,7 @@ namespace D3E
 
 		SoundEngine();
 
-		FMOD::Sound* GetSound(const eastl::string& name);
+		FMOD::Sound* GetSound(const eastl::string& uuid);
 
 	public:
 		static SoundEngine& GetInstance();
@@ -44,13 +46,14 @@ namespace D3E
 		int GetDriverCount() const;
 		int SetDriver(int id);
 
-		void LoadSound(const eastl::string& path, bool is3d = false,
-		               bool isLooping = false, bool stream = false);
-		void UnloadSound(const eastl::string& soundName);
-		void PlaySound3D(const eastl::string& soundName,
+		bool IsSoundUuidValid(const String& uuid) const;
+
+		void LoadSound(SoundMetaData& metadata, const std::string& directory);
+		void UnloadSound(const String& uuid);
+		void PlaySound3D(const eastl::string& uuid,
 		                 const DirectX::SimpleMath::Vector3 loc,
 		                 float dbVolume = 1.0f);
-		void PlaySound2D(const eastl::string& soundName, float dbVolume = 1.0f);
+		void PlaySound2D(const eastl::string& uuid, float dbVolume = 1.0f);
 		void SetChannelLocation(int channelId,
 		                        const DirectX::SimpleMath::Vector3 loc);
 		void SetChannelVolume(int channelId, float dbVolume);

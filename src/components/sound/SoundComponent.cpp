@@ -22,23 +22,23 @@ namespace D3E
 		         {"is_streaming", isStreaming},
 		         {"volume", volume},
 		         {"location", std::vector({location.x, location.y, location.z})},
-		         {"file_name", fileName.c_str()}
+		         {"sound_uuid", soundUuid.c_str()}
 		};
 	}
 
 	void SoundComponent::from_json(const json& j)
 	{
 		std::vector<float> tmp_location(3);
-		std::string tmp_fileName;
+		std::string tmp_soundUuid;
 
 		j.at("is_3D").get_to(is3D);
 		j.at("is_looping").get_to(isLooping);
 		j.at("is_streaming").get_to(isStreaming);
 		j.at("volume").get_to(volume);
 		j.at("location").get_to(tmp_location);
-		j.at("file_name").get_to(tmp_fileName);
+		j.at("sound_uuid").get_to(tmp_soundUuid);
 
 		location = DirectX::SimpleMath::Vector3(tmp_location[0], tmp_location[1], tmp_location[2]);
-		fileName = tmp_fileName.c_str();
+		soundUuid = tmp_soundUuid.c_str();
 	}
 }

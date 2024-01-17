@@ -70,7 +70,7 @@ PS_IN VSMain(VS_IN input)
 }
 
 [earlydepthstencil]
-GBuffer PSMain(PS_IN input)// : SV_Target
+GBuffer PSMain(PS_IN input)
 {
 	GBuffer result = (GBuffer)0;
 
@@ -85,7 +85,6 @@ GBuffer PSMain(PS_IN input)// : SV_Target
 
 	float3 N = normalize(2.0 * NormalMap.SampleLevel(DefaultSampler, input.tex.xy, 0).rgb - 1.0);
 	result.Normal = normalize(mul(input.tangentBasis, N));
-	//result.Normal = normalize(input.normal.xyz);
 	
 	return result;
 }

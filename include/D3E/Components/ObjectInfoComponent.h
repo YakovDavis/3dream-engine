@@ -17,6 +17,8 @@ namespace D3E
 		String tag;
 		uint32_t editorId = 0;
 		bool visible = true; // TODO: implement
+		bool serializeEntity = true;
+		bool internalObject = false;
 
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;

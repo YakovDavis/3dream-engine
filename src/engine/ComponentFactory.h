@@ -20,7 +20,9 @@ namespace D3E
 		ComponentFactory() = delete;
 		static void Initialize(Game* game);
 		static entt::entity ResolveEntity(const json& j);
+		static void ResolveWorld(const json& j);
 		static void SerializeEntity(const entt::entity& e, json& j, bool recordUuid);
+		static void SerializeWorld(json& j);
 		static eastl::vector<String> GetAllEntityComponents(const entt::entity& e);
 		static bool IsInitialized() { return isInitialized_; }
 		static void DestroyResources();

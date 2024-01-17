@@ -23,6 +23,8 @@ namespace D3E
 		~PhysicsInfo();
 		void updatePhysics();
 		JPH::PhysicsSystem* getPhysicsSystem() { return physicsSystem_; }
+		bool getIsPaused() { return isPaused_; }
+		void setIsPaused(bool isPaused) { isPaused_ = isPaused; }
 
 	private:
 		JPH::PhysicsSystem* physicsSystem_;
@@ -33,6 +35,7 @@ namespace D3E
 		ObjectLayerPairFilterImpl* objectLayerPairFilter_;
 		JoltDebugRenderer* joltRenderer_;
 		JoltContactListener* contactListener_;
+		bool isPaused_;
 		static constexpr int TEMP_ALLOCATOR_SIZE = 10 * 1024 * 1024;
 		static constexpr int MAX_BODIES = 65536;
 		static constexpr int NUM_BODY_MUTEXES = 0;

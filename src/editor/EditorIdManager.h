@@ -19,6 +19,7 @@ namespace D3E
 		static EditorIdManager* Get();
 		uint32_t RegisterUuid(const eastl::string& uuid);
 		void UnregisterUuid(const eastl::string& uuid);
+		void UnregisterAll();
 		eastl::string GetUuid(uint32_t id);
 	};
 }
