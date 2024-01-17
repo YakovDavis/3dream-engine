@@ -127,6 +127,9 @@ void ScriptingEngine::InitScriptComponent(ScriptComponent& c)
 	c.onCollisionExit_ = userType["on_collision_exit"];
 	c.onCollisionExit_.set_error_handler(luaState_["error_handler"]);
 
+	c.onClicked_ = userType["on_clicked"];
+	c.onClicked_.set_error_handler(luaState_["error_handler"]);
+
 	c.self_["owner_id"] = c.ownerId_;
 }
 

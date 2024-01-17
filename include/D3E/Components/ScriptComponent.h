@@ -51,8 +51,13 @@ namespace D3E
 			ValidateCallResult(onCollisionExit_(self_, bodyId));
 		}
 
-		entt::entity GetOwnerId() const { return ownerId_; }
+		void OnClicked(entt::entity e)
+		{
+			ValidateCallResult(onClicked_(self_, e));
+		}
 
+		entt::entity GetOwnerId() const { return ownerId_; }
+		sol::table& GetSelf() { return self_; }
 		const String& GetEntryPoint() const { return entryPoint_; }
 		const String& GetScriptUuid() const { return scriptUuid_; }
 		void SetScriptUuid(const String& uuid) { scriptUuid_ = uuid; }
@@ -66,6 +71,7 @@ namespace D3E
 			onCollisionEnter_ = sol::nil;
 			onCollisionStay_ = sol::nil;
 			onCollisionExit_ = sol::nil;
+			onClicked_ = sol::nil;
 		}
 
 		void to_json(json& j) const override;
@@ -82,6 +88,7 @@ namespace D3E
 		sol::function onCollisionEnter_;
 		sol::function onCollisionStay_;
 		sol::function onCollisionExit_;
+		sol::function onClicked_;
 
 		void ValidateCallResult(const sol::protected_function_result& r)
 		{

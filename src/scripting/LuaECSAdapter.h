@@ -15,7 +15,7 @@ namespace D3E
 
 		sol::object GetComponent(entt::entity e, ComponentType type,
 		                         sol::this_state s);
-		sol::object GetScriptComponent(entt::entity e, const String className,
+		sol::object GetScriptComponent(entt::entity e, const String& className,
 		                               sol::this_state s);
 		sol::object FindWithBodyId(const JPH::BodyID& bodyId,
 		                           sol::this_state s);

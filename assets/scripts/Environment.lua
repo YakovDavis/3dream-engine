@@ -25,6 +25,9 @@ end
 function NativeScript:on_collision_exit(collision)
 end
 
+function NativeScript:on_clicked(e)
+end
+
 function error_handler(message)
     return "Lua Error: " .. message
 end

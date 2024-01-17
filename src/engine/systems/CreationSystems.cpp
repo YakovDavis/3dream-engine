@@ -53,9 +53,7 @@ entt::entity D3E::CreationSystems::CreateSM(
 	sm.pipelineName = "GBuffer";
 	sm.materialUuid = materialUuid;
 
-	ObjectInfoComponent infoComponent;
-	infoComponent.name = info.name;
-	infoComponent.parentId = info.parentId;
+	ObjectInfoComponent infoComponent = info;
 	infoComponent.id = UuidGenerator::NewGuidString();
 	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
