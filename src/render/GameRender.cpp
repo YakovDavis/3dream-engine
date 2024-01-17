@@ -283,18 +283,18 @@ void D3E::GameRender::DrawPostProcess(entt::registry& registry,
 
 	commandList_->open();
 #ifdef D3E_WITH_EDITOR
+	DrawSkybox(registry, gameFramebuffer_);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
-	DrawSkybox(registry, gameFramebuffer_);
 	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
+	DrawSkybox(registry, currentFramebuffer);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
-	DrawSkybox(registry, currentFramebuffer);
 #endif
 
 	// Tonemapper

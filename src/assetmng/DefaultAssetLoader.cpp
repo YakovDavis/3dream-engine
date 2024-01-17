@@ -321,7 +321,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	skyDSState.setFrontFaceStencil(skyStencilOpDesc);
 	skyDSState.setBackFaceStencil(skyStencilOpDesc);
 	skyDSState.setStencilReadMask(0x01);
-	skyDSState.setStencilWriteMask(0x00);
+	skyDSState.setStencilWriteMask(0x01);
 	renderState.depthStencilState = skyDSState;
 	skyboxPipelineDesc.setRenderState(renderState);
 	skyboxPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
@@ -367,7 +367,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassDSState.setFrontFaceStencil(lightpassStencilOpDesc);
 	lightpassDSState.setBackFaceStencil(lightpassStencilOpDesc);
 	lightpassDSState.setStencilReadMask(0x01);
-	lightpassDSState.setStencilWriteMask(0x00);
+	lightpassDSState.setStencilWriteMask(0x01);
 	renderState.depthStencilState = lightpassDSState;
 	lightpassPipelineDesc.setRenderState(renderState);
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
