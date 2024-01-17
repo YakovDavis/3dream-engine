@@ -1,11 +1,11 @@
-#include "NavmeshManager.h"
+#include "NavmeshBuilder.h"
 
-#include "D3E/Components/NavmeshComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
+#include "D3E/Components/navigation/NavmeshCore.h"
 #include "D3E/Debug.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "EASTL/vector.h"
-#include "NavmeshCore.h"
 #include "Recast.h"
 #include "RecastDump.h"
 #include "assetmng/MeshData.h"
@@ -15,33 +15,45 @@
 
 using namespace D3E;
 
-NavmeshManager::NavmeshManager()
+NavmeshBuilder::NavmeshBuilder()
 	: cfg_(), heightField_(nullptr), compactHeightField_(nullptr),
 	  contourSet_(nullptr), polyMesh_(nullptr), polyMeshDetail_(nullptr),
-	  meshData_(nullptr)
+	  meshData_(nullptr), crowd_(nullptr), navMesh_(nullptr),
+	  navQuery_(nullptr), triAreas_(nullptr)
 {
+	navQuery_ = dtAllocNavMeshQuery();
+	crowd_ = dtAllocCrowd();
 }
 
-NavmeshManager::NavmeshManager(MeshData* meshData, const NavmeshConfig& cfg)
-	: meshData_(meshData), cfg_(cfg), heightField_(nullptr),
+NavmeshBuilder::NavmeshBuilder(MeshData* meshData)
+	: meshData_(meshData), cfg_(), heightField_(nullptr),
 	  compactHeightField_(nullptr), contourSet_(nullptr), polyMesh_(nullptr),
-	  polyMeshDetail_(nullptr)
+	  polyMeshDetail_(nullptr), crowd_(nullptr), navMesh_(nullptr),
+	  navQuery_(nullptr), triAreas_(nullptr)
 {
+	navQuery_ = dtAllocNavMeshQuery();
+	crowd_ = dtAllocCrowd();
 }
 
-bool NavmeshManager::Build()
+NavmeshBuilder::~NavmeshBuilder()
+{
+	Clear();
+}
+
+bool NavmeshBuilder::Build(NavmeshComponent& nc)
 {
 	Clear();
 
+	cfg_ = nc.config;
+
 	if (!meshData_)
 	{
-		Debug::LogError("[NavmeshManager] : Build(): meshData is null.");
+		Debug::LogError("[NavmeshBuilder] : Build(): meshData is null.");
 
 		return false;
 	}
 
-	float* bmin = nullptr;
-	float* bmax = nullptr;
+	eastl::vector<float> bmin(3), bmax(3);
 	eastl::vector<float> vertices;
 	eastl::vector<int> triangles;
 	const int vertexCount = meshData_->points.size();
@@ -59,7 +71,14 @@ bool NavmeshManager::Build()
 		triangles.push_back(i);
 	}
 
-	rcCalcBounds(vertices.data(), meshData_->points.size(), bmin, bmax);
+	rcCalcBounds(vertices.data(), meshData_->points.size(), bmin.data(),
+	             bmax.data());
+
+	/*for (int i = 0; i < bmin.size(); ++i)
+	{
+	    bmin[i] *= 10;
+	    bmax[i] *= 10;
+	}*/
 
 	rcConfig cfg{};
 	cfg.cs = cfg_.cellSize;
@@ -78,8 +97,8 @@ bool NavmeshManager::Build()
 	;
 	cfg.detailSampleMaxError = cfg.ch * cfg_.detailSampleMaxError;
 
-	rcVcopy(cfg.bmin, bmin);
-	rcVcopy(cfg.bmax, bmax);
+	rcVcopy(cfg.bmin, bmin.data());
+	rcVcopy(cfg.bmax, bmax.data());
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 	ctx_.resetTimers();
@@ -90,7 +109,7 @@ bool NavmeshManager::Build()
 
 	if (!heightField_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory 'solid'.");
+		Debug::LogError("[NavmeshBuilder] : Out of memory 'solid'.");
 
 		return false;
 	}
@@ -101,7 +120,7 @@ bool NavmeshManager::Build()
 	if (!r)
 	{
 		Debug::LogError(
-			"[NavmeshManager] : Could not create solid heightfield.");
+			"[NavmeshBuilder] : Could not create solid heightfield.");
 
 		return false;
 	}
@@ -110,7 +129,7 @@ bool NavmeshManager::Build()
 
 	if (!triAreas_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory triAreas_.");
+		Debug::LogError("[NavmeshBuilder] : Out of memory triAreas_.");
 
 		return false;
 	}
@@ -126,7 +145,7 @@ bool NavmeshManager::Build()
 
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not rasterize triangles.");
+		Debug::LogError("[NavmeshBuilder] : Could not rasterize triangles.");
 
 		return false;
 	}
@@ -147,7 +166,7 @@ bool NavmeshManager::Build()
 	compactHeightField_ = rcAllocCompactHeightfield();
 	if (!compactHeightField_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory 'compactHeightField");
+		Debug::LogError("[NavmeshBuilder] : Out of memory 'compactHeightField");
 
 		return false;
 	}
@@ -156,7 +175,7 @@ bool NavmeshManager::Build()
 	                              *heightField_, *compactHeightField_);
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not build compact data.");
+		Debug::LogError("[NavmeshBuilder] : Could not build compact data.");
 
 		return false;
 	}
@@ -168,7 +187,7 @@ bool NavmeshManager::Build()
 
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not erode.");
+		Debug::LogError("[NavmeshBuilder] : Could not erode.");
 	}
 
 	/*const ConvexVolume* vols = m_geom->getConvexVolumes();
@@ -186,10 +205,12 @@ bool NavmeshManager::Build()
 			if (!r)
 			{
 				Debug::LogError(
-					"[NavmeshManager] : Could not build layer regions.");
+					"[NavmeshBuilder] : Could not build layer regions.");
 
 				return false;
 			}
+
+			break;
 		}
 		case PartitionType::kWatershed:
 		{
@@ -198,7 +219,7 @@ bool NavmeshManager::Build()
 			if (!r)
 			{
 				Debug::LogError(
-					"[NavmeshManager] : Could not build distance field.");
+					"[NavmeshBuilder] : Could not build distance field.");
 
 				return false;
 			}
@@ -208,10 +229,12 @@ bool NavmeshManager::Build()
 			if (!r)
 			{
 				Debug::LogError(
-					"[NavmeshManager] : Could not build watershed regions.");
+					"[NavmeshBuilder] : Could not build watershed regions.");
 
 				return false;
 			}
+
+			break;
 		}
 		case PartitionType::kMonotone:
 		{
@@ -226,17 +249,21 @@ bool NavmeshManager::Build()
 
 				return false;
 			}
+
+			break;
 		}
 		default:
 		{
-			Debug::LogError("[NavmeshManager] : Unknown partition type");
+			Debug::LogError("[NavmeshBuilder] : Unknown partition type");
 		}
 	}
 
 	contourSet_ = rcAllocContourSet();
 	if (!contourSet_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory 'contourSet_'.");
+		Debug::LogError("[NavmeshBuilder] : Out of memory 'contourSet_'.");
+
+		return false;
 	}
 
 	r = rcBuildContours(&ctx_, *compactHeightField_, cfg.maxSimplificationError,
@@ -244,7 +271,7 @@ bool NavmeshManager::Build()
 
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not create contours.");
+		Debug::LogError("[NavmeshBuilder] : Could not create contours.");
 
 		return false;
 	}
@@ -252,7 +279,7 @@ bool NavmeshManager::Build()
 	polyMesh_ = rcAllocPolyMesh();
 	if (!polyMesh_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory 'polyMesh_'.");
+		Debug::LogError("[NavmeshBuilder] : Out of memory 'polyMesh_'.");
 
 		return false;
 	}
@@ -261,7 +288,7 @@ bool NavmeshManager::Build()
 
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not triangulate contours.");
+		Debug::LogError("[NavmeshBuilder] : Could not triangulate contours.");
 
 		return false;
 	}
@@ -270,7 +297,7 @@ bool NavmeshManager::Build()
 
 	if (!polyMeshDetail_)
 	{
-		Debug::LogError("[NavmeshManager] : Out of memory 'polyMeshDetail_'.");
+		Debug::LogError("[NavmeshBuilder] : Out of memory 'polyMeshDetail_'.");
 
 		return false;
 	}
@@ -281,7 +308,7 @@ bool NavmeshManager::Build()
 
 	if (!r)
 	{
-		Debug::LogError("[NavmeshManager] : Could not build detail mesh.");
+		Debug::LogError("[NavmeshBuilder] : Could not build detail mesh.");
 
 		return false;
 	}
@@ -350,7 +377,7 @@ bool NavmeshManager::Build()
 		if (!r)
 		{
 			Debug::LogError(
-				"[NavmeshManager] : Could not build Detour navmesh.");
+				"[NavmeshBuilder] : Could not build Detour navmesh.");
 
 			return false;
 		}
@@ -360,7 +387,7 @@ bool NavmeshManager::Build()
 		{
 			dtFree(navData);
 			Debug::LogError(
-				"[NavmeshManager] : Could not create Detour navmesh");
+				"[NavmeshBuilder] : Could not create Detour navmesh");
 
 			return false;
 		}
@@ -369,7 +396,7 @@ bool NavmeshManager::Build()
 		if (dtStatusFailed(status))
 		{
 			dtFree(navData);
-			Debug::LogError("[NavmeshManager] : Could not init Detour navmesh");
+			Debug::LogError("[NavmeshBuilder] : Could not init Detour navmesh");
 
 			return false;
 		}
@@ -378,7 +405,7 @@ bool NavmeshManager::Build()
 		if (dtStatusFailed(status))
 		{
 			Debug::LogError(
-				"[NavmeshManager] : Could not init Detour navmesh query");
+				"[NavmeshBuilder] : Could not init Detour navmesh query");
 
 			return false;
 		}
@@ -391,25 +418,25 @@ bool NavmeshManager::Build()
 	                              polyMesh_->nverts, polyMesh_->npolys)
 	                      .c_str());
 
+	nc.isBuilt = true;
+	nc.navMesh = navMesh_;
+	nc.navQuery = navQuery_;
+	nc.crowd = crowd_;
+
 	return true;
 }
 
-void NavmeshManager::Clear()
+void NavmeshBuilder::Clear()
 {
-	cfg_ = {};
-
 	rcFreeHeightField(heightField_);
 	rcFreeCompactHeightfield(compactHeightField_);
 	rcFreeContourSet(contourSet_);
 	rcFreePolyMesh(polyMesh_);
 	rcFreePolyMeshDetail(polyMeshDetail_);
-	dtFreeNavMesh(navMesh_);
 
 	heightField_ = nullptr;
 	compactHeightField_ = nullptr;
 	contourSet_ = nullptr;
 	polyMesh_ = nullptr;
 	polyMeshDetail_ = nullptr;
-	navMesh_ = nullptr;
-	meshData_ = nullptr;
 }

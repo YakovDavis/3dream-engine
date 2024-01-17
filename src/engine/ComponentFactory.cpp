@@ -12,7 +12,7 @@
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
-#include "D3E/Components/NavmeshComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Game.h"
 #include "json.hpp"
 #include "render/systems/LightInitSystem.h"

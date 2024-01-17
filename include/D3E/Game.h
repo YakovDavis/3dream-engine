@@ -73,6 +73,8 @@ namespace D3E
 		static bool MouseLockedByImGui;
 		static bool KeyboardLockedByImGui;
 
+		void BuildNavmesh(entt::entity e);
+
 		void OnEditorPlayPressed();
 
 		void OnEditorPausePressed();

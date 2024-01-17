@@ -11,6 +11,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -1403,6 +1404,17 @@ void D3E::Editor::DrawInspector()
 					} else 
 					if (componentName == "NavmeshComponent")
 					{
+						auto& nc = game_->GetRegistry().get<NavmeshComponent>(
+							currentEntity);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+						ImGui::Checkbox("Navmesh is built", &nc.isBuilt);
+						ImGui::PopItemFlag();
+						
+						if (ImGui::Button("Build"))
+						{
+							game_->BuildNavmesh(currentEntity);
+						}
 					}
 
 					ImGui::TreePop();

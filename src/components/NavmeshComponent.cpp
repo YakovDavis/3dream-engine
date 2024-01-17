@@ -1,4 +1,4 @@
-#include "D3E/Components/NavmeshComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 
 #include "json.hpp"
 

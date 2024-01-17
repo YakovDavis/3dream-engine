@@ -205,15 +205,15 @@ add_library("${PROJECT_NAME}" SHARED
         src/tinyexr/miniz.c
         src/tinyexr/miniz.h
         src/tinyexr/tinyexr.h
-        include/D3E/Components/NavmeshComponent.h 
+        include/D3E/Components/navigation/NavmeshComponent.h
         src/navigation/Context.h 
         src/navigation/Context.cpp 
         src/navigation/PerformanceTimer.h 
         src/navigation/PerformanceTimer.cpp
-        src/navigation/NavmeshManager.h
-        src/navigation/NavmeshManager.cpp
-        src/navigation/NavmeshConfig.h
-        src/navigation/NavmeshCore.h 
+        src/navigation/NavmeshBuilder.h
+        src/navigation/NavmeshBuilder.cpp
+        include/D3E/Components/navigation/NavmeshConfig.h
+        include/D3E/Components/navigation/NavmeshCore.h
         src/components/NavmeshComponent.cpp
 )
 

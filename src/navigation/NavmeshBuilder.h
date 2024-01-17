@@ -1,22 +1,24 @@
 #pragma once
 
 #include "Context.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
+#include "D3E/Components/navigation/NavmeshConfig.h"
 #include "DetourCrowd.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
-#include "NavmeshConfig.h"
 #include "Recast.h"
 #include "assetmng/MeshData.h"
 
 namespace D3E
 {
-	class NavmeshManager
+	class NavmeshBuilder
 	{
 	public:
-		NavmeshManager();
-		NavmeshManager(MeshData* meshData, const NavmeshConfig& cfg);
+		NavmeshBuilder();
+		NavmeshBuilder(MeshData* meshData);
+		~NavmeshBuilder();
 
-		bool Build();
+		bool Build(NavmeshComponent& nc);
 		void Clear();
 
 	private:
