@@ -12,6 +12,7 @@
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/NavmeshComponent.h"
 #include "D3E/Game.h"
 #include "json.hpp"
 #include "render/systems/LightInitSystem.h"
@@ -37,6 +38,7 @@ void D3E::ComponentFactory::Initialize(D3E::Game* game)
 	typeNames_.insert({entt::type_id<StaticMeshComponent>().hash(), "StaticMeshComponent"});
 	typeNames_.insert({entt::type_id<SoundComponent>().hash(), "SoundComponent"});
 	typeNames_.insert({entt::type_id<SoundListenerComponent>().hash(), "SoundListenerComponent"});
+	typeNames_.insert({entt::type_id<NavmeshComponent>().hash(), "NavmeshComponent"});
 }
 
 void D3E::ComponentFactory::DestroyResources()

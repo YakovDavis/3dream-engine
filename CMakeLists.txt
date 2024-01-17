@@ -213,7 +213,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/navigation/NavmeshManager.h
         src/navigation/NavmeshManager.cpp
         src/navigation/NavmeshConfig.h
-        src/navigation/NavmeshCore.h)
+        src/navigation/NavmeshCore.h 
+        src/components/NavmeshComponent.cpp
+)
 
 add_subdirectory(libs)
 

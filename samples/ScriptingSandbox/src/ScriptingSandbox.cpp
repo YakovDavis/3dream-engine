@@ -38,6 +38,13 @@ void ScriptingSandbox::Init()
 
 	GetRegistry().emplace<D3E::ScriptComponent>(duckId, scriptComponent);
 
+	info.name = "Terrain";
+	tc.position = Vector3(0.f, 0.f, 0.f);
+	tc.scale = Vector3(0.1f, 0.1f, 0.1f);
+	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc,
+	                               "172d8c66-fe35-4591-ae35-fa15fa1097be",
+	                               "ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+
 	info.name = "DirectionalLight";
 
 	D3E::CreationSystems::CreateLight(GetRegistry(), info, tc);
