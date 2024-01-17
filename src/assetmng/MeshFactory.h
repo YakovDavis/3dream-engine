@@ -5,6 +5,7 @@
 #include "EASTL/vector.h"
 #include "MeshData.h"
 #include "MeshMetaData.h"
+#include "SkyMeshData.h"
 #include "assimp/scene.h"
 #include "render/VertexIndexBufferInfo.h"
 
@@ -19,6 +20,7 @@ namespace D3E
 		static Game* activeGame_;
 
 		static eastl::unordered_map<String, MeshData> meshData_;
+		static eastl::unordered_map<String, SkyMeshData> skyMeshData_;
 		static eastl::unordered_map<String, nvrhi::BufferHandle> vBuffers_;
 		static eastl::unordered_map<String, nvrhi::VertexBufferBinding> vbBindings_;
 		static eastl::unordered_map<String, nvrhi::BufferHandle> iBuffers_;
@@ -37,9 +39,11 @@ namespace D3E
 		static void LoadMesh(const MeshMetaData& metaData, const std::string& directory, bool firstLoad, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 		static void UnloadMesh(const String& uuid);
 		static void FillMeshBuffers(const String& uuid, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
+		static void FillSkyMeshBuffers(const String& uuid, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
 		static bool IsMeshUuidValid(const String& uuid);
 		static MeshData& GetMeshData(const String& uuid);
+		static SkyMeshData& GetSkyMeshData(const String& uuid);
 		static nvrhi::BufferHandle GetVertexBuffer(const String& uuid);
 		static nvrhi::VertexBufferBinding GetVertexBufferBinding(const String& uuid);
 		static nvrhi::BufferHandle GetIndexBuffer(const String& uuid);

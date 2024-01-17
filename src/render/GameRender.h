@@ -27,6 +27,8 @@ namespace D3E
 
 	class DebugRenderer;
 
+	class SkyboxComponent;
+
 	// Internal class for managing render devices, swap chains etc.
 	class GameRender
 	{
@@ -54,6 +56,8 @@ namespace D3E
 		virtual void DrawPostProcess(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawGUI();
+
+		void DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* fb);
 
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;

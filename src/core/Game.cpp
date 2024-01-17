@@ -214,6 +214,8 @@ void D3E::Game::Init()
 #endif
 
 	ComponentFactory::Initialize(this);
+
+	CreationSystems::CreateSkybox(registry_);
 }
 
 void D3E::Game::EditorUpdate(const float deltaTime)

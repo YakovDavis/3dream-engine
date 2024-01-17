@@ -14,6 +14,7 @@ namespace D3E
 		std::string uuid;
 		std::string name;
 		std::string filename;
+		std::string inputLayout;
 	};
 
 	void to_json(json& j, const MeshMetaData& t);
