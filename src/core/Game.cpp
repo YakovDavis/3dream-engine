@@ -518,6 +518,7 @@ void D3E::Game::Pick()
 			selectedUuids.clear();
 		}
 		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+		OnObjectClicked(uuidEntityList[EditorIdManager::Get()->GetUuid(editorPickedId)]);
 	}
 	EditorUtilsRenderSystem::isSelectionDirty = true;
 	CalculateGizmoTransformsOffsets();
@@ -857,4 +858,12 @@ void D3E::Game::DestroyEntity(const D3E::String& uuid)
 	}
 
 	registry_.destroy(uuidEntityList[uuid]);
+}
+
+void D3E::Game::OnObjectClicked(entt::entity entity)
+{
+	if (auto scriptComponent = registry_.try_get<ScriptComponent>(entity))
+	{
+		scriptComponent->OnClicked(entity);
+	}
 }
