@@ -329,8 +329,10 @@ void D3E::CreationSystems::CreateDefaultCameraComponent(entt::registry& registry
 
 void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry, entt::entity& entity)
 {
+	LightInitSystem::IsDirty = true;
 	LightComponent component = {};
 	registry.emplace<LightComponent>(entity, component);
+
 }
 
 void D3E::CreationSystems::CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity)

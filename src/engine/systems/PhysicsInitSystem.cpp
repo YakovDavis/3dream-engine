@@ -1,5 +1,6 @@
 #include "PhysicsInitSystem.h"
 
+#include "D3E/Game.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
@@ -22,8 +23,9 @@
 
 using namespace JPH;
 
-D3E::PhysicsInitSystem::PhysicsInitSystem(entt::registry& registry, JPH::PhysicsSystem* physicsSystem) :
+D3E::PhysicsInitSystem::PhysicsInitSystem(entt::registry& registry, Game* game, JPH::PhysicsSystem* physicsSystem) :
 	  updateObserver_{registry, entt::collector.update<PhysicsComponent>().where<TransformComponent>()},
+	  game_(game),
 	  physicsSystem_(physicsSystem)
 {
 	registry.on_construct<PhysicsComponent>()
@@ -72,6 +74,72 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 
 void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
                              entt::entity entity)
+{
+	if (game_->IsGameRunning())
+	{
+		OnCreateComponent(registry, entity);
+	}
+}
+
+void D3E::PhysicsInitSystem::ComponentDestroyedHandler(entt::registry& registry,
+                               entt::entity entity)
+{
+	if (game_->IsGameRunning())
+	{
+		OnDestroyComponent(registry, entity);
+	}
+}
+
+void D3E::PhysicsInitSystem::Play(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsComponent>();
+
+	view.each(
+		[&](const auto entity, auto& physicsComponent)
+		{
+			OnCreateComponent(reg, entity);
+		});
+}
+
+void D3E::PhysicsInitSystem::Pause(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsComponent>();
+
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+	if (game_->IsGamePaused())
+	{
+		view.each(
+			[&](const auto entity, auto& physicsComponent)
+			{
+				bodyInterface.DeactivateBody(physicsComponent.bodyID_);
+			});
+	}
+	else
+	{
+		view.each(
+			[&](const auto entity, auto& physicsComponent)
+			{
+				bodyInterface.ActivateBody(physicsComponent.bodyID_);
+			});
+	}
+
+}
+
+void D3E::PhysicsInitSystem::Stop(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsComponent>();
+
+	view.each(
+		[&](const auto entity, auto& physicsComponent)
+		{
+			OnDestroyComponent(reg, entity);
+		});
+}
+
+void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::entity entity)
 {
 	auto& physicsComponent = registry.get<PhysicsComponent>(entity);
 	const auto& transformComponent = registry.get<TransformComponent>(entity);
@@ -227,8 +295,7 @@ void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
 	physicsComponent.isInitialized_ = true;
 }
 
-void D3E::PhysicsInitSystem::ComponentDestroyedHandler(entt::registry& registry,
-                               entt::entity entity)
+void D3E::PhysicsInitSystem::OnDestroyComponent(entt::registry& registry, entt::entity entity)
 {
 	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
 	auto& physicsComponent = registry.get<PhysicsComponent>(entity);
@@ -238,5 +305,5 @@ void D3E::PhysicsInitSystem::ComponentDestroyedHandler(entt::registry& registry,
 	}
 	bodyInterface.RemoveBody(physicsComponent.bodyID_);
 	bodyInterface.DestroyBody(physicsComponent.bodyID_);
-	delete physicsComponent.collider_;
+	//delete physicsComponent.collider_;
 }

@@ -4,6 +4,7 @@
 #include "Editor.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "input/InputDevice.h"
+#include "render/systems/LightInitSystem.h"
 
 D3E::ComponentCreationWindow::ComponentCreationWindow(D3E::Game* game, D3E::Editor* editor)
 {
@@ -1140,6 +1141,7 @@ void D3E::ComponentCreationWindow::Draw()
 			ImGui::Button("Create", ImVec2(0, 0));
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
+				LightInitSystem::IsDirty = true;
 				game_->GetRegistry().emplace<LightComponent>(currentEntity, lightComponent);
 				lightComponent = {};
 				open = false;
