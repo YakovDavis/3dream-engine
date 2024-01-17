@@ -64,9 +64,9 @@ void D3E::LightInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* com
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(5, TextureFactory::GetTextureHandle(kIrMapTextureUUID)));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(6, TextureFactory::GetTextureHandle(kSpBrdfLutTextureUUID)));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(7, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
-				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseGraphics")));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(1, TextureFactory::GetSampler("SpBrdf")));
-				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(2, TextureFactory::GetSampler("Base")));
+				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(2, TextureFactory::GetSampler("BaseGraphics")));
 				  ShaderFactory::AddBindingSetP(info.id, bindingSetDescP, "LightPassP");
 
 				  lc.initialized = true;

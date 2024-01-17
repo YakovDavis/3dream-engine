@@ -415,8 +415,17 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 	samplerDesc.addressU = nvrhi::SamplerAddressMode::Wrap;
 	samplerDesc.addressV = nvrhi::SamplerAddressMode::Wrap;
 	samplerDesc.addressW = nvrhi::SamplerAddressMode::Wrap;
-	//samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
-	TextureFactory::AddSampler("Base", device, samplerDesc);
+	TextureFactory::AddSampler("BaseCompute", device, samplerDesc);
+
+	auto sampler2Desc = nvrhi::SamplerDesc();
+	sampler2Desc.setMaxAnisotropy(16.0f);
+	sampler2Desc.minFilter = false;
+	sampler2Desc.magFilter = false;
+	sampler2Desc.mipFilter = false;
+	sampler2Desc.addressU = nvrhi::SamplerAddressMode::Wrap;
+	sampler2Desc.addressV = nvrhi::SamplerAddressMode::Wrap;
+	sampler2Desc.addressW = nvrhi::SamplerAddressMode::Wrap;
+	TextureFactory::AddSampler("BaseGraphics", device, sampler2Desc);
 }
 
 void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
@@ -437,7 +446,7 @@ void D3E::DefaultAssetLoader::LoadEditorDebugAssets(
 
 	nvrhi::BindingSetDesc bindingSetDescP = {};
 	bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle(kWhiteTextureUUID)));
-	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+	bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseGraphics")));
 	ShaderFactory::AddBindingSetP(kDebugLineBindingSetUUID, bindingSetDescP, "SimpleForwardP");
 }
 

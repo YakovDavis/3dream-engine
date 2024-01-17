@@ -15,7 +15,6 @@ struct PS_IN
 	float4 pos : SV_POSITION;
  	float2 tex : TEXCOORD;
 };
-
 cbuffer cbPerScene : register(b0)
 {
 	float4 gLightDir; // w = type
@@ -162,10 +161,10 @@ float4 PSMain(PS_IN input) : SV_Target
 	float3 albedo = AlbedoBuffer.Load(int3(input.pos.xy, 0)).rgb;
 	float metalness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).r;
 	float roughness = MetalRoughnessBuffer.Load(int3(input.pos.xy, 0)).g;
-	float3 viewPos = PositionBuffer.Load(int3(input.pos.xy, 0)).xyz;
+	float3 worldPos = PositionBuffer.Load(int3(input.pos.xy, 0)).xyz;
 
-	// Outgoing light direction (vector from view-space fragment position to the "eye").
-	float3 Lo = normalize(-viewPos); // float3(0.0f, 0.0f, -1.0f);
+	// Outgoing light direction (vector from world-space fragment position to the "eye").
+	float3 Lo = normalize(gEyePosition.xyz - worldPos);
 	
 	// Angle between surface normal and outgoing light direction.
 	float cosLo = max(0.0, dot(norm, Lo));

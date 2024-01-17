@@ -54,8 +54,8 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(3, TextureFactory::GetTextureHandle(m.roughnessTextureUuid)));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(4, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
 					bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(5, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
-					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(1, TextureFactory::GetSampler("Base")));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseGraphics")));
+					bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(1, TextureFactory::GetSampler("BaseGraphics")));
 					ShaderFactory::RemoveBindingSetP(info.id);
 					ShaderFactory::AddBindingSetP(info.id, bindingSetDescP, "GBufferP");
 

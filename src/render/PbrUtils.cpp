@@ -35,7 +35,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			nvrhi::BindingSetDesc equirect2CubeBSC = {};
 			equirect2CubeBSC.addItem(nvrhi::BindingSetItem::Texture_SRV(0, envTextureEquirect));
 			equirect2CubeBSC.addItem(nvrhi::BindingSetItem::Texture_UAV(0, envTextureUnfiltered));
-			equirect2CubeBSC.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+			equirect2CubeBSC.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
 			ShaderFactory::AddBindingSetC("Equirect2Cube", equirect2CubeBSC, "Equirect2CubeC");
 
 			nvrhi::ComputeState computeState = {};
@@ -97,24 +97,29 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 
 			// Pre-filter rest of the mip chain.
 			const float deltaRoughness = 1.0f / std::max(float(m_envTexture->getDesc().mipLevels - 1), 1.0f);
-			for(UINT level = 1, size = 512; level<m_envTexture->getDesc().mipLevels; ++level, size /= 2)
+			for(UINT level = 1, size = 512; level < m_envTexture->getDesc().mipLevels; ++level, size /= 2)
 			{
 				const UINT numGroups = std::max<UINT>(1, size/32);
-				auto currentSubresource = nvrhi::TextureSubresourceSet().setMipLevels(level, 1);
+
+				auto currentSubresource = nvrhi::TextureSubresourceSet()
+				                  .setMipLevels(level, 1)
+				                  .setArraySlices(0, m_envTexture->getDesc().arraySize);
+
+				nvrhi::BindingSetItem uavItem = nvrhi::BindingSetItem::Texture_UAV(0, m_envTexture);
+				uavItem.setSubresources(currentSubresource);
+				nvrhi::BindingSetDesc bindingSetDesc = {};
+				bindingSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, spmapCB));
+				bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, envTextureUnfiltered));
+				bindingSetDesc.addItem(uavItem);
+				bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
+				nvrhi::BindingSetHandle bindingSetHandle = device->createBindingSet(bindingSetDesc, ShaderFactory::GetBindingLayout("SpMapC"));
+				computeState.bindings = { bindingSetHandle };
+
 				commandList->setTextureState(envTextureUnfiltered, currentSubresource, nvrhi::ResourceStates::UnorderedAccess);
 
 				const SpecularMapFilterSettingsCB spmapConstants = { level * deltaRoughness };
 
 				commandList->writeBuffer(spmapCB, &spmapConstants, sizeof(SpecularMapFilterSettingsCB));
-
-				nvrhi::BindingSetDesc bindingSetDesc = {};
-				bindingSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, spmapCB));
-				bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, envTextureUnfiltered));
-				bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_UAV(0, m_envTexture));
-				bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
-				nvrhi::BindingSetHandle bindingSetHandle = device->createBindingSet(bindingSetDesc, ShaderFactory::GetBindingLayout("SpMapC"));
-
-				computeState.bindings = { bindingSetHandle };
 
 				commandList->setComputeState(computeState);
 
@@ -136,7 +141,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		irmapTexturDesc.setArraySize(6);
 		irmapTexturDesc.setWidth(32);
 		irmapTexturDesc.setHeight(32);
-		irmapTexturDesc.setMipLevels(5);
+		irmapTexturDesc.setMipLevels(1);
 		irmapTexturDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		irmapTexturDesc.setIsUAV(true);
 		irmapTexturDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
@@ -146,7 +151,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		nvrhi::BindingSetDesc bindingSetDesc = {};
 		bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, m_envTexture));
 		bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_UAV(0, m_irmapTexture));
-		bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("Base")));
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
 		nvrhi::BindingSetHandle bindingSetHandle = device->createBindingSet(bindingSetDesc, ShaderFactory::GetBindingLayout("IrMapC"));
 		computeState.bindings = { bindingSetHandle };
 
