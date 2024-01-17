@@ -6,28 +6,31 @@
 
 void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandList)
 {
-	nvrhi::TextureHandle m_envTexture = TextureFactory::GetNewTextureHandle(kEnvTextureUUID);
-	nvrhi::TextureHandle m_irmapTexture = TextureFactory::GetNewTextureHandle(kIrMapTextureUUID);
-	nvrhi::TextureHandle m_spBRDF_LUT = TextureFactory::GetNewTextureHandle(kSpBrdfLutTextureUUID);
+	nvrhi::TextureHandle envTextureUnfiltered;
+	nvrhi::TextureHandle m_envTexture;
+	nvrhi::TextureHandle m_irmapTexture;
+	nvrhi::TextureHandle m_spBRDF_LUT;
 
 	{
 		// Unfiltered environment cube map (temporary).
 		nvrhi::TextureDesc envTextureUnfilteredDesc = {};
+		envTextureUnfilteredDesc.setDebugName("envTextureUnfiltered");
 		envTextureUnfilteredDesc.setDimension(nvrhi::TextureDimension::TextureCube);
 		envTextureUnfilteredDesc.setArraySize(6);
 		envTextureUnfilteredDesc.setWidth(1024);
 		envTextureUnfilteredDesc.setHeight(1024);
-		envTextureUnfilteredDesc.setMipLevels(10);
-		envTextureUnfilteredDesc.setFormat(nvrhi::Format::RGBA16_UNORM);
+		envTextureUnfilteredDesc.setMipLevels(11);
+		envTextureUnfilteredDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		envTextureUnfilteredDesc.setIsUAV(true);
-		envTextureUnfilteredDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
-		envTextureUnfilteredDesc.setKeepInitialState(true);
+		envTextureUnfilteredDesc.setInitialState(nvrhi::ResourceStates::Common);
 
-		nvrhi::TextureHandle envTextureUnfiltered = device->createTexture(envTextureUnfilteredDesc);
+		TextureFactory::AddNewTextureHandle(kRenderDebugTextureUUID, device->createTexture(envTextureUnfilteredDesc));
+		envTextureUnfiltered = TextureFactory::GetTextureHandle(kRenderDebugTextureUUID);
+		//nvrhi::TextureHandle envTextureUnfiltered = device->createTexture(envTextureUnfilteredDesc);
 
 		// Load & convert equirectangular environment map to a cubemap texture.
 		{
-			nvrhi::ITexture* envTextureEquirect = TextureFactory::GetTextureHandle("e408d7c8-f1ad-42fb-a0bd-35669f30d7a1");
+			nvrhi::ITexture* envTextureEquirect = TextureFactory::GetTextureHandle("d85c2a3b-4b82-4642-9023-b85e62d3a39d");
 
 			nvrhi::BindingSetDesc equirect2CubeBSC = {};
 			equirect2CubeBSC.addItem(nvrhi::BindingSetItem::Texture_SRV(0, envTextureEquirect));
@@ -40,6 +43,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			computeState.bindings = { ShaderFactory::GetBindingSetC("Equirect2Cube") };
 
 			commandList->open();
+			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
 			commandList->setComputeState(computeState);
 			commandList->dispatch(envTextureUnfilteredDesc.width/32, envTextureUnfilteredDesc.height/32, 6);
 			commandList->close();
@@ -67,18 +71,22 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			nvrhi::BufferHandle spmapCB = device->createBuffer(spmapCbDesc);
 
 			nvrhi::TextureDesc envTextureDesc = {};
+			envTextureDesc.setDebugName("envTexture");
 			envTextureDesc.setDimension(nvrhi::TextureDimension::TextureCube);
 			envTextureDesc.setArraySize(6);
 			envTextureDesc.setWidth(1024);
 			envTextureDesc.setHeight(1024);
-			envTextureDesc.setMipLevels(10);
+			envTextureDesc.setMipLevels(11);
 			envTextureDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 			envTextureDesc.setIsUAV(true);
 			envTextureDesc.setInitialState(nvrhi::ResourceStates::Common);
 			//envTextureDesc.setKeepInitialState(true);
-			m_envTexture = device->createTexture(envTextureUnfilteredDesc);
+			TextureFactory::AddNewTextureHandle(kEnvTextureUUID, device->createTexture(envTextureDesc));
+			m_envTexture = TextureFactory::GetTextureHandle(kEnvTextureUUID);
 
 			commandList->open();
+			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::CopySource);
+			commandList->beginTrackingTextureState(m_envTexture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
 
 			// Copy 0th mipmap level into destination environment map.
 			for(int arraySlice=0; arraySlice<6; ++arraySlice)
@@ -132,7 +140,8 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		irmapTexturDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		irmapTexturDesc.setIsUAV(true);
 		irmapTexturDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
-		m_irmapTexture = device->createTexture(irmapTexturDesc);
+		TextureFactory::AddNewTextureHandle(kIrMapTextureUUID, device->createTexture(irmapTexturDesc));
+		m_irmapTexture = TextureFactory::GetTextureHandle(kIrMapTextureUUID);
 
 		nvrhi::BindingSetDesc bindingSetDesc = {};
 		bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, m_envTexture));
@@ -164,7 +173,8 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		spBrdfTexturDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		spBrdfTexturDesc.setIsUAV(true);
 		spBrdfTexturDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
-		m_spBRDF_LUT = device->createTexture(spBrdfTexturDesc);
+		TextureFactory::AddNewTextureHandle(kSpBrdfLutTextureUUID, device->createTexture(spBrdfTexturDesc));
+		m_spBRDF_LUT = TextureFactory::GetTextureHandle(kSpBrdfLutTextureUUID);
 
 		nvrhi::SamplerDesc samplerDesc = {};
 		samplerDesc.magFilter = true;

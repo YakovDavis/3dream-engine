@@ -71,23 +71,34 @@ void D3E::RenderUtils::GenerateMips(nvrhi::ITexture* texture, nvrhi::IDevice* de
 			ShaderFactory::GetComputePipeline("DownsampleArray"));
 	}
 
-	nvrhi::BindingSetDesc downsampleBSC = {};
-	downsampleBSC.addItem(nvrhi::BindingSetItem::Texture_SRV(0, texture));
-	downsampleBSC.addItem(nvrhi::BindingSetItem::Texture_UAV(0, texture));
-	auto bindingSet = device->createBindingSet(downsampleBSC, ShaderFactory::GetBindingLayout("DownsampleC"));
-	state.addBindingSet(bindingSet);
-
 	commandList->open();
-	commandList->setComputeState(state);
+	commandList->beginTrackingTextureState(texture, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
 
 	for(UINT level = 1, levelWidth=desc.width / 2, levelHeight=desc.height / 2; level < desc.mipLevels; ++level, levelWidth/=2, levelHeight/=2)
 	{
-		auto srvSub = nvrhi::TextureSubresourceSet().setMipLevels(level-1, 1);
-		auto uavSub = nvrhi::TextureSubresourceSet().setMipLevels(level, 1);
+		auto srvSub = nvrhi::TextureSubresourceSet()
+		                  .setMipLevels(level - 1, 1)
+		                  .setArraySlices(0, desc.arraySize);
+		auto uavSub = nvrhi::TextureSubresourceSet()
+		                  .setMipLevels(level, 1)
+		                  .setArraySlices(0, desc.arraySize);
+
+		nvrhi::BindingSetItem srvItem = nvrhi::BindingSetItem::Texture_SRV(0, texture);
+		srvItem.setSubresources(srvSub);
+		srvItem.setDimension(nvrhi::TextureDimension::Texture2DArray);
+		srvItem.setFormat(nvrhi::Format::RGBA16_FLOAT);
+		nvrhi::BindingSetItem uavItem = nvrhi::BindingSetItem::Texture_UAV(0, texture);
+		uavItem.setSubresources(uavSub);
+		nvrhi::BindingSetDesc downsampleBSC = {};
+		downsampleBSC.bindings = { srvItem, uavItem };
+		auto bindingSet = device->createBindingSet(downsampleBSC, ShaderFactory::GetBindingLayout("DownsampleC"));
+		state.bindings = { bindingSet };
+
 		commandList->setTextureState(texture, srvSub, nvrhi::ResourceStates::ShaderResource);
 		commandList->setTextureState(texture, uavSub, nvrhi::ResourceStates::UnorderedAccess);
+		commandList->setComputeState(state);
 
-		commandList->dispatch(std::max(UINT(1), levelWidth/8), std::max(UINT(1), levelHeight/8), desc.arraySize);
+		commandList->dispatch(std::max(UINT(1), levelWidth/4), std::max(UINT(1), levelHeight/8), desc.arraySize);
 	}
 
 	commandList->close();

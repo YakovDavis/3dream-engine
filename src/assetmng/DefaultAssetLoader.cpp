@@ -412,7 +412,10 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 	samplerDesc.minFilter = true;
 	samplerDesc.magFilter = true;
 	samplerDesc.mipFilter = true;
-	samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
+	samplerDesc.addressU = nvrhi::SamplerAddressMode::Wrap;
+	samplerDesc.addressV = nvrhi::SamplerAddressMode::Wrap;
+	samplerDesc.addressW = nvrhi::SamplerAddressMode::Wrap;
+	//samplerDesc.reductionType = nvrhi::SamplerReductionType::Standard;
 	TextureFactory::AddSampler("Base", device, samplerDesc);
 }
 

@@ -1,0 +1,15 @@
+{
+    "filename": "meadow.exr",
+    "format": {
+        "channels": "EXR",
+        "type": "Texture2D",
+        "dimensions": [
+            4096,
+            2048
+        ]
+    },
+    "name": "meadow",
+    "type": "texture2d",
+    "uuid": "d85c2a3b-4b82-4642-9023-b85e62d3a39d",
+    "lock_resource_state": false
+}

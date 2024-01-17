@@ -15,14 +15,14 @@ struct PS_IN
 	float4 normal : NORMAL;
     float3x3 tangentBasis : TBASIS;
     float4 tex : TEXCOORD;
-	float4 worldPos : WORLDPOS;
+	float4 viewPos : VIEWPOS;
 	int EditorId : EDITORID;
 };
 
 struct GBuffer
 {
 	float3 Albedo : SV_Target0;
-	float3 WorldPos : SV_Target1;
+	float3 ViewPos : SV_Target1;
 	float3 Normal : SV_Target2;
 	float3 MetalRoughnessSpecular : SV_Target3;
 	int EditorIds : SV_Target4;
@@ -62,7 +62,7 @@ PS_IN VSMain(VS_IN input)
 	float3x3 TBN = float3x3(tangent, bitangent, output.normal.xyz);
 	output.tangentBasis = mul((float3x3)gInvTrWorldView, transpose(TBN));
 
-	output.worldPos = mul(float4(input.pos.xyz, 1.0f), gWorld);
+	output.viewPos = mul(float4(input.pos.xyz, 1.0f), gWorldView);
 
 	output.EditorId = EditorId;
 	
@@ -70,7 +70,7 @@ PS_IN VSMain(VS_IN input)
 }
 
 [earlydepthstencil]
-GBuffer PSMain(PS_IN input)// : SV_Target
+GBuffer PSMain(PS_IN input)
 {
 	GBuffer result = (GBuffer)0;
 
@@ -80,12 +80,11 @@ GBuffer PSMain(PS_IN input)// : SV_Target
 	result.MetalRoughnessSpecular.x = MetalnessMap.SampleLevel(DefaultSampler, input.tex.xy, 0).r;
 	result.MetalRoughnessSpecular.y = RoughnessMap.SampleLevel(DefaultSampler, input.tex.xy, 0).r;
 	result.MetalRoughnessSpecular.z = 0.5f; // spec
-	result.WorldPos = input.worldPos.xyz;
+	result.ViewPos = input.viewPos.xyz;
 	result.EditorIds = input.EditorId;
 
 	float3 N = normalize(2.0 * NormalMap.SampleLevel(DefaultSampler, input.tex.xy, 0).rgb - 1.0);
 	result.Normal = normalize(mul(input.tangentBasis, N));
-	//result.Normal = normalize(input.normal.xyz);
 	
 	return result;
 }

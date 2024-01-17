@@ -11,7 +11,8 @@ namespace D3E
 	enum TextureChannels
 	{
 		RGBA8,
-		RGBA16
+		RGBA16,
+		EXR
 	};
 	enum TextureType
 	{

@@ -5,6 +5,9 @@
 #include "render/GameRender.h"
 #include <filesystem>
 
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr/tinyexr.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "utils/FilenameUtils.h"
@@ -44,32 +47,59 @@ void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, const std::st
 			textureFormat = nvrhi::Format::RGBA16_UNORM;
 			bytesPerComponent = 2;
 			break;
+		case TextureChannels::EXR:
+			textureFormat = nvrhi::Format::RGBA32_FLOAT;
+			bytesPerComponent = 4;
+			break;
 	}
+
+	void* imageData;
 
 	int width, height, comps;
 
-	void* imageData;
-	if (bytesPerComponent == 2)
+	if (textureFormat == nvrhi::Format::RGBA32_FLOAT)
 	{
-		imageData = stbi_load_16(FilenameUtils::MetaFilenameToFilePath(
-								  texture.MetaData.filename, directory)
-		                          .string()
-		                          .c_str(),
-		                       &width, &height, &comps, STBI_default);
+		comps = 4;
+		float* out; // width * height * RGBA
+		const char* err = nullptr;
+		int ret = LoadEXR(reinterpret_cast<float**>(&imageData), &width, &height, FilenameUtils::MetaFilenameToFilePath(
+													 texture.MetaData.filename, directory)
+		                                             .string()
+		                                             .c_str(), &err);
+
+		if (ret != TINYEXR_SUCCESS)
+		{
+			if (err)
+			{
+				fprintf(stderr, "ERR : %s\n", err);
+				FreeEXRErrorMessage(err);
+			}
+		}
 	}
 	else
 	{
-		imageData = stbi_load(FilenameUtils::MetaFilenameToFilePath(
-								  texture.MetaData.filename, directory)
-		                          .string()
-		                          .c_str(),
-		                       &width, &height, &comps, STBI_default);
-	}
-	if (!imageData)
-	{
-		Debug::LogError("[TextureFactory] Texture file not found");
-		Debug::LogError(texture.MetaData.filename.c_str());
-		return;
+		if (bytesPerComponent == 2)
+		{
+			imageData = stbi_load_16(FilenameUtils::MetaFilenameToFilePath(
+										 texture.MetaData.filename, directory)
+			                             .string()
+			                             .c_str(),
+			                         &width, &height, &comps, STBI_default);
+		}
+		else
+		{
+			imageData = stbi_load(FilenameUtils::MetaFilenameToFilePath(
+									  texture.MetaData.filename, directory)
+			                          .string()
+			                          .c_str(),
+			                      &width, &height, &comps, STBI_default);
+		}
+		if (!imageData)
+		{
+			Debug::LogError("[TextureFactory] Texture file not found");
+			Debug::LogError(texture.MetaData.filename.c_str());
+			return;
+		}
 	}
 
 	if (firstLoad)
@@ -136,6 +166,8 @@ void D3E::TextureFactory::LoadTexture(Texture2DMetaData& metaData, const std::st
 		device->executeCommandList(commandList);
 	}
 
+	free(imageData);
+
 	textures_.insert({texture.MetaData.uuid.c_str(), texture});
 }
 
@@ -198,9 +230,8 @@ void D3E::TextureFactory::RenameTexture(const D3E::String& uuid,
 	textures_[uuid].MetaData.name = name.c_str();
 }
 
-nvrhi::TextureHandle D3E::TextureFactory::GetNewTextureHandle(const D3E::String& uuid)
+void D3E::TextureFactory::AddNewTextureHandle(const D3E::String& uuid,
+                                         nvrhi::TextureHandle handle)
 {
-	nvrhi::TextureHandle newHandle;
-	textures_.insert({uuid, {newHandle, {}}});
-	return newHandle;
+	textures_.insert({uuid, {handle, {}}});
 }
