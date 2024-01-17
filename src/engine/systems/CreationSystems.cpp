@@ -358,3 +358,26 @@ void D3E::CreationSystems::CreateDefaultScriptComponent(entt::registry& registry
 	ScriptComponent component(entity, EmptyIdString);
 	registry.emplace<ScriptComponent>(entity, component);
 }
+
+entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent info;
+	info.name = "EditorPlayer";
+	info.id = UuidGenerator::NewGuidString();
+	info.internalObject = true;
+
+	TransformComponent transform = {};
+
+	CameraComponent camera;
+
+	FPSControllerComponent fps;
+
+	registry.emplace<ObjectInfoComponent>(e, info);
+	registry.emplace<TransformComponent>(e, transform);
+	registry.emplace<CameraComponent>(e, camera);
+	registry.emplace<FPSControllerComponent>(e, fps);
+
+	return e;
+}

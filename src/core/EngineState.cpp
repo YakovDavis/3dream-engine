@@ -8,6 +8,7 @@ bool D3E::EngineState::isViewportDirty = true;
 int D3E::EngineState::viewportW = 0;
 int D3E::EngineState::viewportH = 0;
 bool D3E::EngineState::isInitialized = false;
+entt::entity D3E::EngineState::currentPlayer = entt::null;
 D3E::String D3E::EngineState::CurrentMapUuid = D3E::EmptyIdString;
 
 int D3E::EngineState::GetViewportHeight()

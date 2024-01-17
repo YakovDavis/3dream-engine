@@ -7,6 +7,7 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "SimpleMath.h"
+#include "core/EngineState.h"
 #include "input/InputDevice.h"
 #include "input/Keys.h"
 #include "sound_engine/SoundEngine.h"
@@ -21,28 +22,36 @@ using namespace D3E;
 
 void D3E::FPSControllerSystem::Update(entt::registry& reg, Game* game, float dT)
 {
-	auto view =
-		reg.view<TransformComponent, CameraComponent, FPSControllerComponent>();
+	if (EngineState::currentPlayer == entt::null)
+	{
+		return;
+	}
+	TransformComponent* playerTransform = reg.try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	CameraComponent* camera = reg.try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	FPSControllerComponent* fpsController = reg.try_get<FPSControllerComponent>(EngineState::currentPlayer);
+	if (!fpsController)
+	{
+		return;
+	}
 
-	if (view.begin() == view.end())
-		Debug::LogError("FPS controller entity not found");
+	reg.patch<FPSControllerComponent>(
+		EngineState::currentPlayer,
+		[&, game](auto& fpscc_) { UpdateFpsComponent(fpscc_, game); });
 
-	auto controllerEntity = view.front();
+	reg.patch<TransformComponent>(
+		EngineState::currentPlayer, [&, game](auto& tc_)
+		{ UpdateTransformComponent(tc_, *fpsController, game, dT); });
 
-	view.each(
-		[&, game, dT](auto& tc, auto& cc, auto& fpscc)
-		{
-			reg.patch<FPSControllerComponent>(
-				controllerEntity,
-				[&, game](auto& fpscc_) { UpdateFpsComponent(fpscc_, game); });
-
-			reg.patch<TransformComponent>(
-				controllerEntity, [&, game](auto& tc_)
-				{ UpdateTransformComponent(tc_, fpscc, game, dT); });
-
-			reg.patch<CameraComponent>(controllerEntity, [&](auto& cc_)
-		                               { UpdateCameraComponent(cc_, fpscc); });
-		});
+	reg.patch<CameraComponent>(EngineState::currentPlayer, [&](auto& cc_)
+	                           { UpdateCameraComponent(cc_, *fpsController); });
 }
 
 void FPSControllerSystem::UpdateFpsComponent(FPSControllerComponent& fpscc,

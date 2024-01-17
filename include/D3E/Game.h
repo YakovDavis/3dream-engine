@@ -154,8 +154,12 @@ namespace D3E
 	private:
 		void HandleMessages();
 
+		entt::entity FindFirstNonEditorPlayer();
+
 		eastl::hash_set<String> selectedUuids;
 
 		std::string contentBrowserFilePath_ = "";
+
+		entt::entity editorFakePlayer_;
 	};
 } // namespace D3E

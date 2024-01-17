@@ -1,0 +1,14 @@
+{
+    "filename": "PauseIcon.png",
+    "format": {
+        "channels": "RGBA8",
+        "dimensions": [
+            100,
+            100
+        ],
+        "type": "Texture2D"
+    },
+    "name": "PauseIcon",
+    "type": "texture2d",
+    "uuid": "302abece-d4bf-4875-bc39-8c32bd15f1ef"
+}

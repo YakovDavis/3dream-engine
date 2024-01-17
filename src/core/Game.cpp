@@ -83,11 +83,6 @@ void D3E::Game::Run()
 
 	bool lmbPressedLastTick = false; // temp
 
-	json j;
-	ComponentFactory::SerializeWorld(j);
-	std::ofstream o("DuckWorld.meta");
-	o << std::setw(4) << j << std::endl;
-
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -211,6 +206,12 @@ void D3E::Game::Init()
 	soundEngine_->Init();
 
 	ClearWorld();
+
+#ifdef D3E_WITH_EDITOR
+	EngineState::currentPlayer = editorFakePlayer_;
+#else
+	EngineState::currentPlayer = FindFirstNonEditorPlayer();
+#endif
 
 	ComponentFactory::Initialize(this);
 }
@@ -634,6 +635,9 @@ void D3E::Game::OnEditorPlayPressed()
 		{
 			sys->Play(registry_, this);
 		}
+
+		EngineState::currentPlayer = FindFirstNonEditorPlayer();
+
 		//physicsInfo_->setIsPaused(false);
 	}
 }
@@ -665,6 +669,8 @@ void D3E::Game::OnEditorStopPressed()
 		ComponentFactory::ResolveWorld(currentMapSavedState);
 		ScriptingEngine::GetInstance().Clear();
 		//physicsInfo_->setIsPaused(true);
+
+		EngineState::currentPlayer = editorFakePlayer_;
 	}
 }
 
@@ -676,6 +682,7 @@ void D3E::Game::ClearWorld()
 	registry_.clear();
 #ifdef D3E_WITH_EDITOR
 	CreationSystems::CreateEditorDebugRender(registry_);
+	editorFakePlayer_ = CreationSystems::CreateEditorFakePlayer(registry_);
 #endif
 }
 
@@ -866,4 +873,10 @@ void D3E::Game::OnObjectClicked(entt::entity entity)
 	{
 		scriptComponent->OnClicked(entity);
 	}
+}
+
+entt::entity D3E::Game::FindFirstNonEditorPlayer()
+{
+	auto playerView = registry_.view<const TransformComponent, const CameraComponent>();
+	return playerView.front();
 }

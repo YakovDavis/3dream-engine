@@ -40,7 +40,7 @@ SoundEngine::~SoundEngine()
 
 void SoundEngine::Init()
 {
-	Debug::LogMessage("FMOD: Init");
+	Debug::LogMessage("[FMOD] Init");
 
 	CheckError(FMOD::System_Create(&system));
 	CheckError(
