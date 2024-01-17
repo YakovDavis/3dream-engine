@@ -32,6 +32,7 @@ namespace D3E
 	{
 	public:
 		virtual void Init(eastl::vector<GameSystem*>& systems);
+		virtual void PostAssetLoadInit();
 		virtual void OnResize();
 
 		virtual void PrimitiveBatchStart() {}

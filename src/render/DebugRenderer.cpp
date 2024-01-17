@@ -113,7 +113,7 @@ void D3E::DebugRenderer::Flush()
 	constBufferData1.gWorldViewProj = world * CameraUtils::GetViewProj(origin, *camera);
 	constBufferData1.gWorld = world;
 	constBufferData1.gWorldView = world * CameraUtils::GetView(origin, *camera);
-	constBufferData1.gInvTrWorldView = (world * CameraUtils::GetView(origin, *camera)).Invert().Transpose();
+	constBufferData1.gInvTrRotation = world.Invert().Transpose();
 	constBufferData1.gEditorId = 0;
 
 	if (linesVertexCount_ > 0)

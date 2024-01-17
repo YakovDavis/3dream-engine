@@ -87,7 +87,7 @@ float3 tangentToWorld(const float3 v, const float3 N, const float3 S, const floa
 }
 
 [numthreads(32, 32, 1)]
-void main(uint3 ThreadID : SV_DispatchThreadID)
+void CSMain(uint3 ThreadID : SV_DispatchThreadID)
 {
 	float3 N = getSamplingVector(ThreadID);
 	

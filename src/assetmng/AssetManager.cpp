@@ -347,7 +347,7 @@ const json& D3E::AssetManager::GetPrefab(const D3E::String& uuid)
 {
 	if (!IsPrefabUuidValid(uuid))
 	{
-		return "";
+		return {}; // TODO: Potential crash spot, fix later
 	}
 
 	return prefabsMap_[uuid];

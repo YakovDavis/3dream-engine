@@ -1,14 +1,15 @@
 {
     "filename": "environment.hdr",
     "format": {
-        "channels": "RGBA8",
-        "type": "Texture2D",
+        "channels": "RGBA16",
+        "type": "TextureCube",
         "dimensions": [
-            4000,
-            2000
+            1024,
+            1024
         ]
     },
     "name": "environment",
     "type": "texture2d",
-    "uuid": "e408d7c8-f1ad-42fb-a0bd-35669f30d7a1"
+    "uuid": "e408d7c8-f1ad-42fb-a0bd-35669f30d7a1",
+    "lock_resource_state": false
 }

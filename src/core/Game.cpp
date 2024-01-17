@@ -186,6 +186,8 @@ void D3E::Game::Init()
 
 	physicsInfo_ = new PhysicsInfo(this);
 
+	gameRender_->PostAssetLoadInit();
+
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
