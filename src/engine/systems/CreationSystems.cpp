@@ -368,6 +368,7 @@ entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& regist
 	info.name = "EditorPlayer";
 	info.id = UuidGenerator::NewGuidString();
 	info.internalObject = true;
+	info.serializeEntity = false;
 
 	TransformComponent transform = {};
 
@@ -390,6 +391,8 @@ entt::entity D3E::CreationSystems::CreateSkybox(entt::registry& registry)
 	ObjectInfoComponent ic;
 	ic.name = "Skybox";
 	ic.id = UuidGenerator::NewGuidString();
+	ic.serializeEntity = true;
+	ic.internalObject = false;
 	ic.editorId = 0;
 
 	TransformComponent tc = {};

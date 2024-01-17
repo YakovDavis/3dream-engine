@@ -100,6 +100,8 @@ namespace D3E
 
 		void OnObjectClicked(entt::entity entity);
 
+		entt::entity FindFirstNonEditorPlayer();
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
@@ -153,8 +155,6 @@ namespace D3E
 
 	private:
 		void HandleMessages();
-
-		entt::entity FindFirstNonEditorPlayer();
 
 		eastl::hash_set<String> selectedUuids;
 

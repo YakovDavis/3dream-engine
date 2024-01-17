@@ -391,6 +391,13 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	{
 		return;
 	}
+
+	auto skyboxView = registry.view<const ObjectInfoComponent, const TransformComponent, SkyboxComponent>();
+	if (skyboxView.begin() == skyboxView.end())
+	{
+		return;
+	}
+
 	const TransformComponent* playerTransform = registry.try_get<TransformComponent>(EngineState::currentPlayer);
 	if (!playerTransform)
 	{
@@ -403,7 +410,7 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	}
 	Vector3 origin = playerTransform->position + camera->offset;
 
-	entt::entity sb = registry.view<const ObjectInfoComponent, const TransformComponent, SkyboxComponent>().front();
+	entt::entity sb = skyboxView.front();
 
 	const ObjectInfoComponent& info = registry.get<ObjectInfoComponent>(sb);
 	const TransformComponent& tc = registry.get<TransformComponent>(sb);

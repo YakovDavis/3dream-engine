@@ -214,8 +214,6 @@ void D3E::Game::Init()
 #endif
 
 	ComponentFactory::Initialize(this);
-
-	CreationSystems::CreateSkybox(registry_);
 }
 
 void D3E::Game::EditorUpdate(const float deltaTime)
@@ -682,6 +680,7 @@ void D3E::Game::ClearWorld()
 	EditorIdManager::Get()->UnregisterAll();	
 	uuidEntityList.clear();
 	registry_.clear();
+	//CreationSystems::CreateSkybox(registry_);
 #ifdef D3E_WITH_EDITOR
 	CreationSystems::CreateEditorDebugRender(registry_);
 	editorFakePlayer_ = CreationSystems::CreateEditorFakePlayer(registry_);
