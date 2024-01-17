@@ -148,14 +148,7 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 
 float4 PSMain(PS_IN input) : SV_Target
 {
-	// FIXME: hack before i add skybox
-	float3 norm = NormalBuffer.Load(int3(input.pos.xy, 0));
-	[branch]
-	if (abs(norm.x) + abs(norm.y) + abs(norm.z) < 0.5f)
-	{
-		return float4(0.2f, 0.2f, 0.2f, 1.0f);
-	}
-	norm = normalize(norm);
+	float3 norm = normalize(NormalBuffer.Load(int3(input.pos.xy, 0)));
 
     // Load input textures to get shading model params.
 	float3 albedo = AlbedoBuffer.Load(int3(input.pos.xy, 0)).rgb;
@@ -230,7 +223,7 @@ float4 PSMain(PS_IN input) : SV_Target
 
 		// Sample pre-filtered specular reflection environment at correct mipmap level.
 		uint specularTextureLevels = querySpecularTextureLevels();
-		float3 specularIrradiance = SpecularTexture.SampleLevel(DefaultSampler, Lr, roughness * specularTextureLevels).rgb;
+		float3 specularIrradiance = SpecularTexture.SampleLevel(DefaultSampler, normalize(Lr), roughness * specularTextureLevels).rgb;
 
 		// Split-sum approximation factors for Cook-Torrance specular BRDF.
 		float2 specularBRDF = SpecularBRDF_LUT.Sample(spBRDF_Sampler, float2(cosLo, roughness)).rg;

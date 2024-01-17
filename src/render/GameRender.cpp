@@ -148,9 +148,19 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	pickingBSC.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pickedIdBuffer_));
 	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
 
+	nvrhi::BindingSetDesc tonemapBSP = {};
+#ifdef D3E_WITH_EDITOR
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gameFrameTexture_));
+#else
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, nvrhiFramebuffer[0])); // TODO: probably not going to work like this
+#endif
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
+	ShaderFactory::AddBindingSetP("Tonemap", tonemapBSP, "TonemapP");
+
 	nvrhi::BindingSetDesc nullBindingSetDesc = {};
 	ShaderFactory::AddBindingSetV("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassV");
 	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
+	ShaderFactory::AddBindingSetV("Tonemap", nullBindingSetDesc, "TonemapV");
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -255,6 +265,18 @@ void D3E::GameRender::PrepareFrame()
 void D3E::GameRender::DrawPostProcess(entt::registry& registry,
                                       eastl::vector<GameSystem*>& systems)
 {
+	// Tonemapper // TODO: probably should move somewhere else
+	nvrhi::GraphicsState graphicsState = {};
+	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("Tonemap"));
+	graphicsState.bindings = {ShaderFactory::GetBindingSetV("Tonemap"), ShaderFactory::GetBindingSetP("Tonemap")};
+#ifdef D3E_WITH_EDITOR
+	graphicsState.framebuffer = gameFramebuffer_;
+#else
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	graphicsState.framebuffer = currentFramebuffer;
+#endif
+	nvrhi::DrawArguments drawArguments = {3};
+
 	commandList_->open();
 #ifdef D3E_WITH_EDITOR
 	for (auto& sys : systems)
@@ -263,13 +285,14 @@ void D3E::GameRender::DrawPostProcess(entt::registry& registry,
 	}
 	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
 	debugRenderer_->Begin(commandList_, currentFramebuffer);
 #endif
+	commandList_->setGraphicsState(graphicsState);
+	commandList_->draw(drawArguments);
 	debugRenderer_->ProcessQueue();
 	debugRenderer_->End();
 	commandList_->close();
