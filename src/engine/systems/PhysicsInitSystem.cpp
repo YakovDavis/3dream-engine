@@ -102,6 +102,31 @@ void D3E::PhysicsInitSystem::Play(entt::registry& reg, D3E::Game* game)
 		});
 }
 
+void D3E::PhysicsInitSystem::Pause(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsComponent>();
+
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+	if (game_->IsGamePaused())
+	{
+		view.each(
+			[&](const auto entity, auto& physicsComponent)
+			{
+				bodyInterface.DeactivateBody(physicsComponent.bodyID_);
+			});
+	}
+	else
+	{
+		view.each(
+			[&](const auto entity, auto& physicsComponent)
+			{
+				bodyInterface.ActivateBody(physicsComponent.bodyID_);
+			});
+	}
+
+}
+
 void D3E::PhysicsInitSystem::Stop(entt::registry& reg, D3E::Game* game)
 {
 	auto view =

@@ -382,7 +382,7 @@ void D3E::CharacterInitSystem::Play(entt::registry& reg, D3E::Game* game)
 		reg.view<PhysicsCharacterComponent>();
 
 	view.each(
-		[&](const auto entity, auto& physicsComponent)
+		[&](const auto entity, auto& characterComponent)
 		{
 			OnCreateComponent(reg, entity);
 		});
@@ -392,10 +392,35 @@ void D3E::CharacterInitSystem::Stop(entt::registry& reg, D3E::Game* game)
 {
 	auto view =
 		reg.view<PhysicsCharacterComponent>();
-
 	view.each(
-		[&](const auto entity, auto& physicsComponent)
+		[&](const auto entity, auto& characterComponent)
 		{
 			OnDestroyComponent(reg, entity);
 		});
+}
+
+void D3E::CharacterInitSystem::Pause(entt::registry& reg, D3E::Game* game)
+{
+	auto view =
+		reg.view<PhysicsCharacterComponent>();
+
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+	if (game_->IsGamePaused())
+	{
+		view.each(
+			[&](const auto entity, auto& characterComponent)
+			{
+				//characterComponent.character_->RemoveFromPhysicsSystem();
+				bodyInterface.DeactivateBody(characterComponent.bodyID_);
+			});
+	}
+	else
+	{
+		view.each(
+			[&](const auto entity, auto& characterComponent)
+			{
+				//characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
+				bodyInterface.ActivateBody(characterComponent.bodyID_);
+			});
+	}
 }

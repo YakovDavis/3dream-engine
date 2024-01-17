@@ -640,6 +640,10 @@ void D3E::Game::OnEditorPausePressed()
 	if (isGameRunning_)
 	{
 		isGamePaused_ = !isGamePaused_;
+		for (auto& sys : systems_)
+		{
+			sys->Pause(registry_, this);
+		}
 		//physicsInfo_->setIsPaused(!(physicsInfo_->getIsPaused()));
 	}
 }
