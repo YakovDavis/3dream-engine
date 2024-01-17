@@ -1,0 +1,14 @@
+{
+    "filename": "PlayIcon.png",
+    "format": {
+        "channels": "RGBA8",
+        "dimensions": [
+            100,
+            100
+        ],
+        "type": "Texture2D"
+    },
+    "name": "PlayIcon",
+    "type": "texture2d",
+    "uuid": "a4e0c3f6-8615-4504-bbb6-16ab19891f3d"
+}

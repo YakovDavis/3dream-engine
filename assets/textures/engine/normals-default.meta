@@ -1,0 +1,14 @@
+{
+    "filename": "normals-default.png",
+    "format": {
+        "channels": "RGBA8",
+        "type": "Texture2D",
+        "dimensions": [
+            1,
+            1
+        ]
+    },
+    "name": "normals-default",
+    "type": "texture2d",
+    "uuid": "c2346e38-a332-4c9f-bb91-f22591ce5f52"
+}

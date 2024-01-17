@@ -168,8 +168,6 @@ void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, const std::st
 		aiProcess_ValidateDataStructure |
 		aiProcess_ConvertToLeftHanded;
 
-	Debug::LogMessage(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str());
-
 	const aiScene* pScene = importer.ReadFile(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str(), ImportFlags);
 
 	ProcessNode(metaData, pScene->mRootNode, pScene);
