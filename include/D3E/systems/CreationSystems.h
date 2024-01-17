@@ -26,6 +26,7 @@ namespace D3E
 		static entt::entity CreatePhysicalCharacter(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsCharacterComponent& character);
 		static entt::entity CreatePurelyPhysicalObject(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
 		static entt::entity OnCreateObjectButtonPressed(entt::registry& registry, int item);
+		static entt::entity CreateSkybox(entt::registry& registry);
 
 		static void CreateDefaultFPSControllerComponent(entt::registry& registry, entt::entity& entity);
 		static void CreateDefaultCameraComponent(entt::registry& registry, entt::entity& entity);

@@ -207,6 +207,10 @@ add_library("${PROJECT_NAME}" SHARED
         src/tinyexr/miniz.c
         src/tinyexr/miniz.h
         src/tinyexr/tinyexr.h
+        src/render/SkyboxCB.h
+        include/D3E/Components/render/SkyboxComponent.h
+        src/assetmng/SkyboxVertex.h
+        src/components/render/SkyboxComponent.cpp
 )
 
 add_subdirectory(libs)

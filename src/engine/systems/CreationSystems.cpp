@@ -3,11 +3,12 @@
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
+#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
+#include "D3E/Components/render/SkyboxComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
-#include "D3E/Components/ScriptComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Uuid.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -378,6 +379,27 @@ entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& regist
 	registry.emplace<TransformComponent>(e, transform);
 	registry.emplace<CameraComponent>(e, camera);
 	registry.emplace<FPSControllerComponent>(e, fps);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateSkybox(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "Skybox";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.editorId = 0;
+
+	TransformComponent tc = {};
+
+	SkyboxComponent sc = {};
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<SkyboxComponent>(e, sc);
+	StaticMeshInitSystem::IsDirty = true;
 
 	return e;
 }

@@ -7,7 +7,8 @@ namespace D3E
 		j = json{{"type", "mesh"},
 		         {"uuid", t.uuid},
 		         {"name", t.name},
-		         {"filename", t.filename}
+		         {"filename", t.filename},
+				 {"input_layout", t.inputLayout},
 		};
 	}
 
@@ -18,5 +19,14 @@ namespace D3E
 		j.at("uuid").get_to(t.uuid);
 		j.at("name").get_to(t.name);
 		j.at("filename").get_to(t.filename);
+
+		if (j.contains("input_layout"))
+		{
+			j.at("input_layout").get_to(t.inputLayout);
+		}
+		else
+		{
+			t.inputLayout = "default";
+		}
 	}
 }

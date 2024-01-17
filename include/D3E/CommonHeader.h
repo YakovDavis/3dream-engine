@@ -17,6 +17,7 @@ namespace D3E
 	const String kGeosphereUUID = "cb20b6c4-138e-499e-ab36-2572bd1db3da";
 	const String kPlaneUUID = "630f8ccc-d809-4fcf-8eff-f00772e25c28";
 	const String kGridUUID = "ef480c40-b6b7-49a6-b7cc-fffd443ba63d";
+	const String kSkyboxMeshUUID = "ba806d98-cb91-4035-b2de-5b0085832c54";
 
 	const String kDebugLineBindingSetUUID =
 		"ef480c40-b6b7-49a6-b7cc-fffd443ba63d";
