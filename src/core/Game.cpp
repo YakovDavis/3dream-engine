@@ -45,6 +45,7 @@
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
 #include "utils/ECSUtils.h"
+#include "utils/MeshUtils.h"
 
 #include <filesystem>
 #include <thread>
@@ -643,11 +644,18 @@ D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
 void D3E::Game::BuildNavmesh(entt::entity e)
 {
 	auto& nc = registry_.get<NavmeshComponent>(e);
+	auto& tc = registry_.get<TransformComponent>(e);
 	auto& smc = registry_.get<StaticMeshComponent>(e);
 	auto& meshData = MeshFactory::GetMeshData(smc.meshUuid);
 
+	eastl::vector<float> vertices;
+	eastl::vector<int> indices;
+
+	ConvertVertices(meshData.points, vertices, tc);
+	ConvertIndices(meshData.indices, indices);
+
 	eastl::unique_ptr<NavmeshBuilder> nb =
-		eastl::make_unique<NavmeshBuilder>(&meshData);
+		eastl::make_unique<NavmeshBuilder>(&vertices, &indices);
 
 	auto r = nb->Build(nc);
 	if (!r)

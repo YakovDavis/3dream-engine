@@ -14,22 +14,23 @@
 #include <format>
 
 using namespace D3E;
+using namespace eastl;
 
 NavmeshBuilder::NavmeshBuilder()
 	: cfg_(), heightField_(nullptr), compactHeightField_(nullptr),
 	  contourSet_(nullptr), polyMesh_(nullptr), polyMeshDetail_(nullptr),
-	  meshData_(nullptr), crowd_(nullptr), navMesh_(nullptr),
-	  navQuery_(nullptr), triAreas_(nullptr)
+	  crowd_(nullptr), navMesh_(nullptr), navQuery_(nullptr),
+	  triAreas_(nullptr), vertices_(nullptr), indices_(nullptr)
 {
 	navQuery_ = dtAllocNavMeshQuery();
 	crowd_ = dtAllocCrowd();
 }
 
-NavmeshBuilder::NavmeshBuilder(MeshData* meshData)
-	: meshData_(meshData), cfg_(), heightField_(nullptr),
-	  compactHeightField_(nullptr), contourSet_(nullptr), polyMesh_(nullptr),
-	  polyMeshDetail_(nullptr), crowd_(nullptr), navMesh_(nullptr),
-	  navQuery_(nullptr), triAreas_(nullptr)
+NavmeshBuilder::NavmeshBuilder(const vector<float>* v, const vector<int>* i)
+	: cfg_(), heightField_(nullptr), compactHeightField_(nullptr),
+	  contourSet_(nullptr), polyMesh_(nullptr), polyMeshDetail_(nullptr),
+	  crowd_(nullptr), navMesh_(nullptr), navQuery_(nullptr),
+	  triAreas_(nullptr), vertices_(v), indices_(i)
 {
 	navQuery_ = dtAllocNavMeshQuery();
 	crowd_ = dtAllocCrowd();
@@ -46,39 +47,21 @@ bool NavmeshBuilder::Build(NavmeshComponent& nc)
 
 	cfg_ = nc.config;
 
-	if (!meshData_)
+	if (!vertices_ || !indices_)
 	{
-		Debug::LogError("[NavmeshBuilder] : Build(): meshData is null.");
+		Debug::LogError(
+			"[NavmeshBuilder] : Build(): vertices or indices is nullptr.");
 
 		return false;
 	}
 
-	eastl::vector<float> bmin(3), bmax(3);
-	eastl::vector<float> vertices;
-	eastl::vector<int> triangles;
-	const int vertexCount = meshData_->points.size();
-	const int triangleCount = meshData_->indices.size() / 3;
+	const int vertexCount = vertices_->size() / 3;
+	const int triangleCount = indices_->size() / 3;
 
-	for (auto& v : meshData_->points)
-	{
-		vertices.push_back(v.pos.x);
-		vertices.push_back(v.pos.y);
-		vertices.push_back(v.pos.z);
-	}
+	eastl::vector<float> bmin(3);
+	eastl::vector<float> bmax(3);
 
-	for (auto i : meshData_->indices)
-	{
-		triangles.push_back(i);
-	}
-
-	rcCalcBounds(vertices.data(), meshData_->points.size(), bmin.data(),
-	             bmax.data());
-
-	/*for (int i = 0; i < bmin.size(); ++i)
-	{
-	    bmin[i] *= 10;
-	    bmax[i] *= 10;
-	}*/
+	rcCalcBounds(vertices_->data(), vertexCount, bmin.data(), bmax.data());
 
 	rcConfig cfg{};
 	cfg.cs = cfg_.cellSize;
@@ -135,12 +118,12 @@ bool NavmeshBuilder::Build(NavmeshComponent& nc)
 	}
 
 	memset(triAreas_, 0, sizeof(unsigned char) * triangleCount);
-	rcMarkWalkableTriangles(&ctx_, cfg.walkableSlopeAngle, vertices.data(),
-	                        vertexCount, triangles.data(), triangleCount,
+	rcMarkWalkableTriangles(&ctx_, cfg.walkableSlopeAngle, vertices_->data(),
+	                        vertexCount, indices_->data(), triangleCount,
 	                        triAreas_);
 
-	r = rcRasterizeTriangles(&ctx_, vertices.data(), vertexCount,
-	                         triangles.data(), triAreas_, triangleCount,
+	r = rcRasterizeTriangles(&ctx_, vertices_->data(), vertexCount,
+	                         indices_->data(), triAreas_, triangleCount,
 	                         *heightField_, cfg.walkableClimb);
 
 	if (!r)

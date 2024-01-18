@@ -215,7 +215,7 @@ add_library("${PROJECT_NAME}" SHARED
         include/D3E/Components/navigation/NavmeshConfig.h
         include/D3E/Components/navigation/NavmeshCore.h
         src/components/NavmeshComponent.cpp
-)
+        src/utils/MeshUtils.h)
 
 add_subdirectory(libs)
 

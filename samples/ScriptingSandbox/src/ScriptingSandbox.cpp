@@ -41,7 +41,7 @@ void ScriptingSandbox::Init()
 
 	info.name = "Dungeon";
 	tc.position = Vector3(0.f, 0.f, 0.f);
-	tc.scale = Vector3(0.1f, 0.1f, 0.1f);
+	tc.scale = Vector3(1.f, 1.f, 1.f);
 	auto te = D3E::CreationSystems::CreateSM(
 		GetRegistry(), info, tc, "51f14cf8-d75f-4819-9ee7-a487919740c4",
 		"ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
