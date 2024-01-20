@@ -97,7 +97,7 @@ bool D3E::ImGui_NVRHI::createFontTexture(nvrhi::ICommandList* commandList)
     {
         const auto desc = nvrhi::SamplerDesc()
                               .setAllAddressModes(nvrhi::SamplerAddressMode::Wrap)
-                              .setAllFilters(true);
+                              .setAllFilters(true).setReductionType(nvrhi::SamplerReductionType::Maximum);
 
         fontSampler = renderer->createSampler(desc);
 

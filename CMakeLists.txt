@@ -211,6 +211,13 @@ add_library("${PROJECT_NAME}" SHARED
         include/D3E/Components/render/SkyboxComponent.h
         src/assetmng/SkyboxVertex.h
         src/components/render/SkyboxComponent.cpp
+        src/rmlui_backend/rmlui_backend.cpp
+        src/rmlui_backend/rmlui_backend.h
+        src/game_ui/GameUi.cpp
+        src/game_ui/GameUi.h
+        src/rmlui_backend/RmlUi_Platform_Win32.cpp
+        src/rmlui_backend/RmlUi_Platform_Win32.h
+        src/rmlui_backend/RmlUi_Include_Windows.h
 )
 
 add_subdirectory(libs)
@@ -252,6 +259,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         DetourCrowd
         DetourTileCache
         Recast
+        RmlUi::Core
 )
 
 

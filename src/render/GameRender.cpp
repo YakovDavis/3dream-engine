@@ -24,8 +24,11 @@
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
+#include "game_ui/GameUi.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
+
+using namespace DirectX::SimpleMath;
 
 void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 {
@@ -91,6 +94,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	gameFrameBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
 	gameFramebuffer_ = device_->createFramebuffer(gameFrameBufferDesc);
 #endif
+
+	gameUi_ = D3E::GameUi::Init(parentGame, gameFramebuffer_);
 
 #ifdef USE_IMGUI
 	editor_ = D3E::Editor::Init(device_, display_, parentGame);
@@ -172,6 +177,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 void D3E::GameRender::DestroyResources()
 {
 //	editor_->Release();
+	GameUi::DestroyResources();
 }
 
 void D3E::GameRender::OnResize()
@@ -324,6 +330,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
+	gameUi_->Draw();
 }
 
 //void D3E::GameRender::LoadTexture(const String& name,
@@ -334,6 +341,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 
 void D3E::GameRender::UpdateAnimations(float dT)
 {
+	gameUi_->Update();
 #ifdef USE_IMGUI
 	editor_->BeginDraw(dT);
 #endif // USE_IMGUI
@@ -383,6 +391,7 @@ void D3E::GameRender::DrawGUI()
 void D3E::GameRender::PostAssetLoadInit()
 {
 	PbrUtils::Setup(device_, commandList_);
+	gameUi_->PostInputInit();
 }
 
 void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* fb)
@@ -408,7 +417,7 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	{
 		return;
 	}
-	Vector3 origin = playerTransform->position + camera->offset;
+	DirectX::SimpleMath::Vector3 origin = playerTransform->position + camera->offset;
 
 	entt::entity sb = skyboxView.front();
 
@@ -443,7 +452,7 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 
 	SkyboxCB constBufferData = {};
 
-	Matrix viewRot = DirectX::XMMatrixLookAtLH(Vector3::Zero, camera->forward, camera->up);
+	DirectX::SimpleMath::Matrix viewRot = DirectX::XMMatrixLookAtLH(DirectX::SimpleMath::Vector3::Zero, camera->forward, camera->up);
 	constBufferData.skyProjectionMatrix = viewRot * CameraUtils::GetProj(*camera);
 
 	commandList_->writeBuffer(sc.constantBuffer, &constBufferData, sizeof(constBufferData));
@@ -460,4 +469,13 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	auto drawArguments = nvrhi::DrawArguments()
 	                         .setVertexCount(MeshFactory::GetSkyMeshData(kSkyboxMeshUUID).indices.size());
 	commandList_->drawIndexed(drawArguments);
+}
+
+nvrhi::IFramebuffer* D3E::GameRender::GetGameFramebuffer()
+{
+#ifdef D3E_WITH_EDITOR
+	return gameFramebuffer_;
+#else
+	return nvrhiFramebuffer[GetCurrentFrameBuffer()];
+#endif
 }

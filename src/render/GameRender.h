@@ -29,6 +29,8 @@ namespace D3E
 
 	class SkyboxComponent;
 
+	class GameUi;
+
 	// Internal class for managing render devices, swap chains etc.
 	class GameRender
 	{
@@ -62,6 +64,8 @@ namespace D3E
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;
 
+		nvrhi::IFramebuffer* GetGameFramebuffer();
+
 //		void LoadTexture(const String& name, const String& fileName);
 
 		void DestroyResources();
@@ -89,6 +93,8 @@ namespace D3E
 		NvrhiMessageCallback* messageCallback_;
 
 		nvrhi::InputLayoutHandle inputLayout_;
+
+		D3E::GameUi* gameUi_;
 
 #ifdef D3E_WITH_EDITOR
 		D3E::Editor* editor_;

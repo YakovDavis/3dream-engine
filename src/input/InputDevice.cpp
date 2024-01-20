@@ -46,8 +46,10 @@ void D3E::InputDevice::OnKeyDown(KeyboardInputEventArgs args)
 	
 	if(Break) {
 		if(keys->count(key))	RemovePressedKey(key);
+		KeyChanged.Broadcast({key, false});
 	} else {
 		if (!keys->count(key))	AddPressedKey(key);
+		KeyChanged.Broadcast({key, true});
 	}
 }
 
