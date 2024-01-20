@@ -42,3 +42,6 @@ option(RECASTNAVIGATION_DEMO OFF)
 option(RECASTNAVIGATION_TESTS OFF)
 option(RECASTNAVIGATION_EXAMPLES OFF)
 add_subdirectory(recastnavigation)
+
+# RmlUI
+add_subdirectory(RmlUI)
