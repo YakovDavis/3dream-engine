@@ -977,6 +977,40 @@ void D3E::Editor::DrawInspector()
 					{
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						size_t fieldIdx = idx * 100;
+						bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Offset (initial)");
+						if (offsetOpened)
+						{
+							float x, y, z;
+							std::string xInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).initialOffset.x);
+							if (ImGui::InputText("x", &xInput, input_text_flags))
+							{
+								if (!(xInput.empty()))
+								{
+									x = std::stof(xInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [x](auto &component) { component.initialOffset.x = x; });
+								}
+							}
+							std::string yInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).initialOffset.y);
+							if (ImGui::InputText("y", &yInput, input_text_flags))
+							{
+								if (!(yInput.empty()))
+								{
+									y = std::stof(yInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [y](auto &component) { component.initialOffset.y = y; });
+								}
+							}
+							std::string zInput = std::to_string(game_->GetRegistry().get<CameraComponent>(currentEntity).initialOffset.z);
+							if (ImGui::InputText("z", &zInput, input_text_flags))
+							{
+								if (!(zInput.empty()))
+								{
+									z = std::stof(zInput);
+									game_->GetRegistry().patch<CameraComponent>(currentEntity, [z](auto &component) { component.initialOffset.z = z; });
+								}
+							}
+							ImGui::TreePop();
+						}
+						++fieldIdx;
 						bool upOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Up");
 						if (upOpened)
 						{

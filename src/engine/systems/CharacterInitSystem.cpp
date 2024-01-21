@@ -208,7 +208,7 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	character.character_->GetPositionAndRotation(characterPosition,characterRotation);
 	//camera.offset = DirectX::SimpleMath::Vector3(characterPosition.GetX(), characterPosition.GetY(), characterPosition.GetZ());
 	auto transform = view.get<TransformComponent>(characterController);
-	transform.position = camera.offset;
+	transform.position = DirectX::SimpleMath::Vector3(characterPosition.GetX(), characterPosition.GetY(), characterPosition.GetZ());
 }
 
 void D3E::CharacterInitSystem::ComponentCreatedHandler(entt::registry& registry,

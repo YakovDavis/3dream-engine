@@ -802,6 +802,7 @@ void D3E::ComponentCreationWindow::Draw()
 					{
 						x = std::stof(xInput);
 						cameraComponent.offset.x = x;
+						cameraComponent.initialOffset.x = x;
 					}
 				}
 				std::string yInput = std::to_string(cameraComponent.offset.y);
@@ -811,6 +812,7 @@ void D3E::ComponentCreationWindow::Draw()
 					{
 						y = std::stof(yInput);
 						cameraComponent.offset.y = y;
+						cameraComponent.initialOffset.y = y;
 					}
 				}
 				std::string zInput = std::to_string(cameraComponent.offset.z);
@@ -820,6 +822,7 @@ void D3E::ComponentCreationWindow::Draw()
 					{
 						z = std::stof(zInput);
 						cameraComponent.offset.z = z;
+						cameraComponent.initialOffset.z = z;
 					}
 				}
 				ImGui::TreePop();
