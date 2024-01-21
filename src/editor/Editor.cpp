@@ -11,6 +11,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -452,7 +453,7 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0\0");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0");
 	switch (createComponent)
 	{
 		case 0:
@@ -465,6 +466,7 @@ void D3E::Editor::DrawInspector()
 		case 5:
 		case 7:
 		case 8:
+		case 9:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = false;
 			break;
@@ -525,6 +527,9 @@ void D3E::Editor::DrawInspector()
 						case 7:
 							CreationSystems::CreateDefaultSoundListenerComponent(game_->GetRegistry(), currentEntity);
 							break;
+						case 9:
+							CreationSystems::CreateDefaultNavigationComponent(
+								game_->GetRegistry(), currentEntity);
 					}
 				}
 			}
@@ -1429,6 +1434,20 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 							ImGui::EndDragDropTarget();
+						}
+					} else 
+					if (componentName == "NavmeshComponent")
+					{
+						auto& nc = game_->GetRegistry().get<NavmeshComponent>(
+							currentEntity);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+						ImGui::Checkbox("Navmesh is built", &nc.isBuilt);
+						ImGui::PopItemFlag();
+						
+						if (ImGui::Button("Build"))
+						{
+							game_->BuildNavmesh(currentEntity);
 						}
 					}
 

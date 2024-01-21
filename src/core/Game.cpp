@@ -3,7 +3,9 @@
 #include "D3E/AssetManager.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
+#include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/TimerManager.h"
@@ -14,6 +16,7 @@
 #include "EngineState.h"
 #include "assetmng/CDialogEventHandler.h"
 #include "assetmng/DefaultAssetLoader.h"
+#include "assetmng/MeshFactory.h"
 #include "assetmng/ScriptFactory.h"
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
@@ -29,6 +32,7 @@
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "json.hpp"
+#include "navigation/NavmeshBuilder.h"
 #include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
 #include "render/GameRenderD3D12.h"
@@ -41,11 +45,15 @@
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "sound_engine/SoundEngine.h"
 #include "utils/ECSUtils.h"
+#include "utils/MeshUtils.h"
 
 #include <filesystem>
 #include <thread>
 
-static json currentMapSavedState = json({{"type", "world"}, {"uuid", D3E::EmptyIdStdStr}, {"filename", ""}, {"entities", {}}});
+static json currentMapSavedState = json({{"type", "world"},
+                                         {"uuid", D3E::EmptyIdStdStr},
+                                         {"filename", ""},
+                                         {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
 bool D3E::Game::KeyboardLockedByImGui = false;
@@ -190,11 +198,12 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
-	systems_.push_back(
-		new PhysicsInitSystem(registry_, this, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new PhysicsInitSystem(registry_, this,
+	                                         physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(
 		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
-	systems_.push_back(new CharacterInitSystem(registry_, this, physicsInfo_->getPhysicsSystem()));
+	systems_.push_back(new CharacterInitSystem(
+		registry_, this, physicsInfo_->getPhysicsSystem()));
 
 	renderPPsystems_.push_back(new LightInitSystem);
 	renderPPsystems_.push_back(new LightRenderSystem);
@@ -294,8 +303,10 @@ D3E::Game::Game() : soundEngine_{nullptr}
 		new eastl::chrono::time_point<eastl::chrono::steady_clock>(
 			eastl::chrono::steady_clock::now());
 
-	registry_.on_construct<ObjectInfoComponent>().connect<&Game::OnObjectInfoConstruct>(this);
-	registry_.on_destroy<ObjectInfoComponent>().connect<&Game::OnObjectInfoDestroy>(this);
+	registry_.on_construct<ObjectInfoComponent>()
+		.connect<&Game::OnObjectInfoConstruct>(this);
+	registry_.on_destroy<ObjectInfoComponent>()
+		.connect<&Game::OnObjectInfoDestroy>(this);
 }
 
 void D3E::Game::HandleMessages()
@@ -437,15 +448,22 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						// If user is dragging the resize bars, we do not resize
 						// the buffers here because as the user continuously
-						// drags the resize bars, a stream of WM_SIZE messages are sent to the window, and it would be pointless (and slow) to resize for each WM_SIZE message received from dragging the resize bars.  So instead, we reset after the user is done resizing the window and releases the resize bars, which sends a WM_EXITSIZEMOVE message.
+						// drags the resize bars, a stream of WM_SIZE messages
+						// are sent to the window, and it would be pointless
+						// (and slow) to resize for each WM_SIZE message
+						// received from dragging the resize bars.  So instead,
+						// we reset after the user is done resizing the window
+						// and releases the resize bars, which sends a
+						// WM_EXITSIZEMOVE message.
 					}
-					else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+					else // API call such as SetWindowPos or
+					     // mSwapChain->SetFullscreenState.
 					{
 						GetRender()->OnResize();
 					}
 				}
 			}
-		return 0;
+			return 0;
 
 		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 		case WM_ENTERSIZEMOVE:
@@ -464,7 +482,6 @@ LRESULT D3E::Game::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				GetRender()->OnResize();
 			}
 			return 0;
-
 
 		// WM_DESTROY is sent when the window is being destroyed.
 		case WM_DESTROY:
@@ -525,7 +542,8 @@ void D3E::Game::Pick()
 	CalculateGizmoTransformsOffsets();
 }
 
-void D3E::Game::SetUuidEditorSelected(const D3E::String& uuid, bool selected, bool resetOthers)
+void D3E::Game::SetUuidEditorSelected(const D3E::String& uuid, bool selected,
+                                      bool resetOthers)
 {
 
 	if (resetOthers)
@@ -576,7 +594,10 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 	}
 	gizmoRotation.Normalize();
 	gizmoScale /= selectedUuids.size();
-	gizmoTransform_ = DirectX::SimpleMath::Matrix::CreateScale(gizmoScale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(gizmoRotation) * DirectX::SimpleMath::Matrix::CreateTranslation(gizmoPosition);
+	gizmoTransform_ =
+		DirectX::SimpleMath::Matrix::CreateScale(gizmoScale) *
+		DirectX::SimpleMath::Matrix::CreateFromQuaternion(gizmoRotation) *
+		DirectX::SimpleMath::Matrix::CreateTranslation(gizmoPosition);
 	DirectX::SimpleMath::Matrix invGizmoTransform = gizmoTransform_.Invert();
 	gizmoOffsets_.clear();
 	for (const auto& uuid : selectedUuids)
@@ -587,18 +608,22 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 			continue;
 		}
 		gizmoOffsets_.insert({uuid, invGizmoTransform});
-		gizmoOffsets_[uuid] *= DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
-		                       DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc->rotation) *
-		                       DirectX::SimpleMath::Matrix::CreateTranslation(tc->position);
+		gizmoOffsets_[uuid] *=
+			DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
+			DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc->rotation) *
+			DirectX::SimpleMath::Matrix::CreateTranslation(tc->position);
 	}
 }
 
-void D3E::Game::OnObjectInfoConstruct(entt::registry& registry, entt::entity entity)
+void D3E::Game::OnObjectInfoConstruct(entt::registry& registry,
+                                      entt::entity entity)
 {
-	uuidEntityList.insert({registry.get<ObjectInfoComponent>(entity).id, entity});
+	uuidEntityList.insert(
+		{registry.get<ObjectInfoComponent>(entity).id, entity});
 }
 
-void D3E::Game::OnObjectInfoDestroy(entt::registry& registry, entt::entity entity)
+void D3E::Game::OnObjectInfoDestroy(entt::registry& registry,
+                                    entt::entity entity)
 {
 	uuidEntityList.erase(registry.get<ObjectInfoComponent>(entity).id);
 }
@@ -608,13 +633,37 @@ DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoTransform()
 	return gizmoTransform_;
 }
 
-const DirectX::SimpleMath::Matrix& D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
+const DirectX::SimpleMath::Matrix&
+D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
 {
 	if (gizmoOffsets_.find(uuid) == gizmoOffsets_.end())
 	{
 		return DirectX::SimpleMath::Matrix::Identity;
 	}
 	return gizmoOffsets_.at(uuid);
+}
+
+void D3E::Game::BuildNavmesh(entt::entity e)
+{
+	auto& nc = registry_.get<NavmeshComponent>(e);
+	auto& tc = registry_.get<TransformComponent>(e);
+	auto& smc = registry_.get<StaticMeshComponent>(e);
+	auto& meshData = MeshFactory::GetMeshData(smc.meshUuid);
+
+	eastl::vector<float> vertices;
+	eastl::vector<int> indices;
+
+	ConvertVertices(meshData.points, vertices, tc);
+	ConvertIndices(meshData.indices, indices);
+
+	eastl::unique_ptr<NavmeshBuilder> nb =
+		eastl::make_unique<NavmeshBuilder>(&vertices, &indices);
+
+	auto r = nb->Build(nc);
+	if (!r)
+	{
+		Debug::LogError("[Game] : BuildNavmesh(): Navmesh was not built");
+	}
 }
 
 void D3E::Game::OnEditorPlayPressed()
@@ -651,7 +700,7 @@ void D3E::Game::OnEditorPausePressed()
 		{
 			sys->Pause(registry_, this);
 		}
-		//physicsInfo_->setIsPaused(!(physicsInfo_->getIsPaused()));
+		// physicsInfo_->setIsPaused(!(physicsInfo_->getIsPaused()));
 	}
 }
 
@@ -668,7 +717,7 @@ void D3E::Game::OnEditorStopPressed()
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
 		ScriptingEngine::GetInstance().Clear();
-		//physicsInfo_->setIsPaused(true);
+		// physicsInfo_->setIsPaused(true);
 
 		EngineState::currentPlayer = editorFakePlayer_;
 	}
@@ -677,7 +726,7 @@ void D3E::Game::OnEditorStopPressed()
 void D3E::Game::ClearWorld()
 {
 	RenderUtils::InvalidateWorldBuffers(registry_);
-	EditorIdManager::Get()->UnregisterAll();	
+	EditorIdManager::Get()->UnregisterAll();
 	uuidEntityList.clear();
 	registry_.clear();
 	//CreationSystems::CreateSkybox(registry_);
@@ -690,12 +739,13 @@ void D3E::Game::ClearWorld()
 HRESULT D3E::Game::AssetFileImport(String currentDir)
 {
 	// CoCreate the File Open Dialog object.
-	IFileDialog *pfd = NULL;
-	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+	IFileDialog* pfd = NULL;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL,
+	                              CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
 	if (SUCCEEDED(hr))
 	{
 		// Create an event handling object, and hook it up to the dialog.
-		IFileDialogEvents *pfde = NULL;
+		IFileDialogEvents* pfde = NULL;
 		hr = CDialogEventHandler_CreateInstance(IID_PPV_ARGS(&pfde));
 		if (SUCCEEDED(hr))
 		{
@@ -707,7 +757,8 @@ HRESULT D3E::Game::AssetFileImport(String currentDir)
 				// Set the options on the dialog.
 				DWORD dwFlags;
 
-				// Before setting, always get the options first in order not to override existing options.
+				// Before setting, always get the options first in order not to
+				// override existing options.
 				hr = pfd->GetOptions(&dwFlags);
 				if (SUCCEEDED(hr))
 				{
@@ -715,11 +766,14 @@ HRESULT D3E::Game::AssetFileImport(String currentDir)
 					hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
 					if (SUCCEEDED(hr))
 					{
-						// Set the file types to display only. Notice that, this is a 1-based array.
-						hr = pfd->SetFileTypes(ARRAYSIZE(c_rgSaveTypes), c_rgSaveTypes);
+						// Set the file types to display only. Notice that, this
+						// is a 1-based array.
+						hr = pfd->SetFileTypes(ARRAYSIZE(c_rgSaveTypes),
+						                       c_rgSaveTypes);
 						if (SUCCEEDED(hr))
 						{
-							// Set the selected file type index to Word Docs for this example.
+							// Set the selected file type index to Word Docs for
+							// this example.
 							hr = pfd->SetFileTypeIndex(INDEX_TEXTURE);
 							if (SUCCEEDED(hr))
 							{
@@ -731,32 +785,90 @@ HRESULT D3E::Game::AssetFileImport(String currentDir)
 									hr = pfd->Show(NULL);
 									if (SUCCEEDED(hr))
 									{
-										// Obtain the result, once the user clicks the 'Open' button.
-										// The result is an IShellItem object.
-										IShellItem *psiResult;
+										// Obtain the result, once the user
+										// clicks the 'Open' button. The result
+										// is an IShellItem object.
+										IShellItem* psiResult;
 										hr = pfd->GetResult(&psiResult);
 										if (SUCCEEDED(hr))
 										{
 											PWSTR pszFilePath = NULL;
-											hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+											hr = psiResult->GetDisplayName(
+												SIGDN_FILESYSPATH,
+												&pszFilePath);
 											if (SUCCEEDED(hr))
 											{
-												auto sourcePath = std::filesystem::path(pszFilePath);
-												auto destinationPath = std::filesystem::path(currentDir.c_str() / sourcePath.filename());
-												auto workingDirPath = std::filesystem::current_path();
-												auto relDestinationPath = std::filesystem::relative(destinationPath, workingDirPath);
-												std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::overwrite_existing);
-												if (AssetManager::IsExtensionTexture(sourcePath.extension().string()))
+												auto sourcePath =
+													std::filesystem::path(
+														pszFilePath);
+												auto destinationPath =
+													std::filesystem::path(
+														currentDir.c_str() /
+														sourcePath.filename());
+												auto workingDirPath = std::
+													filesystem::current_path();
+												auto relDestinationPath =
+													std::filesystem::relative(
+														destinationPath,
+														workingDirPath);
+												std::filesystem::copy(
+													sourcePath, destinationPath,
+													std::filesystem::
+														copy_options::
+															overwrite_existing);
+												if (AssetManager::
+												        IsExtensionTexture(
+															sourcePath
+																.extension()
+																.string()))
 												{
-													AssetManager::Get().CreateTexture(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+													AssetManager::Get()
+														.CreateTexture(
+															sourcePath.stem()
+																.string()
+																.c_str(),
+															relDestinationPath
+																.string()
+																.c_str(),
+															GetRender()
+																->GetDevice(),
+															GetRender()
+																->GetCommandList());
 												}
-												else if (AssetManager::IsExtensionModel(sourcePath.extension().string()))
+												else if (
+													AssetManager::
+														IsExtensionModel(
+															sourcePath
+																.extension()
+																.string()))
 												{
-													AssetManager::Get().CreateMesh(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str(), GetRender()->GetDevice(), GetRender()->GetCommandList());
+													AssetManager::Get().CreateMesh(
+														sourcePath.stem()
+															.string()
+															.c_str(),
+														relDestinationPath
+															.string()
+															.c_str(),
+														GetRender()
+															->GetDevice(),
+														GetRender()
+															->GetCommandList());
 												}
-												else if (AssetManager::IsExtensionSound(sourcePath.extension().string()))
+												else if (
+													AssetManager::
+														IsExtensionSound(
+															sourcePath
+																.extension()
+																.string()))
 												{
-													AssetManager::Get().CreateSound(sourcePath.stem().string().c_str(), relDestinationPath.string().c_str());
+													AssetManager::Get()
+														.CreateSound(
+															sourcePath.stem()
+																.string()
+																.c_str(),
+															relDestinationPath
+																.string()
+																.c_str());
 												}
 												CoTaskMemFree(pszFilePath);
 											}
@@ -781,20 +893,16 @@ HRESULT D3E::Game::AssetFileImport(String currentDir)
 void D3E::Game::AssetDeleteDialog(D3E::String filename)
 {
 	int res = 0;
-	TaskDialog(NULL,
-	           NULL,
-	           L"Delete confirm",
-	           L"Are you sure you want to delete this item?",
-	           NULL,
-	           TDCBF_YES_BUTTON | TDCBF_NO_BUTTON,
-	           TD_INFORMATION_ICON,
-	           &res);
+	TaskDialog(NULL, NULL, L"Delete confirm",
+	           L"Are you sure you want to delete this item?", NULL,
+	           TDCBF_YES_BUTTON | TDCBF_NO_BUTTON, TD_INFORMATION_ICON, &res);
 
 	if (res == IDYES)
 	{
 		if (is_directory(std::filesystem::path(filename.c_str())))
 		{
-			std::filesystem::remove_all(std::filesystem::path(filename.c_str()));
+			std::filesystem::remove_all(
+				std::filesystem::path(filename.c_str()));
 		}
 		AssetManager::Get().DeleteAsset(filename);
 	}
@@ -828,7 +936,9 @@ void D3E::Game::OnEditorSaveMapPressed()
 		}
 		else
 		{
-			std::ofstream o(contentBrowserFilePath_ + "\\" + to_string(currentMapSavedState.at("filename")) + ".meta");
+			std::ofstream o(contentBrowserFilePath_ + "\\" +
+			                to_string(currentMapSavedState.at("filename")) +
+			                ".meta");
 			o << std::setw(4) << currentMapSavedState << std::endl;
 			o.close();
 		}
@@ -848,9 +958,11 @@ void D3E::Game::OnSaveSelectedToPrefabPressed()
 	}
 
 	json j;
-	ComponentFactory::SerializeEntity(uuidEntityList[*selectedUuids.begin()], j, false);
+	ComponentFactory::SerializeEntity(uuidEntityList[*selectedUuids.begin()], j,
+	                                  false);
 	j.emplace("uuid", UuidGenerator::NewGuidStdStr());
-	std::filesystem::path filepath = std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta";
+	std::filesystem::path filepath =
+		std::filesystem::path(GetContentBrowserFilePath()) / "NewPrefab.meta";
 	std::ofstream f(filepath);
 	f << std::setw(4) << j << std::endl;
 	f.close();

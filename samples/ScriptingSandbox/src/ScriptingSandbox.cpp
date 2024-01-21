@@ -2,6 +2,7 @@
 
 #include "D3E/CommonHeader.h"
 #include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
@@ -37,6 +38,14 @@ void ScriptingSandbox::Init()
 	auto scriptComponent = D3E::ScriptComponent(duckId, scriptUuid);
 
 	GetRegistry().emplace<D3E::ScriptComponent>(duckId, scriptComponent);
+
+	info.name = "Dungeon";
+	tc.position = Vector3(0.f, 0.f, 0.f);
+	tc.scale = Vector3(1.f, 1.f, 1.f);
+	auto te = D3E::CreationSystems::CreateSM(
+		GetRegistry(), info, tc, "51f14cf8-d75f-4819-9ee7-a487919740c4",
+		"ca626ac7-8f6d-44bd-9fbf-9a529fc577f4");
+	registry_.emplace<D3E::NavmeshComponent>(te, D3E::NavmeshComponent());
 
 	info.name = "DirectionalLight";
 

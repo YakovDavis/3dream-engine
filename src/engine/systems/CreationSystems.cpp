@@ -3,6 +3,7 @@
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
@@ -46,7 +47,8 @@ D3E::CreationSystems::CreateDefaultPlayer(entt::registry& registry,
 
 entt::entity D3E::CreationSystems::CreateSM(
 	entt::registry& registry, const D3E::ObjectInfoComponent& info,
-	const D3E::TransformComponent& tc, const D3E::String& meshUuid, const D3E::String& materialUuid)
+	const D3E::TransformComponent& tc, const D3E::String& meshUuid,
+	const D3E::String& materialUuid)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
@@ -56,7 +58,8 @@ entt::entity D3E::CreationSystems::CreateSM(
 
 	ObjectInfoComponent infoComponent = info;
 	infoComponent.id = UuidGenerator::NewGuidString();
-	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
+	infoComponent.editorId =
+		EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
 	TransformComponent transform(tc);
 	transform.position = tc.position;
@@ -71,16 +74,18 @@ entt::entity D3E::CreationSystems::CreateSM(
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreateLight(
-	entt::registry& registry, const D3E::ObjectInfoComponent& info,
-	const D3E::TransformComponent& tc)
+entt::entity
+D3E::CreationSystems::CreateLight(entt::registry& registry,
+                                  const D3E::ObjectInfoComponent& info,
+                                  const D3E::TransformComponent& tc)
 {
 	const auto e = registry.create();
 
 	ObjectInfoComponent infoComponent;
 	infoComponent.name = info.name;
 	infoComponent.id = UuidGenerator::NewGuidString();
-	infoComponent.editorId = EditorIdManager::Get()->RegisterUuid(infoComponent.id);
+	infoComponent.editorId =
+		EditorIdManager::Get()->RegisterUuid(infoComponent.id);
 
 	TransformComponent transform(tc);
 	transform.position = tc.position;
@@ -97,7 +102,8 @@ entt::entity D3E::CreationSystems::CreateLight(
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& registry)
+entt::entity
+D3E::CreationSystems::CreateEditorDebugRender(entt::registry& registry)
 {
 	const auto e = registry.create();
 
@@ -118,8 +124,9 @@ entt::entity D3E::CreationSystems::CreateEditorDebugRender(entt::registry& regis
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info,
-                                                             const TransformComponent& tc, const PhysicsComponent& physc)
+entt::entity D3E::CreationSystems::CreatePhysicalCube(
+	entt::registry& registry, const ObjectInfoComponent& info,
+	const TransformComponent& tc, const PhysicsComponent& physc)
 {
 	const auto e = registry.create();
 	StaticMeshComponent sm;
@@ -131,7 +138,7 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	infoComponent.id = UuidGenerator::NewGuidString();
 
 	SoundComponent sound;
-	//sound.fileName = "sfx.mp3";
+	// sound.fileName = "sfx.mp3";
 	sound.is3D = true;
 	sound.isLooping = true;
 	sound.isStreaming = false;
@@ -147,8 +154,10 @@ entt::entity D3E::CreationSystems::CreatePhysicalCube(entt::registry& registry, 
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& registry, const D3E::ObjectInfoComponent& info,
-                                                           const D3E::TransformComponent& tc, const D3E::PhysicsCharacterComponent& character)
+entt::entity D3E::CreationSystems::CreatePhysicalCharacter(
+	entt::registry& registry, const D3E::ObjectInfoComponent& info,
+	const D3E::TransformComponent& tc,
+	const D3E::PhysicsCharacterComponent& character)
 {
 	const auto e = registry.create();
 
@@ -159,10 +168,15 @@ entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& regis
 	camera.offset.z = 5 * character.colliderParams_.x;
 	camera.offset.y = 2 * character.colliderParams_.x;
 	camera.initialOffset = camera.offset;
-	camera.forward = DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
+	camera.forward =
+		DirectX::SimpleMath::Vector3::Transform(camera.forward, tc.rotation);
 	camera.forward.y = 0;
-	camera.up = Vector3::Transform(Vector3::Up, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, character.pitch_, 0.0f));
-	camera.offset = Vector3::Transform(camera.offset, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(character.yaw_, 0.0f, 0.0f));
+	camera.up = Vector3::Transform(
+		Vector3::Up, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(
+						 character.yaw_, character.pitch_, 0.0f));
+	camera.offset = Vector3::Transform(
+		camera.offset, DirectX::SimpleMath::Matrix::CreateFromYawPitchRoll(
+						   character.yaw_, 0.0f, 0.0f));
 
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<CameraComponent>(e, camera);
@@ -172,8 +186,9 @@ entt::entity D3E::CreationSystems::CreatePhysicalCharacter(entt::registry& regis
 	return e;
 }
 
-entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& registry, const D3E::ObjectInfoComponent& info,
-                                                              const D3E::TransformComponent& tc, const D3E::PhysicsComponent& physc)
+entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(
+	entt::registry& registry, const D3E::ObjectInfoComponent& info,
+	const D3E::TransformComponent& tc, const D3E::PhysicsComponent& physc)
 {
 	const auto e = registry.create();
 
@@ -188,7 +203,9 @@ entt::entity D3E::CreationSystems::CreatePurelyPhysicalObject(entt::registry& re
 	return e;
 }
 
-entt::entity D3E::CreationSystems::OnCreateObjectButtonPressed(entt::registry& registry, int item)
+entt::entity
+D3E::CreationSystems::OnCreateObjectButtonPressed(entt::registry& registry,
+                                                  int item)
 {
 	switch (item)
 	{
@@ -203,7 +220,8 @@ entt::entity D3E::CreationSystems::OnCreateObjectButtonPressed(entt::registry& r
 		case 4:
 			return CreateDefaultLight(registry);
 		default:
-			Debug::LogWarning("[CreationSystems] Unknown CreateButton item, creating Empty instead");
+			Debug::LogWarning("[CreationSystems] Unknown CreateButton item, "
+			                  "creating Empty instead");
 			return CreateDefaultEmpty(registry);
 	}
 }
@@ -317,44 +335,50 @@ entt::entity D3E::CreationSystems::CreateDefaultLight(entt::registry& registry)
 	return e;
 }
 
-void D3E::CreationSystems::CreateDefaultFPSControllerComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultFPSControllerComponent(
+	entt::registry& registry, entt::entity& entity)
 {
 	FPSControllerComponent component = {};
 	registry.emplace<FPSControllerComponent>(entity, component);
 }
-void D3E::CreationSystems::CreateDefaultCameraComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultCameraComponent(
+	entt::registry& registry, entt::entity& entity)
 {
 	CameraComponent component = {};
 	registry.emplace<CameraComponent>(entity, component);
 }
 
-void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry,
+                                                       entt::entity& entity)
 {
 	LightInitSystem::IsDirty = true;
 	LightComponent component = {};
 	registry.emplace<LightComponent>(entity, component);
-
 }
 
-void D3E::CreationSystems::CreateDefaultStaticMeshComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultStaticMeshComponent(
+	entt::registry& registry, entt::entity& entity)
 {
 	StaticMeshComponent component = {};
 	registry.emplace<StaticMeshComponent>(entity, component);
 }
 
-void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry,
+                                                       entt::entity& entity)
 {
 	SoundComponent component = {};
 	registry.emplace<SoundComponent>(entity, component);
 }
 
-void D3E::CreationSystems::CreateDefaultSoundListenerComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultSoundListenerComponent(
+	entt::registry& registry, entt::entity& entity)
 {
 	SoundListenerComponent component = {};
 	registry.emplace<SoundListenerComponent>(entity, component);
 }
 
-void D3E::CreationSystems::CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity)
+void D3E::CreationSystems::CreateDefaultScriptComponent(
+	entt::registry& registry, entt::entity& entity)
 {
 	ScriptComponent component(entity, EmptyIdString);
 	registry.emplace<ScriptComponent>(entity, component);
@@ -406,3 +430,11 @@ entt::entity D3E::CreationSystems::CreateSkybox(entt::registry& registry)
 
 	return e;
 }
+
+void D3E::CreationSystems::CreateDefaultNavigationComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	NavmeshComponent nc = {};
+	registry.emplace<NavmeshComponent>(entity, nc);
+}
+

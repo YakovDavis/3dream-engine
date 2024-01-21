@@ -218,7 +218,17 @@ add_library("${PROJECT_NAME}" SHARED
         src/rmlui_backend/RmlUi_Platform_Win32.cpp
         src/rmlui_backend/RmlUi_Platform_Win32.h
         src/rmlui_backend/RmlUi_Include_Windows.h
-)
+        include/D3E/Components/navigation/NavmeshComponent.h
+        src/navigation/Context.h 
+        src/navigation/Context.cpp 
+        src/navigation/PerformanceTimer.h 
+        src/navigation/PerformanceTimer.cpp
+        src/navigation/NavmeshBuilder.h
+        src/navigation/NavmeshBuilder.cpp
+        include/D3E/Components/navigation/NavmeshConfig.h
+        include/D3E/Components/navigation/NavmeshCore.h
+        src/components/NavmeshComponent.cpp
+        src/utils/MeshUtils.h)
 
 add_subdirectory(libs)
 
