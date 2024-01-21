@@ -18,15 +18,21 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
                                   nvrhi::ICommandList* commandList,
                                   nvrhi::IDevice* device)
 {
-	Vector3 origin = {0, 0, 0};
-
-	auto playerView = reg.view<const TransformComponent, const CameraComponent>();
-
-	for(auto [entity, tc, cc] : playerView.each())
+	if (EngineState::currentPlayer == entt::null)
 	{
-		origin = tc.position + cc.offset;
-		break;
+		return;
 	}
+	const TransformComponent* playerTransform = reg.try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	const CameraComponent* camera = reg.try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	Vector3 origin = playerTransform->position + camera->offset;
 
 	auto view = reg.view<const ObjectInfoComponent, const TransformComponent, const LightComponent>();
 

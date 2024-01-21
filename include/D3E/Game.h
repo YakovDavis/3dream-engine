@@ -100,6 +100,10 @@ namespace D3E
 
 		void DestroyEntity(const String& uuid);
 
+		void OnObjectClicked(entt::entity entity);
+
+		entt::entity FindFirstNonEditorPlayer();
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
@@ -157,5 +161,7 @@ namespace D3E
 		eastl::hash_set<String> selectedUuids;
 
 		std::string contentBrowserFilePath_ = "";
+
+		entt::entity editorFakePlayer_;
 	};
 } // namespace D3E

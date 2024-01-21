@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
+#include "entt/entt.hpp"
 
 namespace D3E
 {
@@ -24,6 +25,8 @@ namespace D3E
 
 		static int GetViewportWidth();
 		static int GetViewportHeight();
+
+		static entt::entity currentPlayer;
 
 		static bool isViewportDirty;
 

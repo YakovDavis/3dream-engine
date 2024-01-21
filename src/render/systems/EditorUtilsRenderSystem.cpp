@@ -41,24 +41,21 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 	                         .setVertexCount(4);
 	commandList->draw(drawArguments);
 
-	Vector3 origin = {0, 0, 0};
-
-	auto playerView = reg.view<const TransformComponent, const CameraComponent>();
-
-	const CameraComponent* camera = nullptr;
-
-	for(auto [entity, tc, cc] : playerView.each())
+	if (EngineState::currentPlayer == entt::null)
 	{
-		origin = tc.position + cc.offset;
-		camera = &cc;
-		break;
-	}
-
-	if (!camera)
-	{
-		Debug::LogWarning("[EditorUtilsRenderSystem] Camera not found");
 		return;
 	}
+	const TransformComponent* playerTransform = reg.try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	const CameraComponent* camera = reg.try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	Vector3 origin = playerTransform->position + camera->offset;
 
 	auto cvarDisplayGrid = ConsoleManager::getInstance()->findConsoleVariable("displayGrid");
 

@@ -3,6 +3,8 @@
 #include "CameraUtils.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/CommonHeader.h"
+#include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/SkyboxComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/components/render/StaticMeshComponent.h"
@@ -13,15 +15,20 @@
 #include "PerObjectConstBuffer.h"
 #include "PickConstBuffer.h"
 #include "ShaderFactory.h"
+#include "SkyboxCB.h"
 #include "Vertex.h"
 #include "assetmng/DefaultAssetLoader.h"
 #include "assetmng/MeshFactory.h"
 #include "assetmng/TextureFactory.h"
+#include "core/EngineState.h"
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
+#include "game_ui/GameUi.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
+
+using namespace DirectX::SimpleMath;
 
 void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 {
@@ -88,6 +95,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	gameFramebuffer_ = device_->createFramebuffer(gameFrameBufferDesc);
 #endif
 
+	gameUi_ = D3E::GameUi::Init(parentGame, gameFramebuffer_);
+
 #ifdef USE_IMGUI
 	editor_ = D3E::Editor::Init(device_, display_, parentGame);
 #endif
@@ -148,9 +157,19 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	pickingBSC.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pickedIdBuffer_));
 	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
 
+	nvrhi::BindingSetDesc tonemapBSP = {};
+#ifdef D3E_WITH_EDITOR
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gameFrameTexture_));
+#else
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, nvrhiFramebuffer[0])); // TODO: probably not going to work like this
+#endif
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
+	ShaderFactory::AddBindingSetP("Tonemap", tonemapBSP, "TonemapP");
+
 	nvrhi::BindingSetDesc nullBindingSetDesc = {};
 	ShaderFactory::AddBindingSetV("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassV");
 	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
+	ShaderFactory::AddBindingSetV("Tonemap", nullBindingSetDesc, "TonemapV");
 
 	Debug::LogMessage("[GameRender] Init finished");
 }
@@ -158,6 +177,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 void D3E::GameRender::DestroyResources()
 {
 //	editor_->Release();
+	GameUi::DestroyResources();
 }
 
 void D3E::GameRender::OnResize()
@@ -255,24 +275,44 @@ void D3E::GameRender::PrepareFrame()
 void D3E::GameRender::DrawPostProcess(entt::registry& registry,
                                       eastl::vector<GameSystem*>& systems)
 {
+	// Tonemapper // TODO: probably should move somewhere else
+	nvrhi::GraphicsState graphicsState = {};
+	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("Tonemap"));
+	graphicsState.bindings = {ShaderFactory::GetBindingSetV("Tonemap"), ShaderFactory::GetBindingSetP("Tonemap")};
+#ifdef D3E_WITH_EDITOR
+	graphicsState.framebuffer = gameFramebuffer_;
+#else
+	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	graphicsState.framebuffer = currentFramebuffer;
+#endif
+	nvrhi::DrawArguments drawArguments = {3};
+
 	commandList_->open();
 #ifdef D3E_WITH_EDITOR
+	DrawSkybox(registry, gameFramebuffer_);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
 	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
+	DrawSkybox(registry, currentFramebuffer);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
-	debugRenderer_->Begin(commandList_, currentFramebuffer);
 #endif
+
+	// Tonemapper
+	commandList_->setGraphicsState(graphicsState);
+	commandList_->draw(drawArguments);
+
+#ifdef D3E_WITH_EDITOR
 	debugRenderer_->ProcessQueue();
 	debugRenderer_->End();
+#endif
 	commandList_->close();
+
 	device_->executeCommandList(commandList_);
 }
 
@@ -290,6 +330,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
+	gameUi_->Draw();
 }
 
 //void D3E::GameRender::LoadTexture(const String& name,
@@ -300,6 +341,7 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 
 void D3E::GameRender::UpdateAnimations(float dT)
 {
+	gameUi_->Update();
 #ifdef USE_IMGUI
 	editor_->BeginDraw(dT);
 #endif // USE_IMGUI
@@ -349,4 +391,91 @@ void D3E::GameRender::DrawGUI()
 void D3E::GameRender::PostAssetLoadInit()
 {
 	PbrUtils::Setup(device_, commandList_);
+	gameUi_->PostInputInit();
+}
+
+void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* fb)
+{
+	if (EngineState::currentPlayer == entt::null)
+	{
+		return;
+	}
+
+	auto skyboxView = registry.view<const ObjectInfoComponent, const TransformComponent, SkyboxComponent>();
+	if (skyboxView.begin() == skyboxView.end())
+	{
+		return;
+	}
+
+	const TransformComponent* playerTransform = registry.try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	const CameraComponent* camera = registry.try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	DirectX::SimpleMath::Vector3 origin = playerTransform->position + camera->offset;
+
+	entt::entity sb = skyboxView.front();
+
+	const ObjectInfoComponent& info = registry.get<ObjectInfoComponent>(sb);
+	const TransformComponent& tc = registry.get<TransformComponent>(sb);
+	SkyboxComponent& sc = registry.get<SkyboxComponent>(sb);
+
+	if (!sc.constantBuffer)
+	{
+		auto constantBufferDesc =
+			nvrhi::BufferDesc()
+				.setByteSize(sizeof(SkyboxCB))
+				.setIsConstantBuffer(true)
+				.setIsVolatile(false)
+				.setMaxVersions(16)
+				.setKeepInitialState(true);
+		sc.constantBuffer = device_->createBuffer(constantBufferDesc);
+
+		nvrhi::BindingSetDesc bsv = {};
+		bsv.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, sc.constantBuffer));
+		ShaderFactory::RemoveBindingSetV(info.id);
+		ShaderFactory::AddBindingSetV(info.id, bsv, "SkyboxV");
+		sc.bindingSets.push_back(ShaderFactory::GetBindingSetV(info.id));
+
+		nvrhi::BindingSetDesc bsp = {};
+		bsp.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetTextureHandle(kEnvTextureUUID)));
+		bsp.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
+		ShaderFactory::RemoveBindingSetP(info.id);
+		ShaderFactory::AddBindingSetP(info.id, bsp, "SkyboxP");
+		sc.bindingSets.push_back(ShaderFactory::GetBindingSetP(info.id));
+	}
+
+	SkyboxCB constBufferData = {};
+
+	DirectX::SimpleMath::Matrix viewRot = DirectX::XMMatrixLookAtLH(DirectX::SimpleMath::Vector3::Zero, camera->forward, camera->up);
+	constBufferData.skyProjectionMatrix = viewRot * CameraUtils::GetProj(*camera);
+
+	commandList_->writeBuffer(sc.constantBuffer, &constBufferData, sizeof(constBufferData));
+
+	auto graphicsState = nvrhi::GraphicsState()
+	                         .setPipeline(ShaderFactory::GetGraphicsPipeline("Skybox"))
+	                         .setFramebuffer(fb)
+	                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
+	                         .addVertexBuffer(MeshFactory::GetVertexBufferBinding(kSkyboxMeshUUID))
+							 .setIndexBuffer(MeshFactory::GetIndexBufferBinding(kSkyboxMeshUUID));
+	graphicsState.bindings = {sc.bindingSets[0], sc.bindingSets[1]};
+	commandList_->setGraphicsState(graphicsState);
+
+	auto drawArguments = nvrhi::DrawArguments()
+	                         .setVertexCount(MeshFactory::GetSkyMeshData(kSkyboxMeshUUID).indices.size());
+	commandList_->drawIndexed(drawArguments);
+}
+
+nvrhi::IFramebuffer* D3E::GameRender::GetGameFramebuffer()
+{
+#ifdef D3E_WITH_EDITOR
+	return gameFramebuffer_;
+#else
+	return nvrhiFramebuffer[GetCurrentFrameBuffer()];
+#endif
 }

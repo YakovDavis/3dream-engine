@@ -1,0 +1,7 @@
+{
+    "filename": "skybox.obj",
+    "name": "skybox",
+    "type": "mesh",
+    "input_layout": "skybox",
+    "uuid": "ba806d98-cb91-4035-b2de-5b0085832c54"
+}

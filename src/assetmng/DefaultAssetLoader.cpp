@@ -104,6 +104,16 @@ void D3E::DefaultAssetLoader::LoadDefaultInputLayouts()
 		ShaderFactory::AddInputLayout(vShaderName, attributes, 5,
 		                              ShaderFactory::GetVertexShader(vShaderName));
 	}
+
+	nvrhi::VertexAttributeDesc skyboxAttributes[] = {
+		nvrhi::VertexAttributeDesc()
+			.setName("POSITION")
+			.setFormat(nvrhi::Format::RGB32_FLOAT)
+			.setOffset(0)
+			.setElementStride(sizeof(DirectX::SimpleMath::Vector3))
+	};
+
+	ShaderFactory::AddInputLayout("Skybox", skyboxAttributes, 1, ShaderFactory::GetVertexShader("Skybox"));
 }
 
 void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IFramebuffer* gBuffFb)
@@ -113,15 +123,20 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddVertexShader("GBuffer", "GBuffer.hlsl", "VSMain");
 	loadedVertexShaders.push_back("GBuffer");
 
+	ShaderFactory::AddVertexShader("Skybox", "Skybox.hlsl", "VSMain");
+
 	LoadDefaultInputLayouts();
 
 	ShaderFactory::AddVertexShader("LightPass", "LightPass.hlsl", "VSMain");
+	ShaderFactory::AddVertexShader("Tonemap", "Tonemap.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("DebugDraw", "DebugDraw.hlsl", "VSMain");
 
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("LightPass", "LightPass.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("Skybox", "Skybox.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("Tonemap", "Tonemap.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("DebugDraw", "DebugDraw.hlsl", "PSMain");
 
@@ -139,10 +154,12 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescVDefault.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
 	ShaderFactory::AddBindingLayout("SimpleForwardV", layoutDescVDefault);
 	ShaderFactory::AddBindingLayout("GBufferV", layoutDescVDefault);
+	ShaderFactory::AddBindingLayout("SkyboxV", layoutDescVDefault);
 
 	nvrhi::BindingLayoutDesc layoutDescVNull = {};
 	layoutDescVNull.setVisibility(nvrhi::ShaderType::Vertex);
 	ShaderFactory::AddBindingLayout("LightPassV", layoutDescVNull);
+	ShaderFactory::AddBindingLayout("TonemapV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("EditorHighlightPassV", layoutDescVNull);
 
 	nvrhi::BindingLayoutDesc layoutDescPNull = {};
@@ -184,6 +201,18 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(2));
 	ShaderFactory::AddBindingLayout("LightPassP", layoutDescLight);
 
+	nvrhi::BindingLayoutDesc layoutDescSky = {};
+	layoutDescSky.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescSky.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	layoutDescSky.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	ShaderFactory::AddBindingLayout("SkyboxP", layoutDescSky);
+
+	nvrhi::BindingLayoutDesc layoutDescTonemap = {};
+	layoutDescTonemap.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	ShaderFactory::AddBindingLayout("TonemapP", layoutDescTonemap);
+
 	nvrhi::BindingLayoutDesc pickLayoutDesc = {};
 	pickLayoutDesc.setVisibility(nvrhi::ShaderType::Compute);
 	pickLayoutDesc.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
@@ -224,13 +253,21 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	spBrdfLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_UAV(0));
 	ShaderFactory::AddBindingLayout("SpBrdfC", spBrdfLayoutDesc);
 
+	nvrhi::DepthStencilState::StencilOpDesc stencilOpDesc1 = {};
+	stencilOpDesc1.passOp = nvrhi::StencilOp::Replace;
+	stencilOpDesc1.failOp = nvrhi::StencilOp::Keep;
+	stencilOpDesc1.stencilFunc = nvrhi::ComparisonFunc::Always;
+
 	nvrhi::DepthStencilState depthStencilState = {};
 	depthStencilState.setDepthTestEnable(true);
 	depthStencilState.setDepthWriteEnable(true);
 	depthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Less);
 	depthStencilState.setStencilEnable(true);
-	depthStencilState.setStencilWriteMask(0xFF);
-	depthStencilState.setStencilReadMask(0xFF);
+	depthStencilState.setStencilWriteMask(0x01);
+	depthStencilState.setStencilRefValue(0x01);
+	depthStencilState.setStencilReadMask(0x00);
+	depthStencilState.setFrontFaceStencil(stencilOpDesc1);
+	depthStencilState.setBackFaceStencil(stencilOpDesc1);
 
 	nvrhi::RasterState rasterState = {};
 	rasterState.fillMode = nvrhi::RasterFillMode::Solid;
@@ -265,12 +302,41 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	gbufferPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
 	ShaderFactory::AddGraphicsPipeline("GBuffer", gbufferPipelineDesc, gBuffFb);
 
+	nvrhi::GraphicsPipelineDesc skyboxPipelineDesc = {};
+	skyboxPipelineDesc.setInputLayout(ShaderFactory::GetInputLayout("Skybox"));
+	skyboxPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("Skybox"));
+	skyboxPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("Skybox"));
+	skyboxPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SkyboxV"));
+	skyboxPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("SkyboxP"));
+	rasterState.setCullNone();
+	nvrhi::DepthStencilState::StencilOpDesc skyStencilOpDesc = {};
+	skyStencilOpDesc.passOp = nvrhi::StencilOp::Keep;
+	skyStencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::NotEqual;
+	skyStencilOpDesc.failOp = nvrhi::StencilOp::Keep;
+	nvrhi::DepthStencilState skyDSState = depthStencilState;
+	skyDSState.setDepthTestEnable(false);
+	skyDSState.setDepthWriteEnable(false);
+	skyDSState.setStencilRefValue(0x01);
+	skyDSState.setStencilEnable(true);
+	skyDSState.setFrontFaceStencil(skyStencilOpDesc);
+	skyDSState.setBackFaceStencil(skyStencilOpDesc);
+	skyDSState.setStencilReadMask(0x01);
+	skyDSState.setStencilWriteMask(0x01);
+	renderState.depthStencilState = skyDSState;
+	skyboxPipelineDesc.setRenderState(renderState);
+	skyboxPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
+	ShaderFactory::AddGraphicsPipeline("Skybox", skyboxPipelineDesc, fb);
+	rasterState.setCullBack();
+	renderState.depthStencilState = depthStencilState;
+
 	nvrhi::DepthStencilState::StencilOpDesc stencilOpDesc = {};
 	stencilOpDesc.passOp = nvrhi::StencilOp::Replace;
+	stencilOpDesc.failOp = nvrhi::StencilOp::Keep;
 	stencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::Always;
 	depthStencilState.setBackFaceStencil(stencilOpDesc);
 	depthStencilState.setFrontFaceStencil(stencilOpDesc);
-	depthStencilState.setStencilRefValue(1);
+	depthStencilState.setStencilWriteMask(0x03);
+	depthStencilState.setStencilRefValue(0x03);
 	renderState.depthStencilState = depthStencilState;
 	gbufferPipelineDesc.setRenderState(renderState);
 	ShaderFactory::AddGraphicsPipeline("GBufferHighlight", gbufferPipelineDesc, gBuffFb);
@@ -289,10 +355,37 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("LightPass"));
 	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassV"));
 	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassP"));
-	renderState.depthStencilState = nullDepthStencilState;
+	nvrhi::DepthStencilState::StencilOpDesc lightpassStencilOpDesc = {};
+	lightpassStencilOpDesc.passOp = nvrhi::StencilOp::Keep;
+	lightpassStencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::Equal;
+	lightpassStencilOpDesc.failOp = nvrhi::StencilOp::Keep;
+	nvrhi::DepthStencilState lightpassDSState = depthStencilState;
+	lightpassDSState.setDepthTestEnable(false);
+	lightpassDSState.setDepthWriteEnable(false);
+	lightpassDSState.setStencilRefValue(0x01);
+	lightpassDSState.setStencilEnable(true);
+	lightpassDSState.setFrontFaceStencil(lightpassStencilOpDesc);
+	lightpassDSState.setBackFaceStencil(lightpassStencilOpDesc);
+	lightpassDSState.setStencilReadMask(0x01);
+	lightpassDSState.setStencilWriteMask(0x01);
+	renderState.depthStencilState = lightpassDSState;
 	lightpassPipelineDesc.setRenderState(renderState);
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
+
+	nvrhi::GraphicsPipelineDesc tonemapPipelineDesc = {};
+	tonemapPipelineDesc.setInputLayout(nullptr);
+	tonemapPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("Tonemap"));
+	tonemapPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("Tonemap"));
+	tonemapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("TonemapV"));
+	tonemapPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("TonemapP"));
+	renderState.depthStencilState = nullDepthStencilState;
+	rasterState.setCullNone();
+	renderState.rasterState = rasterState;
+	tonemapPipelineDesc.setRenderState(renderState);
+	tonemapPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
+	ShaderFactory::AddGraphicsPipeline("Tonemap", tonemapPipelineDesc, fb);
+	rasterState.setCullBack();
 
 	auto ppDepthStencilState = depthStencilState;
 	nvrhi::GraphicsPipelineDesc editorHighlightPipelineDesc = {};
@@ -301,8 +394,8 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	editorHighlightPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("EditorHighlightPass"));
 	editorHighlightPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("EditorHighlightPassV"));
 	editorHighlightPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("EditorHighlightPassP"));
-	ppDepthStencilState.setStencilRefValue(0x01);
-	ppDepthStencilState.setStencilReadMask(0xFF);
+	ppDepthStencilState.setStencilRefValue(0x02);
+	ppDepthStencilState.setStencilReadMask(0x02);
 	ppDepthStencilState.setStencilWriteMask(0x00);
 	nvrhi::DepthStencilState::StencilOpDesc highlightPassStencilOpDesc = {};
 	highlightPassStencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::Equal;
@@ -419,9 +512,9 @@ void D3E::DefaultAssetLoader::LoadDefaultSamplers(nvrhi::DeviceHandle& device)
 
 	auto sampler2Desc = nvrhi::SamplerDesc();
 	sampler2Desc.setMaxAnisotropy(16.0f);
-	sampler2Desc.minFilter = false;
-	sampler2Desc.magFilter = false;
-	sampler2Desc.mipFilter = false;
+	sampler2Desc.minFilter = true;
+	sampler2Desc.magFilter = true;
+	sampler2Desc.mipFilter = true;
 	sampler2Desc.addressU = nvrhi::SamplerAddressMode::Wrap;
 	sampler2Desc.addressV = nvrhi::SamplerAddressMode::Wrap;
 	sampler2Desc.addressW = nvrhi::SamplerAddressMode::Wrap;

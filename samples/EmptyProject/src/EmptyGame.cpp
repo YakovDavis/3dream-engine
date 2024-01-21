@@ -14,4 +14,6 @@ void EmptyGame::Init()
 
 	info.name = "DirectionalLight";
 	D3E::CreationSystems::CreateLight(GetRegistry(), info, tc);
+
+	D3E::CreationSystems::CreateSkybox(GetRegistry());
 }

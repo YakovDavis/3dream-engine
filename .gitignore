@@ -593,3 +593,7 @@ references/*
 !*fmod*.dll
 !*fmod*.lib
 !/libs/JoltPhysics/Build
+!libs/RmlUi/Dependencies/
+!libs/RmlUi/Dependencies/include/
+!libs/RmlUi/Dependencies/lib/
+!libs/RmlUi/Dependencies/freetype/

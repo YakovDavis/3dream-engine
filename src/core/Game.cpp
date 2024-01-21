@@ -91,11 +91,6 @@ void D3E::Game::Run()
 
 	bool lmbPressedLastTick = false; // temp
 
-	json j;
-	ComponentFactory::SerializeWorld(j);
-	std::ofstream o("DuckWorld.meta");
-	o << std::setw(4) << j << std::endl;
-
 	while (!isQuitRequested_)
 	{
 		HandleMessages();
@@ -220,6 +215,12 @@ void D3E::Game::Init()
 	soundEngine_->Init();
 
 	ClearWorld();
+
+#ifdef D3E_WITH_EDITOR
+	EngineState::currentPlayer = editorFakePlayer_;
+#else
+	EngineState::currentPlayer = FindFirstNonEditorPlayer();
+#endif
 
 	ComponentFactory::Initialize(this);
 }
@@ -535,6 +536,7 @@ void D3E::Game::Pick()
 			selectedUuids.clear();
 		}
 		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
+		OnObjectClicked(uuidEntityList[EditorIdManager::Get()->GetUuid(editorPickedId)]);
 	}
 	EditorUtilsRenderSystem::isSelectionDirty = true;
 	CalculateGizmoTransformsOffsets();
@@ -682,7 +684,10 @@ void D3E::Game::OnEditorPlayPressed()
 		{
 			sys->Play(registry_, this);
 		}
-		// physicsInfo_->setIsPaused(false);
+
+		EngineState::currentPlayer = FindFirstNonEditorPlayer();
+
+		//physicsInfo_->setIsPaused(false);
 	}
 }
 
@@ -713,6 +718,8 @@ void D3E::Game::OnEditorStopPressed()
 		ComponentFactory::ResolveWorld(currentMapSavedState);
 		ScriptingEngine::GetInstance().Clear();
 		// physicsInfo_->setIsPaused(true);
+
+		EngineState::currentPlayer = editorFakePlayer_;
 	}
 }
 
@@ -722,8 +729,10 @@ void D3E::Game::ClearWorld()
 	EditorIdManager::Get()->UnregisterAll();
 	uuidEntityList.clear();
 	registry_.clear();
+	//CreationSystems::CreateSkybox(registry_);
 #ifdef D3E_WITH_EDITOR
 	CreationSystems::CreateEditorDebugRender(registry_);
+	editorFakePlayer_ = CreationSystems::CreateEditorFakePlayer(registry_);
 #endif
 }
 
@@ -969,4 +978,18 @@ void D3E::Game::DestroyEntity(const D3E::String& uuid)
 	}
 
 	registry_.destroy(uuidEntityList[uuid]);
+}
+
+void D3E::Game::OnObjectClicked(entt::entity entity)
+{
+	if (auto scriptComponent = registry_.try_get<ScriptComponent>(entity))
+	{
+		scriptComponent->OnClicked(entity);
+	}
+}
+
+entt::entity D3E::Game::FindFirstNonEditorPlayer()
+{
+	auto playerView = registry_.view<const TransformComponent, const CameraComponent>();
+	return playerView.front();
 }

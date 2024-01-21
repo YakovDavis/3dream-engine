@@ -2,6 +2,8 @@
 #include "core/magic_enum.hpp"
 #include "json.hpp"
 
+using namespace DirectX::SimpleMath;
+
 namespace D3E
 {
 	void to_json(json& j, const LightComponent& t)

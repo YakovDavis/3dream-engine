@@ -6,10 +6,12 @@
 #include "assimp/postprocess.h"
 #include "utils/FilenameUtils.h"
 #include "D3E/Game.h"
+#include "assetmng/SkyboxVertex.h"
 
 bool D3E::MeshFactory::isInitialized_ = false;
 D3E::Game* D3E::MeshFactory::activeGame_;
 eastl::unordered_map<D3E::String, D3E::MeshData> D3E::MeshFactory::meshData_ {};
+eastl::unordered_map<D3E::String, D3E::SkyMeshData> D3E::MeshFactory::skyMeshData_ {};
 eastl::unordered_map<D3E::String, nvrhi::BufferHandle> D3E::MeshFactory::vBuffers_ {};
 eastl::unordered_map<D3E::String, nvrhi::VertexBufferBinding> D3E::MeshFactory::vbBindings_ {};
 eastl::unordered_map<D3E::String, nvrhi::BufferHandle> D3E::MeshFactory::iBuffers_ {};
@@ -168,13 +170,20 @@ void D3E::MeshFactory::LoadMesh(const D3E::MeshMetaData& metaData, const std::st
 		aiProcess_ValidateDataStructure |
 		aiProcess_ConvertToLeftHanded;
 
-	Debug::LogMessage(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str());
-
 	const aiScene* pScene = importer.ReadFile(FilenameUtils::MetaFilenameToFilePath(metaData.filename, directory).string().c_str(), ImportFlags);
 
 	ProcessNode(metaData, pScene->mRootNode, pScene);
 
-	MeshFactory::FillMeshBuffers(metaData.uuid.c_str(), device, commandList);
+	if (metaData.inputLayout == "skybox")
+	{
+		MeshFactory::FillSkyMeshBuffers(metaData.uuid.c_str(), device,
+		                             commandList);
+	}
+	else
+	{
+		MeshFactory::FillMeshBuffers(metaData.uuid.c_str(), device,
+		                             commandList);
+	}
 }
 
 void D3E::MeshFactory::ProcessNode(const D3E::MeshMetaData& metaData, aiNode* node,
@@ -194,49 +203,71 @@ void D3E::MeshFactory::ProcessNode(const D3E::MeshMetaData& metaData, aiNode* no
 void D3E::MeshFactory::ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* mesh,
                                    const aiScene* scene)
 {
-	for (UINT i = 0; i < mesh->mNumVertices; i++)
+	if (metaData.inputLayout == "skybox")
 	{
-		Vertex point;
-
-		point.pos.x = mesh->mVertices[i].x;
-		point.pos.y = mesh->mVertices[i].y;
-		point.pos.z = mesh->mVertices[i].z;
-		point.pos.w = 1.0f;
-
-		if (mesh->mTextureCoords[0])
+		for (UINT i = 0; i < mesh->mNumVertices; i++)
 		{
-			point.tex.x = mesh->mTextureCoords[0][i].x;
-			point.tex.y = mesh->mTextureCoords[0][i].y;
+			SkyboxVertex point;
+
+			point.pos.x = mesh->mVertices[i].x;
+			point.pos.y = mesh->mVertices[i].y;
+			point.pos.z = mesh->mVertices[i].z;
+
+			skyMeshData_[metaData.uuid.c_str()].points.push_back(point);
 		}
-
-		point.normal.x = mesh->mNormals[i].x;
-		point.normal.y = mesh->mNormals[i].y;
-		point.normal.z = mesh->mNormals[i].z;
-		point.normal.w = 0.0f;
-
-		if (mesh->mTangents)
+		for (UINT i = 0; i < mesh->mNumFaces; i++)
 		{
-			point.tangentU.x = mesh->mTangents[i].x;
-			point.tangentU.y = mesh->mTangents[i].y;
-			point.tangentU.z = mesh->mTangents[i].z;
-			point.tangentU.w = 0.0f;
-		}
-		else
-		{
-			Debug::LogError("[MeshFactory] Tangents missing");
-		}
+			const aiFace face = mesh->mFaces[i];
 
-		//point.GenerateBitangent();
-
-		meshData_[metaData.uuid.c_str()].points.push_back(point);
+			for (UINT j = 0; j < face.mNumIndices; j++)
+				skyMeshData_[metaData.uuid.c_str()].indices.push_back(face.mIndices[j]);
+		}
 	}
-
-	for (UINT i = 0; i < mesh->mNumFaces; i++)
+	else
 	{
-		const aiFace face = mesh->mFaces[i];
+		for (UINT i = 0; i < mesh->mNumVertices; i++)
+		{
+			Vertex point;
 
-		for (UINT j = 0; j < face.mNumIndices; j++)
-			meshData_[metaData.uuid.c_str()].indices.push_back(face.mIndices[j]);
+			point.pos.x = mesh->mVertices[i].x;
+			point.pos.y = mesh->mVertices[i].y;
+			point.pos.z = mesh->mVertices[i].z;
+			point.pos.w = 1.0f;
+
+			if (mesh->mTextureCoords[0])
+			{
+				point.tex.x = mesh->mTextureCoords[0][i].x;
+				point.tex.y = mesh->mTextureCoords[0][i].y;
+			}
+
+			point.normal.x = mesh->mNormals[i].x;
+			point.normal.y = mesh->mNormals[i].y;
+			point.normal.z = mesh->mNormals[i].z;
+			point.normal.w = 0.0f;
+
+			if (mesh->mTangents)
+			{
+				point.tangentU.x = mesh->mTangents[i].x;
+				point.tangentU.y = mesh->mTangents[i].y;
+				point.tangentU.z = mesh->mTangents[i].z;
+				point.tangentU.w = 0.0f;
+			}
+			else
+			{
+				Debug::LogError("[MeshFactory] Tangents missing");
+			}
+
+			// point.GenerateBitangent();
+
+			meshData_[metaData.uuid.c_str()].points.push_back(point);
+		}
+		for (UINT i = 0; i < mesh->mNumFaces; i++)
+		{
+			const aiFace face = mesh->mFaces[i];
+
+			for (UINT j = 0; j < face.mNumIndices; j++)
+				meshData_[metaData.uuid.c_str()].indices.push_back(face.mIndices[j]);
+		}
 	}
 }
 
@@ -258,4 +289,56 @@ void D3E::MeshFactory::UnloadMesh(const D3E::String& uuid)
 	iBuffers_.erase(uuid);
 	ibBindings_.erase(uuid);
 	meshData_.erase(uuid);
+}
+
+D3E::SkyMeshData& D3E::MeshFactory::GetSkyMeshData(const D3E::String& uuid)
+{
+	if (skyMeshData_.find(uuid) == skyMeshData_.end())
+	{
+		Debug::LogError("[MeshFactory] Sky mesh data not found. UUID: " + uuid);
+	}
+	return skyMeshData_[uuid];
+}
+
+void D3E::MeshFactory::FillSkyMeshBuffers(const D3E::String& uuid,
+                                          nvrhi::IDevice* device,
+                                          nvrhi::ICommandList* commandList)
+{
+	auto vertexBufferDesc = nvrhi::BufferDesc()
+	                            .setByteSize(skyMeshData_[uuid].points.size() * sizeof(Vertex))
+	                            .setIsVertexBuffer(true)
+	                            .setInitialState(nvrhi::ResourceStates::VertexBuffer)
+	                            .setKeepInitialState(true)
+	                            .setDebugName("Vertex Buffer");
+
+	vBuffers_.insert({uuid, device->createBuffer(vertexBufferDesc)});
+
+	auto indexBufferDesc = nvrhi::BufferDesc()
+	                           .setByteSize(skyMeshData_[uuid].indices.size() * sizeof(uint32_t))
+	                           .setIsIndexBuffer(true)
+	                           .setInitialState(nvrhi::ResourceStates::IndexBuffer)
+	                           .setKeepInitialState(true)
+	                           .setDebugName("Index Buffer");
+
+	iBuffers_.insert({uuid, device->createBuffer(indexBufferDesc)});
+
+	commandList->open();
+
+	commandList->writeBuffer(vBuffers_[uuid], &(skyMeshData_[uuid].points[0]), skyMeshData_[uuid].points.size() * sizeof(SkyboxVertex));
+	commandList->writeBuffer(iBuffers_[uuid], &(skyMeshData_[uuid].indices[0]), skyMeshData_[uuid].indices.size() * sizeof(std::uint32_t));
+
+	commandList->close();
+	device->executeCommandList(commandList);
+
+	nvrhi::VertexBufferBinding vertexBufferBinding = {};
+	vertexBufferBinding.buffer = vBuffers_[uuid];
+	vertexBufferBinding.slot = 0;
+	vertexBufferBinding.offset = 0;
+	vbBindings_.insert({uuid, vertexBufferBinding});
+
+	nvrhi::IndexBufferBinding indexBufferBinding = {};
+	indexBufferBinding.buffer = iBuffers_[uuid];
+	indexBufferBinding.format = nvrhi::Format::R32_UINT;
+	indexBufferBinding.offset = 0;
+	ibBindings_.insert({uuid, indexBufferBinding});
 }

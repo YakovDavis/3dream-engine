@@ -7,9 +7,11 @@ include(CMakePrintHelpers)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc /bigobj")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+add_compile_options(/bigobj)
 
 add_library("${PROJECT_NAME}" SHARED
         include/D3E/CommonHeader.h
@@ -205,6 +207,17 @@ add_library("${PROJECT_NAME}" SHARED
         src/tinyexr/miniz.c
         src/tinyexr/miniz.h
         src/tinyexr/tinyexr.h
+        src/render/SkyboxCB.h
+        include/D3E/Components/render/SkyboxComponent.h
+        src/assetmng/SkyboxVertex.h
+        src/components/render/SkyboxComponent.cpp
+        src/rmlui_backend/rmlui_backend.cpp
+        src/rmlui_backend/rmlui_backend.h
+        src/game_ui/GameUi.cpp
+        src/game_ui/GameUi.h
+        src/rmlui_backend/RmlUi_Platform_Win32.cpp
+        src/rmlui_backend/RmlUi_Platform_Win32.h
+        src/rmlui_backend/RmlUi_Include_Windows.h
         include/D3E/Components/navigation/NavmeshComponent.h
         src/navigation/Context.h 
         src/navigation/Context.cpp 
@@ -256,6 +269,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         DetourCrowd
         DetourTileCache
         Recast
+        RmlUi::Core
 )
 
 

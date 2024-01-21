@@ -25,6 +25,12 @@ namespace D3E
 			int WheelDelta;
 		};
 
+		struct KeyEventArgs
+		{
+			Keys key;
+			bool down;
+		};
+
 		DirectX::SimpleMath::Vector2 MousePosition;
 		DirectX::SimpleMath::Vector2 MouseOffset;
 		int MouseWheelDelta{};
@@ -32,6 +38,8 @@ namespace D3E
 		DirectX::SimpleMath::Vector2 MouseOffsetInTick;
 
 		MulticastDelegate<const MouseMoveEventArgs&> MouseMove;
+
+		MulticastDelegate<const KeyEventArgs&> KeyChanged;
 
 	public:
 		InputDevice(Game* inGame);

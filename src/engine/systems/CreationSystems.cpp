@@ -7,6 +7,7 @@
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
+#include "D3E/Components/render/SkyboxComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Debug.h"
@@ -383,9 +384,57 @@ void D3E::CreationSystems::CreateDefaultScriptComponent(
 	registry.emplace<ScriptComponent>(entity, component);
 }
 
+entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent info;
+	info.name = "EditorPlayer";
+	info.id = UuidGenerator::NewGuidString();
+	info.internalObject = true;
+	info.serializeEntity = false;
+
+	TransformComponent transform = {};
+
+	CameraComponent camera;
+
+	FPSControllerComponent fps;
+
+	registry.emplace<ObjectInfoComponent>(e, info);
+	registry.emplace<TransformComponent>(e, transform);
+	registry.emplace<CameraComponent>(e, camera);
+	registry.emplace<FPSControllerComponent>(e, fps);
+
+	return e;
+}
+
+entt::entity D3E::CreationSystems::CreateSkybox(entt::registry& registry)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent ic;
+	ic.name = "Skybox";
+	ic.id = UuidGenerator::NewGuidString();
+	ic.serializeEntity = true;
+	ic.internalObject = false;
+	ic.editorId = 0;
+
+	TransformComponent tc = {};
+
+	SkyboxComponent sc = {};
+
+	registry.emplace<ObjectInfoComponent>(e, ic);
+	registry.emplace<TransformComponent>(e, tc);
+	registry.emplace<SkyboxComponent>(e, sc);
+	StaticMeshInitSystem::IsDirty = true;
+
+	return e;
+}
+
 void D3E::CreationSystems::CreateDefaultNavigationComponent(
 	entt::registry& registry, entt::entity& entity)
 {
 	NavmeshComponent nc = {};
 	registry.emplace<NavmeshComponent>(entity, nc);
 }
+

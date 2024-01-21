@@ -9,11 +9,13 @@
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
+#include "D3E/Components/render/SkyboxComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
 #include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Game.h"
+#include "core/EngineState.h"
 #include "json.hpp"
 #include "render/systems/LightInitSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
@@ -35,6 +37,7 @@ void D3E::ComponentFactory::Initialize(D3E::Game* game)
 	typeNames_.insert({entt::type_id<ScriptComponent>().hash(), "ScriptComponent"});
 	typeNames_.insert({entt::type_id<CameraComponent>().hash(), "CameraComponent"});
 	typeNames_.insert({entt::type_id<LightComponent>().hash(), "LightComponent"});
+	typeNames_.insert({entt::type_id<SkyboxComponent>().hash(), "SkyboxComponent"});
 	typeNames_.insert({entt::type_id<StaticMeshComponent>().hash(), "StaticMeshComponent"});
 	typeNames_.insert({entt::type_id<SoundComponent>().hash(), "SoundComponent"});
 	typeNames_.insert({entt::type_id<SoundListenerComponent>().hash(), "SoundListenerComponent"});
@@ -105,6 +108,12 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			c.from_json(el);
 			game_->GetRegistry().emplace<LightComponent>(e, c);
 			LightInitSystem::IsDirty = true;
+		}
+		else if (el.at("class") == "SkyboxComponent")
+		{
+			SkyboxComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<SkyboxComponent>(e, c);
 		}
 		else if (el.at("class") == "StaticMeshComponent")
 		{
@@ -214,6 +223,12 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 			game_->GetRegistry().get<LightComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
+		else if (el == "SkyboxComponent")
+		{
+			json c;
+			game_->GetRegistry().get<SkyboxComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
 		else if (el == "StaticMeshComponent")
 		{
 			json c;
@@ -241,6 +256,7 @@ void D3E::ComponentFactory::ResolveWorld(const json& j)
 	{
 		ResolveEntity(el);
 	}
+	EngineState::currentPlayer = game_->FindFirstNonEditorPlayer();
 }
 
 void D3E::ComponentFactory::SerializeWorld(json& j)

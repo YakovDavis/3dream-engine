@@ -5,8 +5,6 @@
 #include "SimpleMath.h"
 #include "nvrhi/nvrhi.h"
 
-using namespace DirectX::SimpleMath;
-
 namespace D3E
 {
 	enum LightType
@@ -19,10 +17,10 @@ namespace D3E
 	struct LightComponent : public BaseComponent
 	{
 		LightType lightType = LightType::Directional;
-		Vector3 offset = Vector3(0.f, 0.f, 0.f);
-		Vector3 direction = Vector3(2.f, -1.f, 1.f);
-		Vector3 color = Vector3(2.f, 2.f, 2.f);
-		float intensity = 1000.0f;
+		DirectX::SimpleMath::Vector3 offset = {0.f, 0.f, 0.f};
+		DirectX::SimpleMath::Vector3 direction = {2.f, -1.f, 1.f};
+		DirectX::SimpleMath::Vector3 color = 0.8f * DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
+		float intensity = 1.0f;
 		bool castsShadows = false;
 		nvrhi::BufferHandle lightCBuffer;
 		nvrhi::BufferHandle csmCBuffer;
