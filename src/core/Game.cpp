@@ -984,6 +984,11 @@ void D3E::Game::DestroyEntity(const D3E::String& uuid)
 
 void D3E::Game::OnObjectClicked(entt::entity entity)
 {
+	if (!isGameRunning_)
+	{
+		return;
+	}
+
 	if (auto scriptComponent = registry_.try_get<ScriptComponent>(entity))
 	{
 		scriptComponent->OnClicked(entity);
