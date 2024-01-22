@@ -12,6 +12,8 @@
 #include "render/GBuffer.h"
 #include "render/LightConstBuffer.h"
 #include "render/ShaderFactory.h"
+#include "D3E/Game.h"
+#include "render/GameRender.h"
 
 bool D3E::LightInitSystem::IsDirty = false;
 
@@ -25,7 +27,7 @@ void D3E::LightInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* com
 
 	auto view = reg.view<const ObjectInfoComponent, LightComponent>();
 
-	view.each([device, commandList](const auto& info, auto& lc)
+	view.each([&, device, commandList](const auto& info, auto& lc)
 	          {
 				  if (lc.initialized)
 				  {
@@ -41,21 +43,12 @@ void D3E::LightInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* com
 
 				  lc.lightCBuffer = device->createBuffer(lightCBufferDesc);
 
-				  auto csmCBufferDesc = nvrhi::BufferDesc()
-		                                        .setByteSize(sizeof(CsmConstBuffer))
-		                                        .setIsConstantBuffer(true)
-		                                        .setIsVolatile(false)
-		                                        .setMaxVersions(16)
-		                                        .setKeepInitialState(true);
-
-				  lc.csmCBuffer = device->createBuffer(csmCBufferDesc);
-
 				  nvrhi::BindingSetDesc bindingSetDescV = {};
 				  ShaderFactory::AddBindingSetV(info.id, bindingSetDescV, "LightPassV");
 
 				  nvrhi::BindingSetDesc bindingSetDescP = {};
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, lc.lightCBuffer));
-				  bindingSetDescP.addItem(nvrhi::BindingSetItem::ConstantBuffer(1, lc.csmCBuffer));
+				  bindingSetDescP.addItem(nvrhi::BindingSetItem::ConstantBuffer(1, game_->GetRender()->GetCsmConstantBuffer()));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, TextureFactory::GetGBuffer()->albedoBuffer));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(1, TextureFactory::GetGBuffer()->positionBuffer));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(2, TextureFactory::GetGBuffer()->normalBuffer));
@@ -63,14 +56,18 @@ void D3E::LightInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList* com
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(4, TextureFactory::GetTextureHandle(kEnvTextureUUID)));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(5, TextureFactory::GetTextureHandle(kIrMapTextureUUID)));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(6, TextureFactory::GetTextureHandle(kSpBrdfLutTextureUUID)));
-				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(7, TextureFactory::GetTextureHandle("34b9a6f1-240f-4d40-b76d-ad38ce9e65ea")));
+				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Texture_SRV(7, game_->GetRender()->GetCsmTexture()));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseGraphics")));
 				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(1, TextureFactory::GetSampler("SpBrdf")));
-				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(2, TextureFactory::GetSampler("BaseGraphics")));
+				  bindingSetDescP.addItem(nvrhi::BindingSetItem::Sampler(2, game_->GetRender()->GetCsmSampler()));
 				  ShaderFactory::AddBindingSetP(info.id, bindingSetDescP, "LightPassP");
 
 				  lc.initialized = true;
 			  });
 
 	LightInitSystem::IsDirty = false;
+}
+
+D3E::LightInitSystem::LightInitSystem(D3E::Game* game) : game_(game)
+{
 }

@@ -9,13 +9,13 @@
 #include "EASTL/vector.h"
 #include "NvrhiMessageCallback.h"
 #include "nvrhi/nvrhi.h"
+#include "LightPass.h"
 
 #include <Windows.h>
 
 #define USE_IMGUI
 
 #ifdef USE_IMGUI
-#include "LightPass.h"
 #include "editor/Editor.h"
 #endif // USE_IMGUI
 
@@ -30,6 +30,8 @@ namespace D3E
 	class SkyboxComponent;
 
 	class GameUi;
+
+	class Csm;
 
 	// Internal class for managing render devices, swap chains etc.
 	class GameRender
@@ -55,10 +57,13 @@ namespace D3E
 		virtual void PrepareFrame();
 		virtual void BeginDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems);
-		virtual void DrawPostProcess(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawPostProcessSystems(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawPostProcessEffects(entt::registry& registry);
 		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawGUI();
 
+		void DrawDebug();
+		void DrawTonemapper(nvrhi::IFramebuffer* fb);
 		void DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* fb);
 
 		virtual void Present() = 0;
@@ -66,7 +71,9 @@ namespace D3E
 
 		nvrhi::IFramebuffer* GetGameFramebuffer();
 
-//		void LoadTexture(const String& name, const String& fileName);
+		nvrhi::IBuffer* GetCsmConstantBuffer();
+		nvrhi::ITexture* GetCsmTexture();
+		nvrhi::ISampler* GetCsmSampler();
 
 		void DestroyResources();
 
@@ -95,6 +102,8 @@ namespace D3E
 		nvrhi::InputLayoutHandle inputLayout_;
 
 		D3E::GameUi* gameUi_;
+
+		D3E::Csm* shadowRenderer_;
 
 #ifdef D3E_WITH_EDITOR
 		D3E::Editor* editor_;

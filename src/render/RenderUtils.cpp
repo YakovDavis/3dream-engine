@@ -40,8 +40,6 @@ void D3E::RenderUtils::InvalidateWorldBuffers(entt::registry& reg)
 
 				lc.lightCBuffer = nullptr;
 
-				lc.csmCBuffer = nullptr;
-
 				ShaderFactory::RemoveBindingSetV(info.id);
 				ShaderFactory::RemoveBindingSetP(info.id);
 

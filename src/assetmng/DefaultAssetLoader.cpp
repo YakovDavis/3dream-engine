@@ -122,6 +122,8 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	loadedVertexShaders.push_back("SimpleForward");
 	ShaderFactory::AddVertexShader("GBuffer", "GBuffer.hlsl", "VSMain");
 	loadedVertexShaders.push_back("GBuffer");
+	ShaderFactory::AddVertexShader("Csm", "Csm.hlsl", "VSMain");
+	loadedVertexShaders.push_back("Csm");
 
 	ShaderFactory::AddVertexShader("Skybox", "Skybox.hlsl", "VSMain");
 
@@ -131,6 +133,8 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddVertexShader("Tonemap", "Tonemap.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("DebugDraw", "DebugDraw.hlsl", "VSMain");
+
+	ShaderFactory::AddGeometryShader("Csm", "Csm.hlsl", "GSMain");
 
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
@@ -154,6 +158,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescVDefault.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
 	ShaderFactory::AddBindingLayout("SimpleForwardV", layoutDescVDefault);
 	ShaderFactory::AddBindingLayout("GBufferV", layoutDescVDefault);
+	ShaderFactory::AddBindingLayout("CsmV", layoutDescVDefault);
 	ShaderFactory::AddBindingLayout("SkyboxV", layoutDescVDefault);
 
 	nvrhi::BindingLayoutDesc layoutDescVNull = {};
@@ -161,6 +166,11 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddBindingLayout("LightPassV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("TonemapV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("EditorHighlightPassV", layoutDescVNull);
+
+	nvrhi::BindingLayoutDesc layoutDescGCsm = {};
+	layoutDescGCsm.setVisibility(nvrhi::ShaderType::Geometry);
+	layoutDescGCsm.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	ShaderFactory::AddBindingLayout("CsmG", layoutDescGCsm);
 
 	nvrhi::BindingLayoutDesc layoutDescPNull = {};
 	layoutDescPNull.setVisibility(nvrhi::ShaderType::Pixel);
@@ -554,9 +564,9 @@ void D3E::DefaultAssetLoader::LoadDefaultMaterials()
 	defaultGrid.name = "DefaultGrid";
 	defaultGrid.uuid = kDefaultGridMaterialUUID;
 	defaultGrid.type = MaterialType::Lit;
-	defaultGrid.albedoTextureUuid = "24c71f11-0d38-4594-ae18-c8eedca9b896";
-	defaultGrid.normalTextureUuid = "c2346e38-a332-4c9f-bb91-f22591ce5f52";
-	defaultGrid.metalnessTextureUuid = "eb93c841-6911-411c-93cd-54b24861e6e7";
-	defaultGrid.roughnessTextureUuid = "eb93c841-6911-411c-93cd-54b24861e6e7";
+	defaultGrid.albedoTextureUuid = kDebugLinesTextureUUID;
+	defaultGrid.normalTextureUuid = kNormalsDefaultTextureUUID;
+	defaultGrid.metalnessTextureUuid = kBlackTextureUUID;
+	defaultGrid.roughnessTextureUuid =  kWhiteTextureUUID;
 	MaterialFactory::AddMaterial(defaultGrid);
 }

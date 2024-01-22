@@ -9,6 +9,7 @@
 #include "D3E/engine/ConsoleManager.h"
 #include "SimpleMath.h"
 #include "core/EngineState.h"
+#include "render/CameraUtils.h"
 #include "render/LightConstBuffer.h"
 #include "render/ShaderFactory.h"
 
@@ -34,9 +35,13 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 	}
 	Vector3 origin = playerTransform->position + camera->offset;
 
+	Matrix viewMatrix = CameraUtils::GetView(origin, *camera);
+
 	auto view = reg.view<const ObjectInfoComponent, const TransformComponent, const LightComponent>();
 
-	view.each([commandList, fb, origin](const auto& info, const auto& tc, const auto& lc)
+	commandList->beginMarker("LightPass");
+
+	view.each([viewMatrix, commandList, fb, origin](const auto& info, const auto& tc, const auto& lc)
 	          {
 				  // Fill the constant buffer
 				  LightConstBuffer constBufferData = {};
@@ -45,6 +50,7 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 				  constBufferData.gLightDir = Vector4(lc.direction.x, lc.direction.y, lc.direction.z, 0.0f);
 				  constBufferData.gLightDir.Normalize();
 				  constBufferData.gLightColor = Vector4(lc.color.x, lc.color.y, lc.color.z, 1.0f);
+				  constBufferData.gView = viewMatrix;
 
 				  commandList->writeBuffer(lc.lightCBuffer, &constBufferData, sizeof(constBufferData));
 
@@ -62,4 +68,6 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 		                                   .setVertexCount(4);
 				  commandList->draw(drawArguments);
 			  });
+
+	commandList->endMarker();
 }

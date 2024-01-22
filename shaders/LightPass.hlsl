@@ -20,6 +20,7 @@ cbuffer cbPerScene : register(b0)
 	float4 gLightDir; // w = type
 	float4 gLightColor; // w = is shadow casting
 	float4 gEyePosition;
+	float4x4 gView;
 };
 
 cbuffer cbCascade : register(b1)
@@ -39,7 +40,7 @@ Texture2DArray CascadeShadowMap : register(t7);
 
 SamplerState DefaultSampler : register(s0);
 SamplerState spBRDF_Sampler : register(s1);
-SamplerComparisonState DepthSampler : register(s2);
+SamplerState DepthSampler : register(s2);
 
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2.
@@ -90,9 +91,9 @@ PS_IN VSMain(uint id: SV_VertexID)
 	return output;
 }
 
-float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
+float ShadowCalculation(float3 posWorldSpace, float4 posViewSpace, float dotN)
 {
-	/*float depthValue = abs(posViewSpace.z);
+	float depthValue = abs(posViewSpace.z);
 
 	int layer = -1;
 	for (int i = 0; i < CASCADE_COUNT; ++i)
@@ -111,7 +112,8 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 	float4 posLightSpace = mul(float4(posWorldSpace.xyz, 1.0), gViewProj[layer]);
 	float3 projCoords = posLightSpace.xyz / posLightSpace.w;
 
-	projCoords = (mul(float4(projCoords, 1.0f), gT)).xyz;
+	projCoords.x = (projCoords.x + 1.0f) / 2.0f;
+	projCoords.y = (- projCoords.y + 1.0f) / 2.0f;
 	float currentDepth = projCoords.z;
 
 	if (currentDepth > 1.0f)
@@ -137,13 +139,12 @@ float ShadowCalculation(float4 posWorldSpace, float4 posViewSpace, float dotN)
 	{
 		for (int y = -1; y <= 1; ++y)
 		{
-			shadow += CascadeShadowMap.SampleCmp(DepthSampler, float3(projCoords.xy + float2(x, y) * texelSize, layer), currentDepth - bias);
+			shadow += CascadeShadowMap.Sample(DepthSampler, float3(projCoords.xy + float2(x, y) * texelSize, layer)).r < currentDepth - bias;
 		}
 	}
 	shadow /= 9.0f;
 
-	return shadow;*/
-	return 0.0f;
+	return shadow;
 }
 
 float4 PSMain(PS_IN input) : SV_Target
@@ -202,6 +203,9 @@ float4 PSMain(PS_IN input) : SV_Target
 
 	// Total contribution for this light.
 	directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+
+	float4 viewPos = mul(float4(worldPos, 1.0f), gView);
+	directLighting *= (1 - ShadowCalculation(worldPos, viewPos, dot(norm, gLightDir.xyz)));
 
     // Ambient lighting (IBL).
 	float3 ambientLighting;

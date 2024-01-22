@@ -15,6 +15,7 @@ namespace D3E
 		String materialUuid;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
 		bool editorHighlighted = false;
+		bool castsShadow = true;
 
 		bool initialized = false;
 

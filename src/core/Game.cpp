@@ -205,7 +205,7 @@ void D3E::Game::Init()
 	systems_.push_back(new CharacterInitSystem(
 		registry_, this, physicsInfo_->getPhysicsSystem()));
 
-	renderPPsystems_.push_back(new LightInitSystem);
+	renderPPsystems_.push_back(new LightInitSystem(this));
 	renderPPsystems_.push_back(new LightRenderSystem);
 
 	editorSystems_.push_back(new FPSControllerSystem);
@@ -246,8 +246,9 @@ void D3E::Game::EditorDraw()
 	gameRender_->BeginDraw(registry_, renderPPsystems_);
 	gameRender_->BeginDraw(registry_, editorSystems_);
 	gameRender_->DrawOpaque(registry_, systems_);
-	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
-	gameRender_->DrawPostProcess(registry_, editorSystems_);
+	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_);
+	gameRender_->DrawPostProcessEffects(registry_);
+	gameRender_->DrawPostProcessSystems(registry_, editorSystems_);
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->EndDraw(registry_, editorSystems_);
@@ -281,7 +282,8 @@ void D3E::Game::Draw()
 	gameRender_->BeginDraw(registry_, systems_);
 	gameRender_->BeginDraw(registry_, renderPPsystems_);
 	gameRender_->DrawOpaque(registry_, systems_);
-	gameRender_->DrawPostProcess(registry_, renderPPsystems_);
+	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_);
+	gameRender_->DrawPostProcessEffects(registry_);
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->DrawGUI();

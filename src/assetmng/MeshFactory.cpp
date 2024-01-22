@@ -250,6 +250,9 @@ void D3E::MeshFactory::ProcessMesh(const D3E::MeshMetaData& metaData, aiMesh* me
 				point.tangentU.x = mesh->mTangents[i].x;
 				point.tangentU.y = mesh->mTangents[i].y;
 				point.tangentU.z = mesh->mTangents[i].z;
+				point.bitangent.x = mesh->mBitangents[i].x;
+				point.bitangent.y = mesh->mBitangents[i].y;
+				point.bitangent.z = mesh->mBitangents[i].z;
 				point.tangentU.w = 0.0f;
 			}
 			else

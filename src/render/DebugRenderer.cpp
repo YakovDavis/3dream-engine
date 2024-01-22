@@ -1,11 +1,12 @@
 #include "DebugRenderer.h"
 
 #include "CameraUtils.h"
-#include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "ShaderFactory.h"
+#include "core/EngineState.h"
 #include "render/PerObjectConstBuffer.h"
 
 void D3E::DebugRenderer::DrawLine(const Vector3& from, const Vector3& to,
@@ -125,7 +126,7 @@ void D3E::DebugRenderer::Flush()
 		auto graphicsState = nvrhi::GraphicsState()
 		                         .setPipeline(ShaderFactory::GetGraphicsPipeline("DebugDraw"))
 		                         .setFramebuffer(framebuffer_)
-		                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(1280, 720))) // TODO
+		                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
 		                         .addBindingSet(ShaderFactory::GetBindingSetV(kDebugDrawLinesBindingSetUuid))
 		                         .addBindingSet(ShaderFactory::GetBindingSetP(kDebugDrawLinesBindingSetUuid));
 		commandList_->setGraphicsState(graphicsState);

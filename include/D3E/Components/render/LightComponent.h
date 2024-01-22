@@ -18,12 +18,11 @@ namespace D3E
 	{
 		LightType lightType = LightType::Directional;
 		DirectX::SimpleMath::Vector3 offset = {0.f, 0.f, 0.f};
-		DirectX::SimpleMath::Vector3 direction = {2.f, -1.f, 1.f};
+		DirectX::SimpleMath::Vector3 direction = {1.0f/1.414f, -1.0f/1.414f, 0.f};
 		DirectX::SimpleMath::Vector3 color = 0.8f * DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
 		float intensity = 1.0f;
 		bool castsShadows = false;
 		nvrhi::BufferHandle lightCBuffer;
-		nvrhi::BufferHandle csmCBuffer;
 		bool initialized = false;
 
 		void to_json(json& j) const override;

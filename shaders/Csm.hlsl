@@ -7,8 +7,10 @@
 struct VS_IN
 {
 	float4 pos : POSITION0;
+    float4 normal : NORMAL0;
+    float4 tangentU : TANGENT0;
+	float3 bitangent : BITANGENT;
 	float4 tex : TEXCOORD0;
-	float4 normal : NORMAL0;
 };
 
 struct GS_IN
@@ -22,6 +24,7 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorld;
 	float4x4 gWorldView;
 	float4x4 gInvTrWorldView;
+	int EditorId;
 };
 
 GS_IN VSMain(VS_IN input)

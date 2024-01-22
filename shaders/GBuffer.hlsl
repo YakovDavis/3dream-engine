@@ -12,7 +12,6 @@ struct VS_IN
 struct PS_IN
 {
 	float4 pos : SV_POSITION;
-	float4 normal : NORMAL;
     float3x3 tangentBasis : TBASIS;
     float4 tex : TEXCOORD;
 	float4 worldPos : WORLDPOS;
@@ -54,13 +53,13 @@ PS_IN VSMain(VS_IN input)
 	
 	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorldViewProj);
 	output.tex = input.tex;
-	output.normal = mul(float4(input.normal.xyz, 0.0f), gInvTrWorldView);
 
-	float3 tangent = mul(float4(input.tangentU.xyz, 0.0f), gInvTrWorldView).xyz;
-	float3 bitangent = mul(float4(input.bitangent.xyz, 0.0f), gInvTrWorldView).xyz;
+	float3 normal = normalize(mul(float4(input.normal.xyz, 0.0f), gInvTrWorldView).xyz);
+	float3 tangent = normalize(mul(float4(input.tangentU.xyz, 0.0f), gInvTrWorldView).xyz);
+	float3 bitangent = normalize(mul(float4(input.bitangent.xyz, 0.0f), gInvTrWorldView).xyz);
 
-	float3x3 TBN = float3x3(tangent, bitangent, output.normal.xyz);
-	output.tangentBasis = mul((float3x3)gInvTrWorldView, transpose(TBN));
+	float3x3 TBN = float3x3(tangent, bitangent, normal);
+	output.tangentBasis = TBN;
 
 	output.worldPos = mul(float4(input.pos.xyz, 1.0f), gWorld);
 
@@ -84,7 +83,7 @@ GBuffer PSMain(PS_IN input)
 	result.EditorIds = input.EditorId;
 
 	float3 N = normalize(2.0 * NormalMap.SampleLevel(DefaultSampler, input.tex.xy, 0).rgb - 1.0);
-	result.Normal = normalize(mul(input.tangentBasis, N));
+	result.Normal = normalize(mul(N, input.tangentBasis));
 	
 	return result;
 }
