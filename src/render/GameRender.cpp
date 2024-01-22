@@ -43,7 +43,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	commandList_ = device_->createCommandList();
 
-	auto depthDesc = nvrhi::TextureDesc()
+	/*auto depthDesc = nvrhi::TextureDesc()
 	                     .setDimension(nvrhi::TextureDimension::Texture2D)
 	                     .setWidth(display_->ClientWidth)
 	                     .setHeight(display_->ClientHeight)
@@ -63,7 +63,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	nvrhi::FramebufferDesc framebufferDesc1 = {};
 	framebufferDesc1.addColorAttachment(nvrhiSwapChain[1]);
 	framebufferDesc1.setDepthAttachment(nvrhiDepthBuffer);
-	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));
+	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));*/
 
 	gbuffer_.Initialize(device_, commandList_, display_.get());
 	TextureFactory::RegisterGBuffer(&gbuffer_);
@@ -108,7 +108,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	DefaultAssetLoader::LoadPrimitiveMeshes();
 	DefaultAssetLoader::FillPrimitiveMeshBuffers(device_, commandList_);
-	DefaultAssetLoader::LoadDefaultPSOs(nvrhiFramebuffer[0], frameGBuffer);
+	DefaultAssetLoader::LoadDefaultPSOs(gameFramebuffer_, frameGBuffer);
 	DefaultAssetLoader::LoadDefaultSamplers(device_);
 	DefaultAssetLoader::LoadDefaultMaterials();
 
@@ -189,6 +189,26 @@ void D3E::GameRender::DestroyResources()
 
 void D3E::GameRender::OnResize()
 {
+	auto depthDesc = nvrhi::TextureDesc()
+	                     .setDimension(nvrhi::TextureDimension::Texture2D)
+	                     .setWidth(display_->ClientWidth)
+	                     .setHeight(display_->ClientHeight)
+	                     .setFormat(nvrhi::Format::D24S8)
+	                     .setInitialState(nvrhi::ResourceStates::DepthWrite)
+	                     .setKeepInitialState(true)
+	                     .setIsRenderTarget(true)
+	                     .setDebugName("Depth Texture");
+
+	nvrhiDepthBuffer = device_->createTexture(depthDesc);
+
+	nvrhiFramebuffer.resize(SwapChainBufferCount);
+	for (uint32_t index = 0; index < SwapChainBufferCount; index++)
+	{
+		nvrhiFramebuffer[index] = GetDevice()->createFramebuffer(
+			nvrhi::FramebufferDesc().addColorAttachment(nvrhiSwapChain[index]).setDepthAttachment(nvrhiDepthBuffer));
+	}
+
+	EngineState::isViewportDirty = true;
 }
 
 void D3E::GameRender::CalculateFrameStats()
@@ -250,8 +270,6 @@ nvrhi::CommandListHandle& D3E::GameRender::GetCommandList()
 
 void D3E::GameRender::DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems)
 {
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
-
 	commandList_->open();
 	commandList_->beginMarker("Opaque");
 	for (auto& sys : systems)

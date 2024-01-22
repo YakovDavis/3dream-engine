@@ -22,10 +22,9 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		envTextureUnfilteredDesc.setMipLevels(11);
 		envTextureUnfilteredDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 		envTextureUnfilteredDesc.setIsUAV(true);
-		envTextureUnfilteredDesc.setInitialState(nvrhi::ResourceStates::Common);
+		envTextureUnfilteredDesc.setInitialState(nvrhi::ResourceStates::UnorderedAccess);
 
-		TextureFactory::AddNewTextureHandle(kRenderDebugTextureUUID, device->createTexture(envTextureUnfilteredDesc));
-		envTextureUnfiltered = TextureFactory::GetTextureHandle(kRenderDebugTextureUUID);
+		envTextureUnfiltered = device->createTexture(envTextureUnfilteredDesc);
 		//nvrhi::TextureHandle envTextureUnfiltered = device->createTexture(envTextureUnfilteredDesc);
 
 		// Load & convert equirectangular environment map to a cubemap texture.
@@ -46,6 +45,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
 			commandList->setComputeState(computeState);
 			commandList->dispatch(envTextureUnfilteredDesc.width/32, envTextureUnfilteredDesc.height/32, 6);
+			commandList->setTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::Common);
 			commandList->close();
 			device->executeCommandList(commandList);
 		}
@@ -79,13 +79,14 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			envTextureDesc.setMipLevels(11);
 			envTextureDesc.setFormat(nvrhi::Format::RGBA16_FLOAT);
 			envTextureDesc.setIsUAV(true);
-			envTextureDesc.setInitialState(nvrhi::ResourceStates::Common);
+			envTextureDesc.setInitialState(nvrhi::ResourceStates::CopyDest);
 			//envTextureDesc.setKeepInitialState(true);
 			TextureFactory::AddNewTextureHandle(kEnvTextureUUID, device->createTexture(envTextureDesc));
 			m_envTexture = TextureFactory::GetTextureHandle(kEnvTextureUUID);
 
 			commandList->open();
-			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::CopySource);
+			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::Common);
+			commandList->setTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::CopySource);
 			commandList->beginTrackingTextureState(m_envTexture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
 
 			// Copy 0th mipmap level into destination environment map.
@@ -94,6 +95,10 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 				auto currentSlice = nvrhi::TextureSlice().setMipLevel(0).setArraySlice(arraySlice);
 				commandList->copyTexture(m_envTexture, currentSlice, envTextureUnfiltered, currentSlice);
 			}
+
+			commandList->setTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
+
+			commandList->commitBarriers();
 
 			// Pre-filter rest of the mip chain.
 			const float deltaRoughness = 1.0f / std::max(float(m_envTexture->getDesc().mipLevels - 1), 1.0f);
@@ -105,6 +110,8 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 				                  .setMipLevels(level, 1)
 				                  .setArraySlices(0, m_envTexture->getDesc().arraySize);
 
+				commandList->setTextureState(m_envTexture, currentSubresource, nvrhi::ResourceStates::UnorderedAccess);
+
 				nvrhi::BindingSetItem uavItem = nvrhi::BindingSetItem::Texture_UAV(0, m_envTexture);
 				uavItem.setSubresources(currentSubresource);
 				nvrhi::BindingSetDesc bindingSetDesc = {};
@@ -115,17 +122,17 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 				nvrhi::BindingSetHandle bindingSetHandle = device->createBindingSet(bindingSetDesc, ShaderFactory::GetBindingLayout("SpMapC"));
 				computeState.bindings = { bindingSetHandle };
 
-				commandList->setTextureState(envTextureUnfiltered, currentSubresource, nvrhi::ResourceStates::UnorderedAccess);
-
 				const SpecularMapFilterSettingsCB spmapConstants = { level * deltaRoughness };
 
 				commandList->writeBuffer(spmapCB, &spmapConstants, sizeof(SpecularMapFilterSettingsCB));
+
+				commandList->commitBarriers();
 
 				commandList->setComputeState(computeState);
 
 				commandList->dispatch(numGroups, numGroups, 6);
 			}
-
+			commandList->setPermanentTextureState(m_envTexture, nvrhi::ResourceStates::ShaderResource);
 			commandList->close();
 			device->executeCommandList(commandList);
 		}

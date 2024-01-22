@@ -84,6 +84,9 @@ namespace D3E
 		virtual ~GameRender() = default;
 
 	protected:
+		int SwapChainBufferCount = 2;
+		int mCurrBackBuffer = 0;
+
 		Game* parentGame;
 
 		nvrhi::DeviceHandle device_;
