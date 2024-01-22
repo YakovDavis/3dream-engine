@@ -1476,20 +1476,21 @@ void D3E::Editor::DrawInspector()
 
 void D3E::Editor::DrawGizmo()
 {
-	Vector3 origin = {0, 0, 0};
-
-	auto playerView =
-		game_->GetRegistry()
-			.view<const TransformComponent, const CameraComponent>();
-
-	const CameraComponent* camera = nullptr;
-
-	for (auto [entity, tc, cc] : playerView.each())
+	if (EngineState::currentPlayer == entt::null)
 	{
-		origin = tc.position + cc.offset;
-		camera = &cc;
-		break;
+		return;
 	}
+	const TransformComponent* playerTransform = game_->GetRegistry().try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	const CameraComponent* camera = game_->GetRegistry().try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	Vector3 origin = playerTransform->position + camera->offset;
 
 	if (!camera)
 	{
