@@ -214,13 +214,13 @@ endif()
 
 if(NOT BUILD_SHARED_LIBS)
 	list(APPEND CORE_PUBLIC_DEFS -DRMLUI_STATIC_LIB)
-	message("-- Building static libraries. Make sure to #define RMLUI_STATIC_LIB before including RmlUi in your project.")
+	message(VERBOSE "-- Building static libraries. Make sure to #define RMLUI_STATIC_LIB before including RmlUi in your project.")
 endif()
 
 option(NO_THIRDPARTY_CONTAINERS "Only use standard library containers." OFF)
 if( NO_THIRDPARTY_CONTAINERS )
 	list(APPEND CORE_PUBLIC_DEFS -DRMLUI_NO_THIRDPARTY_CONTAINERS)
-	message("-- No third-party containers will be used: Make sure to #define RMLUI_NO_THIRDPARTY_CONTAINERS before including RmlUi in your project.")
+	message(VERBOSE "-- No third-party containers will be used: Make sure to #define RMLUI_NO_THIRDPARTY_CONTAINERS before including RmlUi in your project.")
 endif()
 
 option(CUSTOM_CONFIGURATION "Customize RmlUi configuration files for overriding the default configuration and types." OFF)

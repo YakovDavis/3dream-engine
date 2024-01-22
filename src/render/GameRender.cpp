@@ -25,6 +25,7 @@
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
 #include "game_ui/GameUi.h"
+#include "Csm.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -171,6 +172,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	ShaderFactory::AddBindingSetP("EditorHighlightPass", nullBindingSetDesc, "EditorHighlightPassP");
 	ShaderFactory::AddBindingSetV("Tonemap", nullBindingSetDesc, "TonemapV");
 
+	shadowRenderer_ = D3E::Csm::Init(parentGame);
+
 	Debug::LogMessage("[GameRender] Init finished");
 }
 
@@ -246,10 +249,12 @@ void D3E::GameRender::DrawOpaque(entt::registry& registry, eastl::vector<GameSys
 	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
 
 	commandList_->open();
+	commandList_->beginMarker("Opaque");
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, frameGBuffer, commandList_, device_);
 	}
+	commandList_->endMarker();
 	commandList_->close();
 	device_->executeCommandList(commandList_);
 }
@@ -270,46 +275,24 @@ void D3E::GameRender::PrepareFrame()
 #endif
 	commandList_->close();
 	device_->executeCommandList(commandList_);
+
+	shadowRenderer_->GenerateCascadeMaps();
 }
 
-void D3E::GameRender::DrawPostProcess(entt::registry& registry,
+void D3E::GameRender::DrawPostProcessSystems(entt::registry& registry,
                                       eastl::vector<GameSystem*>& systems)
 {
-	// Tonemapper // TODO: probably should move somewhere else
-	nvrhi::GraphicsState graphicsState = {};
-	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("Tonemap"));
-	graphicsState.bindings = {ShaderFactory::GetBindingSetV("Tonemap"), ShaderFactory::GetBindingSetP("Tonemap")};
-#ifdef D3E_WITH_EDITOR
-	graphicsState.framebuffer = gameFramebuffer_;
-#else
-	nvrhi::IFramebuffer* currentFramebuffer = nvrhiFramebuffer[GetCurrentFrameBuffer()];
-	graphicsState.framebuffer = currentFramebuffer;
-#endif
-	nvrhi::DrawArguments drawArguments = {3};
-
 	commandList_->open();
 #ifdef D3E_WITH_EDITOR
-	DrawSkybox(registry, gameFramebuffer_);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
 	}
-	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 #else
-	DrawSkybox(registry, currentFramebuffer);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, currentFramebuffer, commandList_, device_);
 	}
-#endif
-
-	// Tonemapper
-	commandList_->setGraphicsState(graphicsState);
-	commandList_->draw(drawArguments);
-
-#ifdef D3E_WITH_EDITOR
-	debugRenderer_->ProcessQueue();
-	debugRenderer_->End();
 #endif
 	commandList_->close();
 
@@ -333,12 +316,6 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 	gameUi_->Draw();
 }
 
-//void D3E::GameRender::LoadTexture(const String& name,
-//                                  const String& fileName)
-//{
-//	TextureFactory::LoadTexture(name, fileName, device_, commandList_);
-//}
-
 void D3E::GameRender::UpdateAnimations(float dT)
 {
 	gameUi_->Update();
@@ -350,6 +327,8 @@ void D3E::GameRender::UpdateAnimations(float dT)
 uint32_t D3E::GameRender::EditorPick(int x, int y)
 {
 	commandList_->open();
+
+	commandList_->beginMarker("EditorPick");
 
 	PickConstBuffer constants = {};
 	constants.mouseX = x;
@@ -363,6 +342,8 @@ uint32_t D3E::GameRender::EditorPick(int x, int y)
 	commandList_->dispatch(1, 1, 1);
 
 	commandList_->copyBuffer(pickedIdBufferCpu_, 0, pickedIdBuffer_, 0, pickedIdBufferCpu_->getDesc().byteSize);
+
+	commandList_->endMarker();
 
 	commandList_->close();
 	device_->executeCommandList(commandList_);
@@ -450,6 +431,9 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 		sc.bindingSets.push_back(ShaderFactory::GetBindingSetP(info.id));
 	}
 
+	commandList_->open();
+	commandList_->beginMarker("Skybox");
+
 	SkyboxCB constBufferData = {};
 
 	DirectX::SimpleMath::Matrix viewRot = DirectX::XMMatrixLookAtLH(DirectX::SimpleMath::Vector3::Zero, camera->forward, camera->up);
@@ -469,6 +453,10 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	auto drawArguments = nvrhi::DrawArguments()
 	                         .setVertexCount(MeshFactory::GetSkyMeshData(kSkyboxMeshUUID).indices.size());
 	commandList_->drawIndexed(drawArguments);
+
+	commandList_->endMarker();
+	commandList_->close();
+	device_->executeCommandList(commandList_);
 }
 
 nvrhi::IFramebuffer* D3E::GameRender::GetGameFramebuffer()
@@ -478,4 +466,58 @@ nvrhi::IFramebuffer* D3E::GameRender::GetGameFramebuffer()
 #else
 	return nvrhiFramebuffer[GetCurrentFrameBuffer()];
 #endif
+}
+
+nvrhi::IBuffer* D3E::GameRender::GetCsmConstantBuffer()
+{
+	return shadowRenderer_->GetCsmConstantBuffer();
+}
+
+nvrhi::ITexture* D3E::GameRender::GetCsmTexture()
+{
+	return shadowRenderer_->GetCsmTexture();
+}
+
+nvrhi::ISampler* D3E::GameRender::GetCsmSampler()
+{
+	return shadowRenderer_->GetCsmSampler();
+}
+
+void D3E::GameRender::DrawTonemapper(nvrhi::IFramebuffer* fb)
+{
+	nvrhi::GraphicsState graphicsState = {};
+	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("Tonemap"));
+	graphicsState.bindings = {ShaderFactory::GetBindingSetV("Tonemap"), ShaderFactory::GetBindingSetP("Tonemap")};
+	graphicsState.framebuffer = fb;
+	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
+
+	nvrhi::DrawArguments drawArguments = {3};
+
+	commandList_->open();
+	commandList_->beginMarker("Tonemapper");
+	commandList_->setGraphicsState(graphicsState);
+	commandList_->draw(drawArguments);
+	commandList_->endMarker();
+	commandList_->close();
+	device_->executeCommandList(commandList_);
+}
+
+void D3E::GameRender::DrawPostProcessEffects(entt::registry& registry)
+{
+	nvrhi::IFramebuffer* framebuffer = GetGameFramebuffer();
+
+	DrawSkybox(registry, framebuffer);
+	DrawTonemapper(framebuffer);
+}
+
+void D3E::GameRender::DrawDebug()
+{
+	commandList_->open();
+	commandList_->beginMarker("DebugDraw");
+	debugRenderer_->Begin(commandList_, gameFramebuffer_);
+	debugRenderer_->ProcessQueue();
+	debugRenderer_->End();
+	commandList_->endMarker();
+	commandList_->close();
+	device_->executeCommandList(commandList_);
 }

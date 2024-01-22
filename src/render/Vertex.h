@@ -51,8 +51,14 @@ namespace D3E
 
 		void GenerateBitangent()
 		{
-			bitangent = normal.Cross(normal, tangentU);
-			bitangent.Normalize();
+			auto norm = (DirectX::SimpleMath::Vector3)normal;
+			auto tang = (DirectX::SimpleMath::Vector3)tangentU;
+			auto b = norm.Cross(tang);
+			b.Normalize();
+			bitangent.x = b.x;
+			bitangent.y = b.y;
+			bitangent.z = b.z;
+			bitangent.w = 0;
 		}
 	};
 }

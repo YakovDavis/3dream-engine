@@ -33,6 +33,11 @@ add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD
         ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Copying ${FREETYPE_BINARY_PATH} to build folder"
 
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${DEFAULT_IMGUI_CONFIG_PATH}
+        ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Copying ${DEFAULT_IMGUI_CONFIG_PATH} to build folder"
+
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_BINARY_DIR}/shaders"
         "${CMAKE_CURRENT_BINARY_DIR}/shaders"

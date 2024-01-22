@@ -9,5 +9,6 @@ namespace D3E
 		DirectX::SimpleMath::Vector4 gLightDir;
 		DirectX::SimpleMath::Vector4 gLightColor;
 		DirectX::SimpleMath::Vector4 gEyePosition;
+		DirectX::SimpleMath::Matrix gView;
 	};
 }

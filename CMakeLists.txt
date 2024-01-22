@@ -218,6 +218,8 @@ add_library("${PROJECT_NAME}" SHARED
         src/rmlui_backend/RmlUi_Platform_Win32.cpp
         src/rmlui_backend/RmlUi_Platform_Win32.h
         src/rmlui_backend/RmlUi_Include_Windows.h
+        src/render/Csm.cpp
+        src/render/Csm.h
         include/D3E/Components/navigation/NavmeshComponent.h
         src/navigation/Context.h 
         src/navigation/Context.cpp 
@@ -228,7 +230,8 @@ add_library("${PROJECT_NAME}" SHARED
         include/D3E/Components/navigation/NavmeshConfig.h
         include/D3E/Components/navigation/NavmeshCore.h
         src/components/NavmeshComponent.cpp
-        src/utils/MeshUtils.h)
+        src/utils/MeshUtils.h
+        )
 
 add_subdirectory(libs)
 
@@ -272,6 +275,7 @@ target_link_libraries("${PROJECT_NAME}" PUBLIC
         RmlUi::Core
 )
 
+set (DEFAULT_IMGUI_CONFIG_PATH "${CMAKE_SOURCE_DIR}/misc/imgui.ini")
 
 set(NVRHI_DEFINES "")
 
