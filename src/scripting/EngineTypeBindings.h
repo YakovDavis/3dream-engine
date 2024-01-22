@@ -243,6 +243,9 @@ namespace D3E
 		adapter["find_with_character_body_id"] =
 			&LuaECSAdapter::FindWithCharacterBodyId;
 		adapter["find_with_tag"] = &LuaECSAdapter::FindWithTag;
+		adapter["find_all_with_tag"] = &LuaECSAdapter::FindAllWithTag;
+		adapter["destroy"] = &LuaECSAdapter::Destroy;
+		adapter["destroy_many"] = &LuaECSAdapter::DestroyMany;
 	}
 
 	static void BindEngineTypes(sol::state& state)

@@ -135,3 +135,19 @@ sol::object LuaECSAdapter::FindWithTag(entt::entity, const String tag,
 
 	return sol::make_object(lua, entity.value());
 }
+
+eastl::vector<entt::entity> D3E::LuaECSAdapter::FindAllWithTag(const String& tag)
+{
+	return ECSUtils::GetEntitiesWithTag(registry_, tag);
+}
+
+void D3E::LuaECSAdapter::Destroy(entt::entity e)
+{
+	ECSUtils::DestroyEntity(registry_, e);
+}
+
+void D3E::LuaECSAdapter::DestroyMany(
+	const eastl::vector<entt::entity>& entities)
+{
+	ECSUtils::DestroyEntities(registry_, entities);
+}
