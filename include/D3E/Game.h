@@ -3,6 +3,7 @@
 #include "App.h"
 #include "D3E/systems/GameSystem.h"
 #include "EASTL/hash_set.h"
+#include "EASTL/shared_ptr.h"
 #include "EASTL/unordered_map.h"
 #include "EASTL/vector.h"
 #include "SimpleMath.h"
@@ -19,6 +20,7 @@ namespace D3E
 	class SoundEngine;
 	class TimerManager;
 	class PhysicsInfo;
+	class ChildTransformSynchronizationSystem;
 
 	class Game : public App
 	{
@@ -104,6 +106,14 @@ namespace D3E
 
 		entt::entity FindFirstNonEditorPlayer();
 
+		void ParentEntitiesById(const String& childUuid, const String& parentUuid);
+
+		void UnparentEntityById(const String& childUuid);
+
+		void FlushChildTransformSync();
+
+		void SignalParentingChange(const String& entityUuid, const String& prevParent);
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;
@@ -163,5 +173,7 @@ namespace D3E
 		std::string contentBrowserFilePath_ = "";
 
 		entt::entity editorFakePlayer_;
+
+		eastl::shared_ptr<ChildTransformSynchronizationSystem> childTransformSyncSystem;
 	};
 } // namespace D3E

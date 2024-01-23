@@ -3,10 +3,25 @@
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/Game.h"
 #include "SimpleMath.h"
 
 using namespace D3E;
 using namespace DirectX::SimpleMath;
+
+static void CalcTransform(TransformComponent& tc, const TransformComponent& parentTc)
+{
+	auto parentMatrix = DirectX::SimpleMath::Matrix::CreateScale(parentTc.scale) *
+	                    DirectX::SimpleMath::Matrix::CreateFromQuaternion(parentTc.rotation) *
+	                    DirectX::SimpleMath::Matrix::CreateTranslation(parentTc.position);
+	auto relChildMatrix = DirectX::SimpleMath::Matrix::CreateScale(tc.relativeScale) *
+	                   DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.relativeRotation) *
+	                   DirectX::SimpleMath::Matrix::CreateTranslation(tc.relativePosition);
+
+	auto res = relChildMatrix * parentMatrix;
+
+	res.Decompose(tc.scale, tc.rotation, tc.position);
+}
 
 ChildTransformSynchronizationSystem::ChildTransformSynchronizationSystem(
 	entt::registry& registry)
@@ -32,10 +47,27 @@ void ChildTransformSynchronizationSystem::Update(entt::registry& reg,
 			auto& info = reg.get<ObjectInfoComponent>(entity);
 
 			if (info.parentId != EmptyIdString)
-				return;
+			{
+				entt::entity parent;
+				if (game->FindEntityByID(parent, info.parentId))
+				{
+					auto parentTc = reg.try_get<TransformComponent>(parent);
+					if (parentTc)
+					{
+						reg.patch<TransformComponent>(
+							entity,
+							[&](auto& ct)
+							{
+								CalcTransform(ct, *parentTc);
+							});
+					}
+				}
+			}
 
 			if (childEntities_.find(info.id) == childEntities_.end())
+			{
 				return;
+			}
 
 			const auto& parentTransform = reg.get<TransformComponent>(entity);
 
@@ -47,13 +79,7 @@ void ChildTransformSynchronizationSystem::Update(entt::registry& reg,
 					ce,
 					[&](auto& ct)
 					{
-						ct.position =
-							parentTransform.position + ct.relativePosition;
-
-						ct.rotation =
-							parentTransform.rotation * ct.relativePosition;
-
-						ct.scale = parentTransform.scale * ct.relativeScale;
+						CalcTransform(ct, parentTransform);
 					});
 			}
 		});
@@ -83,5 +109,31 @@ void ChildTransformSynchronizationSystem::TransformDestroyedHandler(
 	if (objectInfo.parentId != EmptyIdString)
 	{
 		childEntities_[objectInfo.parentId].erase(entity);
+	}
+}
+
+void ChildTransformSynchronizationSystem::OnParentUpdate(entt::registry& registry,
+	entt::entity e, const String& prevParent)
+{
+	auto info = registry.try_get<ObjectInfoComponent>(e);
+	if (!info)
+	{
+		return;
+	}
+	if (prevParent != EmptyIdString)
+	{
+		if (childEntities_.find(info->parentId) != childEntities_.end())
+		{
+			childEntities_[info->parentId].erase(e);
+		}
+	}
+	if (info->parentId != EmptyIdString)
+	{
+		if (childEntities_.find(info->parentId) == childEntities_.end())
+		{
+			childEntities_.insert(info->parentId);
+		}
+
+		childEntities_.at(info->parentId).insert(e);
 	}
 }

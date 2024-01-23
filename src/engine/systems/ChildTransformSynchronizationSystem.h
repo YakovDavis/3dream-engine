@@ -15,6 +15,8 @@ namespace D3E
 		explicit ChildTransformSynchronizationSystem(entt::registry& registry);
 		void Update(entt::registry& reg, Game* game, float dT) override;
 
+		void OnParentUpdate(entt::registry& registry, entt::entity e, const String& prevParent);
+
 	private:
 		void TransformCreatedHandler(entt::registry& registry,
 		                             entt::entity entity);

@@ -197,7 +197,8 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptInitSystem(registry_));
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
-	systems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+	childTransformSyncSystem = eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
+	systems_.push_back(childTransformSyncSystem.get());
 	systems_.push_back(new PhysicsInitSystem(registry_, this,
 	                                         physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(
@@ -208,6 +209,7 @@ void D3E::Game::Init()
 	renderPPsystems_.push_back(new LightInitSystem(this));
 	renderPPsystems_.push_back(new LightRenderSystem);
 
+	editorSystems_.push_back(new ChildTransformSynchronizationSystem(registry_));
 	editorSystems_.push_back(new FPSControllerSystem);
 	editorSystems_.push_back(new EditorUtilsRenderSystem);
 
@@ -581,6 +583,7 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 	{
 		return;
 	}
+	FlushChildTransformSync();
 	Vector3 gizmoPosition, gizmoScale;
 	Quaternion gizmoRotation;
 	for (const auto& uuid : selectedUuids)
@@ -604,16 +607,29 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 	gizmoOffsets_.clear();
 	for (const auto& uuid : selectedUuids)
 	{
+		auto info = registry_.try_get<ObjectInfoComponent>(uuidEntityList[uuid]);
 		auto tc = registry_.try_get<TransformComponent>(uuidEntityList[uuid]);
-		if (!tc)
+		if (!tc || !info)
 		{
 			continue;
 		}
 		gizmoOffsets_.insert({uuid, invGizmoTransform});
-		gizmoOffsets_[uuid] *=
-			DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
-			DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc->rotation) *
-			DirectX::SimpleMath::Matrix::CreateTranslation(tc->position);
+		if (info->parentId == EmptyIdString)
+		{
+			gizmoOffsets_[uuid] *=
+				(DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
+				DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+					tc->rotation) *
+				DirectX::SimpleMath::Matrix::CreateTranslation(tc->position));
+		}
+		else
+		{
+			gizmoOffsets_[uuid] *=
+				(DirectX::SimpleMath::Matrix::CreateScale(tc->relativeScale) *
+				DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+					tc->relativeRotation) *
+				DirectX::SimpleMath::Matrix::CreateTranslation(tc->relativePosition));
+		}
 	}
 }
 
@@ -999,4 +1015,91 @@ entt::entity D3E::Game::FindFirstNonEditorPlayer()
 {
 	auto playerView = registry_.view<const TransformComponent, const CameraComponent>();
 	return playerView.front();
+}
+
+void D3E::Game::ParentEntitiesById(const D3E::String& childUuid,
+                                   const D3E::String& parentUuid)
+{
+	entt::entity child, parent;
+	if (!FindEntityByID(child, childUuid) || !FindEntityByID(parent, parentUuid))
+	{
+		return;
+	}
+
+	auto* childInfo = registry_.try_get<ObjectInfoComponent>(child);
+	auto* childTransform = registry_.try_get<TransformComponent>(child);
+	auto* parentTransform = registry_.try_get<TransformComponent>(parent);
+
+	if (!childInfo || !childTransform || !parentTransform)
+	{
+		return;
+	}
+
+	childInfo->parentId = parentUuid;
+
+	auto parentMatrix = DirectX::SimpleMath::Matrix::CreateScale(parentTransform->scale) *
+	                    DirectX::SimpleMath::Matrix::CreateFromQuaternion(parentTransform->rotation) *
+	                    DirectX::SimpleMath::Matrix::CreateTranslation(parentTransform->position);
+	auto childMatrix = DirectX::SimpleMath::Matrix::CreateScale(childTransform->scale) *
+	                    DirectX::SimpleMath::Matrix::CreateFromQuaternion(childTransform->rotation) *
+	                    DirectX::SimpleMath::Matrix::CreateTranslation(childTransform->position);
+
+	auto relChildMatrix = parentMatrix.Invert() * childMatrix;
+
+	relChildMatrix.Decompose(childTransform->relativeScale, childTransform->relativeRotation, childTransform->relativePosition);
+
+	childTransform->relativePosition.x *= 1.0f / parentTransform->scale.x;
+	childTransform->relativePosition.y *= 1.0f / parentTransform->scale.y;
+	childTransform->relativePosition.z *= 1.0f / parentTransform->scale.z;
+
+	SignalParentingChange(childUuid, parentUuid);
+
+	registry_.patch<TransformComponent>(child);
+
+	FlushChildTransformSync();
+}
+
+void D3E::Game::FlushChildTransformSync()
+{
+	childTransformSyncSystem->Update(registry_, this, 0.0f);
+}
+
+void D3E::Game::SignalParentingChange(const D3E::String& entityUuid,
+                                      const D3E::String& prevParent)
+{
+	if (selectedUuids.find(entityUuid) != selectedUuids.end())
+	{
+		CalculateGizmoTransformsOffsets();
+	}
+
+	entt::entity e;
+	if (FindEntityByID(e, entityUuid))
+	{
+		childTransformSyncSystem->OnParentUpdate(registry_, e, prevParent);
+	}
+}
+
+void D3E::Game::UnparentEntityById(const D3E::String& childUuid)
+{
+	entt::entity child;
+	if (!FindEntityByID(child, childUuid))
+	{
+		return;
+	}
+
+	auto* childInfo = registry_.try_get<ObjectInfoComponent>(child);
+	auto* childTransform = registry_.try_get<TransformComponent>(child);
+
+	auto prevParent = childInfo->parentId;
+	childInfo->parentId = EmptyIdString;
+
+	childTransform->relativePosition = Vector3(0, 0, 0);
+	childTransform->relativeRotation = Quaternion::Identity;
+	childTransform->relativeScale = Vector3(1, 1, 1);
+
+	SignalParentingChange(childUuid, prevParent);
+
+	registry_.patch<TransformComponent>(child);
+
+	FlushChildTransformSync();
 }
