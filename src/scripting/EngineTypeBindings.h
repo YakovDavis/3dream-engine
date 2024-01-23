@@ -7,6 +7,7 @@
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
 #include "scripting/LuaECSAdapter.h"
+#include "scripting/type_adapters/InfoAdapter.h"
 #include "sol/sol.hpp"
 #include "utils/ECSUtils.h"
 
@@ -17,9 +18,15 @@ namespace D3E
 	static void BindComponentType(sol::state& state)
 	{
 		state["ComponentType"] = state.create_table_with(
-			"Transform", ComponentType::kTransformComponent, "Script",
-			ComponentType::kScriptComponent, "Physics",
-			ComponentType::kPhysicsComponent);
+			"Transform", ComponentType::kTransformComponent, "Physics",
+			ComponentType::kPhysicsComponent, "Script",
+			ComponentType::kScriptComponent, "PhysicsCharacter",
+			ComponentType::kPhysicsCharacterComponent, "Info",
+			ComponentType::kObjectInfoComponent, "Sound",
+			ComponentType::kSoundComponent, "Light",
+			ComponentType::kLightComponent, "Camera",
+			ComponentType::kCameraComponent, "StaticMesh",
+			ComponentType::kStaticMeshComponent);
 	}
 
 	static void BindMatrix(sol::state& state)
@@ -224,6 +231,14 @@ namespace D3E
 			&PhysicsCharacterComponent::colliderParams_;
 	}
 
+	static void BindInfoComponent(sol::state& state)
+	{
+		auto infoComponent =
+			state.new_usertype<InfoAdapter>("ObjectInfoComponent");
+		infoComponent["tag"] = &InfoAdapter::tag;
+		infoComponent["name"] = &InfoAdapter::name;
+	}
+
 	static void BindBodyID(sol::state& state)
 	{
 		auto bodyId = state.new_usertype<JPH::BodyID>("BodyID");
@@ -257,6 +272,7 @@ namespace D3E
 		BindTransformCompoent(state);
 		BindPhysicsComponent(state);
 		BindPhysicsCharacterComponent(state);
+		BindInfoComponent(state);
 		BindBodyID(state);
 		BindBody(state);
 		BindECSAdapter(state);

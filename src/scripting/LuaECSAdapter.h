@@ -22,9 +22,9 @@ namespace D3E
 		                           sol::this_state s);
 		sol::object FindWithCharacterBodyId(const JPH::BodyID& bodyId,
 		                                    sol::this_state s);
-		sol::object FindWithTag(entt::entity, const String tag,
+		sol::object FindWithTag(const std::string& tag,
 		                        sol::this_state s);
-		eastl::vector<entt::entity> FindAllWithTag(const String& tag);
+		eastl::vector<entt::entity> FindAllWithTag(const std::string& tag);
 		void Destroy(entt::entity e);
 		void DestroyMany(const eastl::vector<entt::entity>& entities);
 
