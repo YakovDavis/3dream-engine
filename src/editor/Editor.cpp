@@ -674,10 +674,7 @@ void D3E::Editor::DrawInspector()
 						std::string tag = game_->GetRegistry().get<ObjectInfoComponent>(currentEntity).tag.c_str();
 						if (ImGui::InputText("Tag", &tag, input_text_flags))
 						{
-							if (!(tag.empty()))
-							{
-								game_->GetRegistry().patch<ObjectInfoComponent>(currentEntity, [tag](auto &component) { component.tag = tag.c_str(); });
-							}
+							game_->GetRegistry().patch<ObjectInfoComponent>(currentEntity, [tag](auto &component) { component.tag = tag.c_str(); });
 						}
 					}
 					else if (componentName == "FPSControllerComponent")
