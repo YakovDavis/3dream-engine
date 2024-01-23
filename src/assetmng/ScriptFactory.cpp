@@ -76,3 +76,14 @@ bool ScriptFactory::IsScriptUuidValid(const String& uuid)
 {
 	return scriptsData_.find(uuid) != scriptsData_.end();
 }
+
+void ScriptFactory::RenameScript(const D3E::String& uuid,
+                                 const D3E::String& name)
+{
+	if (scriptsData_.find(uuid) == scriptsData_.end())
+	{
+		return;
+	}
+
+	scriptsData_[uuid].entryPoint = name;
+}
