@@ -60,13 +60,7 @@ static bool boundSizingSnap = false;
 		if (payload) \
 		{ \
 			auto payloadId = (const char*)payload->Data; \
-			entt::entity child; \
-			game_->FindEntityByID(child, payloadId); \
-			auto info = game_->GetRegistry().try_get<ObjectInfoComponent>(child); \
-			if (info) \
-			{ \
-				info->parentId = node->info.infoComponent->id; \
-			} \
+			game_->ParentEntitiesById(payloadId, node->info.infoComponent->id); \
 		} \
 		ImGui::EndDragDropTarget(); \
 	}
@@ -396,14 +390,7 @@ void D3E::Editor::DrawHierarchy()
 			if (payload)
 			{
 				auto payloadId = (const char*)payload->Data;
-				entt::entity child;
-				game_->FindEntityByID(child, payloadId);
-				auto info =
-					game_->GetRegistry().try_get<ObjectInfoComponent>(child);
-				if (info)
-				{
-					info->parentId = EmptyIdString;
-				}
+				game_->UnparentEntityById(payloadId);
 			}
 		}
 		{
@@ -1513,19 +1500,31 @@ void D3E::Editor::DrawGizmo()
 
 	auto view = game_->GetRegistry().view<const ObjectInfoComponent, TransformComponent>();
 
-	view.each([&](const auto& info, auto& tc)
+	view.each([&](auto e, const auto& info, auto& tc)
 		  {
 				  if (!game_->IsUuidEditorSelected(info.id))
 				  {
 					  return;
 				  }
-				  Matrix m = game_->GetGizmoTransform() * game_->GetGizmoOffset(info.id);
+				  Matrix gizmoTransform = game_->GetGizmoTransform();
+				  Matrix gizmoOffset = game_->GetGizmoOffset(info.id);
+				  Matrix m = gizmoTransform * gizmoOffset;
 				  Vector3 pos, scale;
 				  Quaternion rot;
 				  m.Decompose(scale, rot, pos);
-				  tc.position = pos;
-				  tc.rotation = rot;
-				  tc.scale = scale;
+				  if (info.parentId == EmptyIdString)
+				  {
+					  tc.position = pos;
+					  tc.rotation = rot;
+					  tc.scale = scale;
+				  }
+				  else
+				  {
+					  tc.relativeRotation = rot;
+					  tc.relativeScale = scale;
+					  tc.relativePosition = pos;
+				  }
+				  game_->GetRegistry().patch<TransformComponent>(e);
 			  });
 
 	game_->CalculateGizmoTransformsOffsets();
