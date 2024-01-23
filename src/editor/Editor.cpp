@@ -660,6 +660,26 @@ void D3E::Editor::DrawInspector()
 							ImGui::TreePop();
 						}
 					}
+					else if (componentName == "ObjectInfoComponent")
+					{
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string name = game_->GetRegistry().get<ObjectInfoComponent>(currentEntity).name.c_str();
+						if (ImGui::InputText("Name", &name, input_text_flags))
+						{
+							if (!(name.empty()))
+							{
+								game_->GetRegistry().patch<ObjectInfoComponent>(currentEntity, [name](auto &component) { component.name = name.c_str(); });
+							}
+						}
+						std::string tag = game_->GetRegistry().get<ObjectInfoComponent>(currentEntity).tag.c_str();
+						if (ImGui::InputText("Tag", &tag, input_text_flags))
+						{
+							if (!(tag.empty()))
+							{
+								game_->GetRegistry().patch<ObjectInfoComponent>(currentEntity, [tag](auto &component) { component.tag = tag.c_str(); });
+							}
+						}
+					}
 					else if (componentName == "FPSControllerComponent")
 					{
 						float yaw, pitch, speed;
