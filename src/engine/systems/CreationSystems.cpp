@@ -380,7 +380,7 @@ void D3E::CreationSystems::CreateDefaultSoundListenerComponent(
 void D3E::CreationSystems::CreateDefaultScriptComponent(
 	entt::registry& registry, entt::entity& entity)
 {
-	ScriptComponent component(entity, EmptyIdString);
+	ScriptComponent component(entity);
 	registry.emplace<ScriptComponent>(entity, component);
 }
 

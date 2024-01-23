@@ -514,6 +514,10 @@ void D3E::Editor::DrawInspector()
 						case 7:
 							CreationSystems::CreateDefaultSoundListenerComponent(game_->GetRegistry(), currentEntity);
 							break;
+						case 8:
+							CreationSystems::CreateDefaultScriptComponent(
+								game_->GetRegistry(), currentEntity);
+							break;
 						case 9:
 							CreationSystems::CreateDefaultNavigationComponent(
 								game_->GetRegistry(), currentEntity);

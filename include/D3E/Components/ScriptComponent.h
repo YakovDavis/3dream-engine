@@ -15,44 +15,83 @@ namespace D3E
 	{
 		friend class ScriptingEngine;
 
-		ScriptComponent() : ownerId_(entt::null), scriptUuid_(EmptyIdString) {}
-
 		explicit ScriptComponent(entt::entity ownerId)
 			: ScriptComponent(ownerId, EmptyIdString)
 		{
 		}
 
 		ScriptComponent(entt::entity ownerId, const String& scriptUuid)
-			: ownerId_(ownerId), scriptUuid_(scriptUuid)
+			: ownerId_(ownerId), scriptUuid_(scriptUuid), loaded_(false)
 		{
 		}
 
-		void Init() { ValidateCallResult(init_(self_)); }
+		void Init()
+		{
+			if (!loaded_)
+			{
+				return;
+			}
 
-		void Start() { ValidateCallResult(start_(self_)); }
+			ValidateCallResult(init_(self_));
+		}
+
+		void Start()
+		{
+			if (!loaded_)
+			{
+				return;
+			}
+
+			ValidateCallResult(start_(self_));
+		}
 
 		void Update(float deltaTime)
 		{
+			if (!loaded_)
+			{
+				return;
+			}
+
 			ValidateCallResult(update_(self_, deltaTime));
 		}
 
 		void OnCollisionEnter(const JPH::BodyID& bodyId)
 		{
+			if (!loaded_)
+			{
+				return;
+			}
+
 			ValidateCallResult(onCollisionEnter_(self_, bodyId));
 		}
 
 		void OnCollisionStay(const JPH::BodyID& bodyId)
 		{
+			if (!loaded_)
+			{
+				return;
+			}
+
 			ValidateCallResult(onCollisionStay_(self_, bodyId));
 		}
 
 		void OnCollisionExit(const JPH::BodyID& bodyId)
 		{
+			if (!loaded_)
+			{
+				return;
+			}
+
 			ValidateCallResult(onCollisionExit_(self_, bodyId));
 		}
 
 		void OnClicked(entt::entity e)
 		{
+			if (!loaded_)
+			{
+				return;
+			}
+
 			ValidateCallResult(onClicked_(self_, e));
 		}
 
@@ -78,6 +117,7 @@ namespace D3E
 		void from_json(const json& j) override;
 
 	private:
+		bool loaded_;
 		String scriptUuid_;
 		String entryPoint_;
 		entt::entity ownerId_;
