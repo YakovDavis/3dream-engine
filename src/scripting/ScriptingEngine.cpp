@@ -57,6 +57,11 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c)
 		return false;
 	}
 
+	if (c.scriptUuid_ == EmptyIdString)
+	{
+		return false;
+	}
+
 	auto scriptData = ScriptFactory::GetScriptData(c.scriptUuid_);
 
 	if (!scriptData)
@@ -85,6 +90,7 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c)
 		});
 
 	c.entryPoint_ = script.entryPoint;
+	c.loaded_ = true;
 
 	InitScriptComponent(c);
 
@@ -174,7 +180,6 @@ void ScriptingEngine::InitScripts()
 		[this](auto& sc)
 		{
 			LoadScript(sc);
-			InitScriptComponent(sc);
 			sc.Init();
 		});
 }
