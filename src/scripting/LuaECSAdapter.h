@@ -26,6 +26,7 @@ namespace D3E
 		                        sol::this_state s);
 		eastl::vector<entt::entity> FindAllWithTag(const std::string& tag);
 		void Destroy(entt::entity e);
+		void SelfDestroy(entt::entity e);
 		void DestroyMany(const eastl::vector<entt::entity>& entities);
 
 	private:

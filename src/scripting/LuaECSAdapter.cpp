@@ -8,6 +8,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/TimerManager.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "utils/ECSUtils.h"
 
@@ -152,6 +153,12 @@ D3E::LuaECSAdapter::FindAllWithTag(const std::string& tag)
 void D3E::LuaECSAdapter::Destroy(entt::entity e)
 {
 	ECSUtils::DestroyEntity(registry_, e);
+}
+
+void D3E::LuaECSAdapter::SelfDestroy(entt::entity e)
+{
+	TimerManager::GetInstance().SetTimerForNextTick(
+		[this, e]() { ECSUtils::DestroyEntity(this->registry_, e); });
 }
 
 void D3E::LuaECSAdapter::DestroyMany(

@@ -261,6 +261,7 @@ namespace D3E
 		adapter["find_all_with_tag"] = &LuaECSAdapter::FindAllWithTag;
 		adapter["destroy"] = &LuaECSAdapter::Destroy;
 		adapter["destroy_many"] = &LuaECSAdapter::DestroyMany;
+		adapter["self_destroy"] = &LuaECSAdapter::SelfDestroy;
 	}
 
 	static void BindEngineTypes(sol::state& state)
