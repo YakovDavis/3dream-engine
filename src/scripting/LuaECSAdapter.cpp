@@ -8,6 +8,7 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "scripting/type_adapters/InfoAdapter.h"
 #include "utils/ECSUtils.h"
 
 using namespace D3E;
@@ -40,8 +41,14 @@ sol::object LuaECSAdapter::GetComponent(entt::entity e, ComponentType type,
 		}
 		case ComponentType::kObjectInfoComponent:
 		{
-			return sol::make_object(lua,
-			                        registry_.try_get<ObjectInfoComponent>(e));
+			auto info = registry_.try_get<ObjectInfoComponent>(e);
+
+			if (!info)
+			{
+				return sol::nil;
+			}
+
+			return sol::make_object(lua, InfoAdapter(*info));
 		}
 		case ComponentType::kSoundComponent:
 		{
@@ -122,11 +129,11 @@ D3E::LuaECSAdapter::FindWithCharacterBodyId(const JPH::BodyID& bodyId,
 	return sol::make_object(lua, entity.value());
 }
 
-sol::object LuaECSAdapter::FindWithTag(entt::entity, const String tag,
+sol::object LuaECSAdapter::FindWithTag(const std::string& tag,
                                        sol::this_state s)
 {
 	sol::state_view lua(s);
-	auto entity = ECSUtils::GetEntityWithTag(registry_, tag);
+	auto entity = ECSUtils::GetEntityWithTag(registry_, tag.c_str());
 
 	if (!entity)
 	{
@@ -134,4 +141,21 @@ sol::object LuaECSAdapter::FindWithTag(entt::entity, const String tag,
 	}
 
 	return sol::make_object(lua, entity.value());
+}
+
+eastl::vector<entt::entity>
+D3E::LuaECSAdapter::FindAllWithTag(const std::string& tag)
+{
+	return ECSUtils::GetEntitiesWithTag(registry_, tag.c_str());
+}
+
+void D3E::LuaECSAdapter::Destroy(entt::entity e)
+{
+	ECSUtils::DestroyEntity(registry_, e);
+}
+
+void D3E::LuaECSAdapter::DestroyMany(
+	const eastl::vector<entt::entity>& entities)
+{
+	ECSUtils::DestroyEntities(registry_, entities);
 }

@@ -21,6 +21,7 @@ namespace D3E
 		         {"class", "ObjectInfoComponent"},
 		         {"name", name.c_str()},
 		         {"uuid", id.c_str()},
+		         {"tag", tag.c_str()},
 		         {"visible", visible},
 		         {"serialize_entity", serializeEntity}
 		};
@@ -30,8 +31,10 @@ namespace D3E
 	{
 		std::string tmp_id;
 		std::string tmp_name;
+		std::string tmp_tag;
 
 		j.at("uuid").get_to(tmp_id);
+		j.at("tag").get_to(tmp_tag);
 		j.at("name").get_to(tmp_name);
 		j.at("visible").get_to(visible);
 		j.at("serialize_entity").get_to(serializeEntity);
@@ -43,6 +46,7 @@ namespace D3E
 
 		id = tmp_id.c_str();
 		name = tmp_name.c_str();
+		tag = tmp_tag.c_str();
 		editorId = EditorIdManager::Get()->RegisterUuid(id);
 	}
 }

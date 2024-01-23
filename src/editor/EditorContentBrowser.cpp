@@ -97,6 +97,11 @@ void D3E::EditorContentBrowser::Draw()
 				AssetManager::Get().CreateDefaultMaterial(
 					currentDirectory_.string().c_str());
 			}
+			if (ImGui::MenuItem("New script", NULL, false, true))
+			{
+				AssetManager::Get().CreateDefaultScript(
+					currentDirectory_.string().c_str());
+			}
 			if (ImGui::MenuItem("Prefab from selected", NULL, false, true))
 			{
 				editor_->game_->OnSaveSelectedToPrefabPressed();

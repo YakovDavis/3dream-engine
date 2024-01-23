@@ -338,6 +338,41 @@ void D3E::AssetManager::CreateDefaultMaterial(const std::string& folder)
 	CreateMaterial(m, folder);
 }
 
+void D3E::AssetManager::CreateDefaultScript(const std::string& folder)
+{
+	namespace fs = std::filesystem;
+
+	ScriptMetaData script = {};
+	script.uuid = uuidGenerator.getUUID().str().c_str();
+
+	fs::path newScriptPath = folder + "\\" + std::string(kDefaultScriptName);
+
+	int i = 1;
+	while (std::filesystem::exists(newScriptPath))
+	{
+		auto newFilename = newScriptPath.stem().string() + "_" +
+		                   std::to_string(i) +
+		                   newScriptPath.extension().string();
+		newScriptPath.replace_filename(newFilename);
+		++i;
+	}
+
+	script.filename = newScriptPath.filename().string();
+
+	auto newScriptMetaPath = newScriptPath;
+	newScriptMetaPath.replace_extension(".meta");
+
+	json j(script);
+	std::ofstream o(newScriptMetaPath);
+	o << std::setw(4) << j << std::endl;
+
+	o = std::ofstream(newScriptPath);
+	o << fs::path(script.filename).stem().string() << " = NativeScript:new()" << std::endl;
+
+	InsertOrReplaceAssetName(script.uuid.c_str(), script.filename.c_str());
+	ScriptFactory::LoadScript(script, folder);
+}
+
 bool D3E::AssetManager::IsPrefabUuidValid(const D3E::String& uuid)
 {
 	return prefabsMap_.find(uuid) != prefabsMap_.end();

@@ -17,10 +17,13 @@ namespace D3E
 		ScriptFactory() = delete;
 
 		static void Initialize(Game* game);
-		static void LoadScript(const ScriptMetaData& metaData, const std::string& directory);
+		static void LoadScript(const ScriptMetaData& metaData,
+		                       const std::string& directory);
 		static void UnloadScript(const D3E::String& uuid);
 		static std::optional<ScriptData> GetScriptData(const String& uuid);
 		static bool IsScriptUuidValid(const String& uuid);
+		static void RenameScript(const D3E::String& uuid,
+		                         const D3E::String& name);
 
 	private:
 		static bool isInitialized_;

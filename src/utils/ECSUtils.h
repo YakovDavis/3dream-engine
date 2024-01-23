@@ -4,6 +4,7 @@
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Debug.h"
+#include "EASTL/vector.h"
 #include "Jolt/Jolt.h"
 #include "Jolt/Physics/Body/BodyID.h"
 #include "entt/entt.hpp"
@@ -45,9 +46,20 @@ namespace D3E
 		static std::optional<entt::entity>
 		GetEntityWithTag(entt::registry& r, const eastl::string& tag);
 
+		static eastl::vector<entt::entity>
+		GetEntitiesWithTag(entt::registry& r, const eastl::string& tag);
+
 		static ScriptComponent* GetScriptComponent(entt::registry& r,
 		                                           entt::entity e,
-		                                           const String className);
+		                                           const String& className);
+
+		static void DestroyEntity(entt::registry& r, entt::entity e);
+
+		static void DestroyEntities(entt::registry& r,
+		                           const eastl::vector<entt::entity>& entities);
+
+		static eastl::vector<entt::entity>
+		GetEntitiesWithScript(entt::registry& r, const String& className);
 
 		template<typename T>
 		static T& Get(entt::registry& r, const entt::entity e)

@@ -34,5 +34,7 @@ namespace D3E
 	const String kIrMapTextureUUID = "1029c59b-3ecb-4d88-b6a9-2cb0f7d65314";
 	const String kSpBrdfLutTextureUUID = "75ed1f4e-e768-48ab-93b6-d911747f3136";
 	const String kRenderDebugTextureUUID = "227b4fee-9094-4b34-87d7-d81b312c3819";
+
+	const std::string kDefaultScriptName = "NewScript.lua";
 } // namespace D3E
 #endif // COMMON_HEADER_H
