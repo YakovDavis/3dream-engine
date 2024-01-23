@@ -366,7 +366,14 @@ void D3E::CharacterInitSystem::OnCreateComponent(entt::registry& registry, entt:
 	characterComponent.character_ = new Character(settings, RVec3(transformComponent.position.x, transformComponent.position.y, transformComponent.position.z),
 	                                              Quat(transformComponent.rotation.x, transformComponent.rotation.y, transformComponent.rotation.z, transformComponent.rotation.w), 0, physicsSystem_);
 	//characterComponent.character_ = new Character(settings, RVec3::sZero(), Quat::sIdentity(), 0, physicsSystem_);
-	characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
+	if (game_->IsGameRunning())
+	{
+		characterComponent.character_->AddToPhysicsSystem(EActivation::Activate);
+	}
+	else
+	{
+		characterComponent.character_->AddToPhysicsSystem(EActivation::DontActivate);
+	}
 	characterComponent.bodyID_ = characterComponent.character_->GetBodyID();
 }
 
@@ -381,21 +388,11 @@ void D3E::CharacterInitSystem::Play(entt::registry& reg, D3E::Game* game)
 	auto view =
 		reg.view<PhysicsCharacterComponent>();
 
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
 	view.each(
 		[&](const auto entity, auto& characterComponent)
 		{
-			OnCreateComponent(reg, entity);
-		});
-}
-
-void D3E::CharacterInitSystem::Stop(entt::registry& reg, D3E::Game* game)
-{
-	auto view =
-		reg.view<PhysicsCharacterComponent>();
-	view.each(
-		[&](const auto entity, auto& characterComponent)
-		{
-			OnDestroyComponent(reg, entity);
+			bodyInterface.ActivateBody(characterComponent.bodyID_);
 		});
 }
 

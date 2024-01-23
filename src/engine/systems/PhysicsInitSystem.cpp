@@ -75,19 +75,13 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
                              entt::entity entity)
 {
-	if (game_->IsGameRunning())
-	{
-		OnCreateComponent(registry, entity);
-	}
+	OnCreateComponent(registry, entity);
 }
 
 void D3E::PhysicsInitSystem::ComponentDestroyedHandler(entt::registry& registry,
                                entt::entity entity)
 {
-	if (game_->IsGameRunning())
-	{
-		OnDestroyComponent(registry, entity);
-	}
+	OnDestroyComponent(registry, entity);
 }
 
 void D3E::PhysicsInitSystem::Play(entt::registry& reg, D3E::Game* game)
@@ -95,10 +89,11 @@ void D3E::PhysicsInitSystem::Play(entt::registry& reg, D3E::Game* game)
 	auto view =
 		reg.view<PhysicsComponent>();
 
+	BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
 	view.each(
 		[&](const auto entity, auto& physicsComponent)
 		{
-			OnCreateComponent(reg, entity);
+			bodyInterface.ActivateBody(physicsComponent.bodyID_);
 		});
 }
 
@@ -125,18 +120,6 @@ void D3E::PhysicsInitSystem::Pause(entt::registry& reg, D3E::Game* game)
 			});
 	}
 
-}
-
-void D3E::PhysicsInitSystem::Stop(entt::registry& reg, D3E::Game* game)
-{
-	auto view =
-		reg.view<PhysicsComponent>();
-
-	view.each(
-		[&](const auto entity, auto& physicsComponent)
-		{
-			OnDestroyComponent(reg, entity);
-		});
 }
 
 void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::entity entity)
@@ -290,7 +273,14 @@ void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::e
 
 	bodySettings.mIsSensor = physicsComponent.isSensor_;
 
-	physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
+	if (game_->IsGameRunning())
+	{
+		physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
+	}
+	else
+	{
+		physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::DontActivate);
+	}
 
 	physicsComponent.isInitialized_ = true;
 }

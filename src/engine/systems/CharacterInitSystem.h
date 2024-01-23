@@ -23,7 +23,6 @@ namespace D3E
 		void PostPhysicsUpdate(entt::registry& reg) override;
 		void Play(entt::registry& reg, Game* game) override;
 		void Pause(entt::registry& reg, Game* game) override;
-		void Stop(entt::registry& reg, Game* game) override;
 
 	private:
 		void ComponentCreatedHandler(entt::registry& registry,

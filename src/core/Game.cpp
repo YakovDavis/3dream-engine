@@ -739,6 +739,10 @@ void D3E::Game::OnEditorStopPressed()
 		ScriptingEngine::GetInstance().Clear();
 		// physicsInfo_->setIsPaused(true);
 
+		for (auto& sys : systems_)
+		{
+			sys->StopReset(registry_, this);
+		}
 		EngineState::currentPlayer = editorFakePlayer_;
 	}
 }
