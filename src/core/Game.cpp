@@ -251,6 +251,7 @@ void D3E::Game::EditorDraw()
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_);
 	gameRender_->DrawPostProcessEffects(registry_);
 	gameRender_->DrawPostProcessSystems(registry_, editorSystems_);
+	gameRender_->DrawDebug();
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->EndDraw(registry_, editorSystems_);
@@ -286,6 +287,7 @@ void D3E::Game::Draw()
 	gameRender_->DrawOpaque(registry_, systems_);
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_);
 	gameRender_->DrawPostProcessEffects(registry_);
+	gameRender_->DrawDebug();
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->DrawGUI();

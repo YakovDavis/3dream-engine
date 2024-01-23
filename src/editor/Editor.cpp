@@ -216,7 +216,7 @@ void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* gameFramebuffer)
 	viewportDimensions.y = viewportInnerRect.GetHeight();
 	ImGui::Image(texture, viewportDimensions, ImVec2{0, 0}, ImVec2{1, 1});
 
-	if (!game_->GetSelectedUuids().empty())
+	if (!game_->GetSelectedUuids().empty() && !game_->IsGameRunning())
 	{
 		DrawGizmo();
 	}

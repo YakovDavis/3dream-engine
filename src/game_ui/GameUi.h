@@ -39,10 +39,10 @@ namespace D3E
 		Rml::Context* context_;
 		bool lmbPressedLastUpdate = false;
 
-//		struct ApplicationData {
-//			bool show_text = true;
-//			Rml::String animal = "dog";
-//		} my_data;
+		struct ApplicationData {
+			bool show_text = true;
+			Rml::String animal = "dog";
+		} my_data;
 
 	private:
 		GameUi(Game *game, nvrhi::IFramebuffer* fb);
