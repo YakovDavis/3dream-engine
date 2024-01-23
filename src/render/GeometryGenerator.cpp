@@ -147,6 +147,8 @@ void D3E::GeometryGenerator::CreateSphere(MeshData& sm, float radius, uint32 sli
 			v.tex.x = theta / XM_2PI;
 			v.tex.y = phi / XM_PI;
 
+			v.GenerateBitangent();
+
 			sm.points.push_back( v );
 		}
 	}
