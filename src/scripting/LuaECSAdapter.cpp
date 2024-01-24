@@ -79,7 +79,7 @@ sol::object LuaECSAdapter::GetComponent(entt::entity e, ComponentType type,
 }
 
 sol::object LuaECSAdapter::GetScriptComponent(entt::entity e,
-                                              const String& className,
+                                              const std::string& className,
                                               sol::this_state s)
 {
 	sol::state_view lua(s);
@@ -91,7 +91,7 @@ sol::object LuaECSAdapter::GetScriptComponent(entt::entity e,
 		return sol::nil;
 	}
 
-	if (sc->GetEntryPoint() != className)
+	if (sc->GetEntryPoint() != className.c_str())
 	{
 		return sol::nil;
 	}
