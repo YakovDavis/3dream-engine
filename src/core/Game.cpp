@@ -52,7 +52,7 @@
 
 static json currentMapSavedState = json({{"type", "world"},
                                          {"uuid", D3E::EmptyIdStdStr},
-                                         {"filename", ""},
+                                         {"filename", "NewWorld"},
                                          {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
@@ -954,18 +954,17 @@ void D3E::Game::OnEditorSaveMapPressed()
 		if (currentMapSavedState.at("uuid") == D3E::EmptyIdStdStr)
 		{
 			currentMapSavedState.at("uuid") = UuidGenerator::NewGuidStdStr();
-			std::ofstream o(contentBrowserFilePath_ + "\\NewWorld.meta");
-			o << std::setw(4) << currentMapSavedState << std::endl;
-			o.close();
 		}
-		else
+		if (!currentMapSavedState.contains("filename"))
 		{
-			std::ofstream o(contentBrowserFilePath_ + "\\" +
-			                to_string(currentMapSavedState.at("filename")) +
-			                ".meta");
-			o << std::setw(4) << currentMapSavedState << std::endl;
-			o.close();
+			currentMapSavedState.emplace("filename", "NewWorld");
 		}
+
+		std::string filename = currentMapSavedState.at("filename");
+
+		std::ofstream o(contentBrowserFilePath_ + "\\" + filename + ".meta");
+		o << std::setw(4) << currentMapSavedState << std::endl;
+		o.close();
 	}
 }
 
