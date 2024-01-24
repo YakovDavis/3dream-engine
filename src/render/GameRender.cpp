@@ -1,6 +1,7 @@
 #include "GameRender.h"
 
 #include "CameraUtils.h"
+#include "Csm.h"
 #include "D3E/CommonCpp.h"
 #include "D3E/CommonHeader.h"
 #include "D3E/Components/TransformComponent.h"
@@ -14,6 +15,7 @@
 #include "PbrUtils.h"
 #include "PerObjectConstBuffer.h"
 #include "PickConstBuffer.h"
+#include "RenderUtils.h"
 #include "ShaderFactory.h"
 #include "SkyboxCB.h"
 #include "Vertex.h"
@@ -21,11 +23,10 @@
 #include "assetmng/MeshFactory.h"
 #include "assetmng/TextureFactory.h"
 #include "core/EngineState.h"
+#include "game_ui/GameUi.h"
 #include "render/GeometryGenerator.h"
 #include "render/systems/StaticMeshInitSystem.h"
 #include "render/systems/StaticMeshRenderSystem.h"
-#include "game_ui/GameUi.h"
-#include "Csm.h"
 
 #include <nvrhi/utils.h> // for ClearColorAttachment
 
@@ -112,6 +113,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	DefaultAssetLoader::LoadDefaultMaterials();
 
 	debugRenderer_ = new DebugRenderer(device_, dynamic_cast<Game*>(parentGame));
+
+	RenderUtils::Initialize(this);
 
 	for (auto& sys : systems)
 	{

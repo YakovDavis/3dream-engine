@@ -12,6 +12,8 @@
 #include "core/EngineState.h"
 #include "render/CameraUtils.h"
 #include "render/PerObjectConstBuffer.h"
+#include "render/RenderUtils.h"
+#include "render/DebugRenderer.h"
 #include "render/ShaderFactory.h"
 
 void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
@@ -42,14 +44,36 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 					  Debug::LogError("sm not initialized");
 					  return;
 				  }
-				  // Fill the constant buffer
-				  PerObjectConstBuffer constBufferData = {};
+
+				  auto view = CameraUtils::GetView(origin, *camera);
 
 				  const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::CreateScale(tc.scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation) * DirectX::SimpleMath::Matrix::CreateTranslation(tc.position);
 
+				  // frustum culling
+				  DirectX::BoundingFrustum boundingFrustum;
+				  camera->boundingFrustum.Transform(boundingFrustum, view.Invert());
+				  DirectX::BoundingBox boundingBox = MeshFactory::GetMeshData(smc.meshUuid).boundingBox;
+				  boundingBox.Transform(boundingBox, world);
+
+				  if (!boundingFrustum.Intersects(boundingBox))
+				  {
+					  return;
+				  }
+
+				  if (ConsoleManager::getInstance()->findConsoleVariable("visualizeBounds")->getInt() > 0)
+				  {
+					  if (auto debugRenderer = RenderUtils::GetDebugRenderer())
+					  {
+						  debugRenderer->QueueAxisAlignedBox(boundingBox.Center, boundingBox.Extents, Color(1, 1, 1, 1));
+					  }
+				  }
+
+				  // Fill the constant buffer
+				  PerObjectConstBuffer constBufferData = {};
+
 				  constBufferData.gWorldViewProj = world * CameraUtils::GetViewProj(origin, *camera);
 				  constBufferData.gWorld = world;
-				  constBufferData.gWorldView = world * CameraUtils::GetView(origin, *camera);
+				  constBufferData.gWorldView = world * view;
 				  constBufferData.gInvTrRotation = DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation).Invert().Transpose();
 				  constBufferData.gEditorId = info.editorId;
 
