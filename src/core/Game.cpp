@@ -182,10 +182,12 @@ void D3E::Game::Init()
 	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
 	                                          gameRender_->GetCommandList());
 
-	ScriptingEngine::GetInstance().Init(this);
 	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
+
+	// Initialization order is crucial: depends on InputDevice
+	ScriptingEngine::GetInstance().Init(this);
 
 	physicsInfo_ = new PhysicsInfo(this);
 

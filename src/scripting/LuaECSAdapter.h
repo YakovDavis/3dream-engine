@@ -11,7 +11,7 @@ namespace D3E
 	class LuaECSAdapter
 	{
 	public:
-		LuaECSAdapter(entt::registry& r);
+		explicit LuaECSAdapter(entt::registry& r);
 
 		sol::object GetComponent(entt::entity e, ComponentType type,
 		                         sol::this_state s);

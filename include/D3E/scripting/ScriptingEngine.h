@@ -20,6 +20,7 @@ namespace D3E
 
 		bool LoadDefaultEnvironment();
 		void LoadStandardLibraries();
+		void InitGlobalObjects();
 
 	public:
 		static ScriptingEngine& GetInstance();

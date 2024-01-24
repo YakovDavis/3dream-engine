@@ -5,6 +5,7 @@
 #include "EngineTypeBindings.h"
 #include "assetmng/ScriptFactory.h"
 #include "scripting/LuaECSAdapter.h"
+#include "scripting/type_adapters/InputDeviceAdapter.h"
 
 using namespace D3E;
 
@@ -37,7 +38,7 @@ void ScriptingEngine::Init(Game* g)
 
 	BindEngineTypes(luaState_);
 
-	luaState_["Component"] = new LuaECSAdapter(g->GetRegistry());
+	InitGlobalObjects();
 
 	if (!LoadDefaultEnvironment())
 		return;
@@ -162,6 +163,12 @@ void ScriptingEngine::LoadStandardLibraries()
 	luaState_.open_libraries(sol::lib::base, sol::lib::string, sol::lib::debug,
 	                         sol::lib::math, sol::lib::package, sol::lib::os,
 	                         sol::lib::table);
+}
+
+void ScriptingEngine::InitGlobalObjects()
+{
+	luaState_["Component"] = new LuaECSAdapter(game_->GetRegistry());
+	luaState_["Input"] = new InputDeviceAdapter(game_->GetInputDevice());
 }
 
 void ScriptingEngine::InitScripts()
