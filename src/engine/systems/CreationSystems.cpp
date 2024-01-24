@@ -351,9 +351,9 @@ void D3E::CreationSystems::CreateDefaultCameraComponent(
 void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry,
                                                        entt::entity& entity)
 {
-	LightInitSystem::IsDirty = true;
 	LightComponent component = {};
 	registry.emplace<LightComponent>(entity, component);
+	LightInitSystem::IsDirty = true;
 }
 
 void D3E::CreationSystems::CreateDefaultStaticMeshComponent(
@@ -361,6 +361,7 @@ void D3E::CreationSystems::CreateDefaultStaticMeshComponent(
 {
 	StaticMeshComponent component = {};
 	registry.emplace<StaticMeshComponent>(entity, component);
+	StaticMeshInitSystem::IsDirty = true;
 }
 
 void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry,
