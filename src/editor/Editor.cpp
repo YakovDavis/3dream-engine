@@ -47,6 +47,14 @@ static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
 static bool boundSizing = false;
 static bool boundSizingSnap = false;
 
+#define INSPECTOR_DELETION(ComponentType) \
+	if (ImGui::IsKeyDown(ImGuiKey_LeftAlt) && ImGui::IsItemClicked(ImGuiMouseButton_Left))\
+	{ \
+		game_->GetRegistry().erase<ComponentType>(currentEntity); \
+		ImGui::TreePop(); \
+		continue; \
+	}
+
 #define HIERARCHY_DRAG_N_DROP \
 	if (ImGui::BeginDragDropSource()) \
 	{ \
@@ -542,12 +550,14 @@ void D3E::Editor::DrawInspector()
 			size_t idx = 0;
 			for (auto componentName : currentComponents)
 			{
-				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
+				                                ImGuiTreeNodeFlags_OpenOnDoubleClick;
 				bool opened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", componentName.c_str());
 				if (opened)
 				{
 					if (componentName == "TransformComponent")
 					{
+						INSPECTOR_DELETION(TransformComponent)
 						//game_->GetRegistry().patch<TransformComponent>(currentEntity, [](auto& transform){ transform.position = {10, 10, 10, 1.0f};});
 						size_t fieldIdx = idx * 100;
 						bool positionOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Position");
@@ -683,6 +693,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "FPSControllerComponent")
 					{
+						INSPECTOR_DELETION(FPSControllerComponent)
 						float yaw, pitch, speed;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).yaw);
@@ -730,6 +741,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "PhysicsComponent")
 					{
+						INSPECTOR_DELETION(PhysicsComponent)
 						float friction, restitution;
 						int isSensorSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
@@ -837,6 +849,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "PhysicsCharacterComponent")
 					{
+						INSPECTOR_DELETION(PhysicsCharacterComponent)
 						float yaw, pitch, speed, jumpSpeed, friction, restitution;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).yaw_);
@@ -988,6 +1001,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "CameraComponent")
 					{
+						INSPECTOR_DELETION(CameraComponent)
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						size_t fieldIdx = idx * 100;
 						bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Offset (initial)");
@@ -1094,6 +1108,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "LightComponent")
 					{
+						INSPECTOR_DELETION(LightComponent)
 						float intensity;
 						int castsShadowsSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
@@ -1235,6 +1250,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "StaticMeshComponent")
 					{
+						INSPECTOR_DELETION(StaticMeshComponent)
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_ReadOnly;
 						String meshUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).meshUuid;
 						std::string meshName;
@@ -1303,6 +1319,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "SoundComponent")
 					{
+						INSPECTOR_DELETION(SoundComponent)
 						int is3D, isLooping, isStreaming;
 						float volume;
 						is3D = game_->GetRegistry().get<SoundComponent>(currentEntity).is3D;
@@ -1403,6 +1420,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "ScriptComponent")
 					{
+						INSPECTOR_DELETION(ScriptComponent)
 						ImGuiInputTextFlags input_text_flags =
 							ImGuiInputTextFlags_ReadOnly;
 
@@ -1446,6 +1464,7 @@ void D3E::Editor::DrawInspector()
 					} else 
 					if (componentName == "NavmeshComponent")
 					{
+						INSPECTOR_DELETION(NavmeshComponent)
 						auto& nc = game_->GetRegistry().get<NavmeshComponent>(
 							currentEntity);
 
