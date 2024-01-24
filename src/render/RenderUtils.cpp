@@ -1,10 +1,13 @@
 #include "RenderUtils.h"
 
+#include "render/GameRender.h"
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/components/render/StaticMeshComponent.h"
 #include "ShaderFactory.h"
+
+D3E::GameRender* D3E::RenderUtils::gameRender_ = nullptr;
 
 void D3E::RenderUtils::InvalidateWorldBuffers(entt::registry& reg)
 {
@@ -102,4 +105,18 @@ void D3E::RenderUtils::GenerateMips(nvrhi::ITexture* texture, nvrhi::IDevice* de
 	commandList->close();
 
 	device->executeCommandList(commandList);
+}
+
+void D3E::RenderUtils::Initialize(D3E::GameRender* gameRender)
+{
+	gameRender_ = gameRender;
+}
+
+D3E::DebugRenderer* D3E::RenderUtils::GetDebugRenderer()
+{
+	if (!gameRender_)
+	{
+		return nullptr;
+	}
+	return gameRender_->GetDebugRenderer();
 }
