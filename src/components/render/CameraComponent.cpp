@@ -61,6 +61,6 @@ namespace D3E
 
 	CameraComponent::CameraComponent()
 	{
-		boundingFrustum = DirectX::BoundingFrustum(CameraUtils::GetProj(*this), false);
+		boundingFrustum = DirectX::BoundingFrustum((DirectX::CXMMATRIX)CameraUtils::GetProj(*this), false);
 	}
 }
