@@ -1,11 +1,12 @@
 #pragma once
 
 #include "D3E/CommonHeader.h"
+#include "EASTL/fixed_vector.h"
 #include "EASTL/queue.h"
 #include "SimpleMath.h"
 #include "nvrhi/nvrhi.h"
 
-#define MAX_BATCH_VERTEX_COUNT 16
+#define MAX_BATCH_VERTEX_COUNT 64
 
 using namespace DirectX::SimpleMath;
 
@@ -30,6 +31,8 @@ namespace D3E
 		};
 
 		explicit DebugRenderer(nvrhi::IDevice* device, Game* game);
+
+		void QueueAxisAlignedBox(const Vector3& center, const Vector3& extents, const Color& color);
 
 		void DrawLine(const Vector3& from, const Vector3& to, const Color& color);
 		void QueueLine(const Vector3& from, const Vector3& to, const Color& color);
@@ -59,7 +62,7 @@ namespace D3E
 
 		Game* game_;
 
-		eastl::queue<VertexPosCol> lineDrawQueue_;
+		eastl::queue<eastl::fixed_vector<VertexPosCol, 2>> lineDrawQueue_;
 		eastl::queue<VertexPosCol> pointsDrawQueue_;
 	};
 }

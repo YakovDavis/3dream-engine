@@ -9,10 +9,10 @@ namespace D3E
 {
 	struct StaticMeshComponent : public BaseComponent
 	{
-		String meshUuid;
-		String pipelineName;
+		String meshUuid = kCubeUUID;
+		String pipelineName = "GBuffer";
 		nvrhi::BufferHandle constantBuffer;
-		String materialUuid;
+		String materialUuid = kDefaultGridMaterialUUID;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;
 		bool editorHighlighted = false;
 		bool castsShadow = true;

@@ -20,6 +20,10 @@ namespace D3E
 		float nearPlane = 1.0f;
 		float farPlane = 1000.f;
 
+		DirectX::BoundingFrustum boundingFrustum;
+
+		CameraComponent();
+
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;
 	};

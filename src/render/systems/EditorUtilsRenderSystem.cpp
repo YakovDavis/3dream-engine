@@ -110,58 +110,6 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 				commandList->drawIndexed(drawArguments);
 			});
 	}
-
-	auto cvarVisualizeBounds = ConsoleManager::getInstance()->findConsoleVariable("visualizeBounds");
-
-	if (cvarVisualizeBounds->getInt() > 0)
-	{
-		auto view = reg.view<const TransformComponent, const StaticMeshComponent>();
-
-		view.each(
-			[origin, camera, commandList, fb](const auto& tc, const auto& smc)
-			{
-				const auto md = MeshFactory::GetMeshData(smc.meshUuid);
-
-				// Fill the constant buffer
-				PerObjectConstBuffer constBufferData = {};
-
-				const DirectX::SimpleMath::Matrix world =
-					DirectX::SimpleMath::Matrix::CreateScale(tc.scale * md.boundingBox.Extents) *
-					DirectX::SimpleMath::Matrix::CreateFromQuaternion(tc.rotation) *
-					DirectX::SimpleMath::Matrix::CreateTranslation(tc.position + md.boundingBox.Center);
-
-				constBufferData.gWorldViewProj =
-					world * CameraUtils::GetViewProj(origin, *camera);
-
-				commandList->writeBuffer(DefaultAssetLoader::GetEditorGridCB(),
-			                             &constBufferData,
-			                             sizeof(constBufferData));
-
-				// Set the graphics state: pipeline, framebuffer, viewport, bindings.
-				auto graphicsState =
-					nvrhi::GraphicsState()
-						.setPipeline(
-							ShaderFactory::GetGraphicsPipeline("LineList"))
-						.setFramebuffer(fb)
-						.setViewport(
-							nvrhi::ViewportState().addViewportAndScissorRect(
-								nvrhi::Viewport(1280, 720)))
-						.addBindingSet(ShaderFactory::GetBindingSetV(
-							kDebugLineBindingSetUUID))
-						.addBindingSet(ShaderFactory::GetBindingSetP(
-							kDebugLineBindingSetUUID))
-						.addVertexBuffer(
-							MeshFactory::GetVertexBufferBinding(kCubeUUID));
-				graphicsState.setIndexBuffer(
-					MeshFactory::GetIndexBufferBinding(kCubeUUID));
-				commandList->setGraphicsState(graphicsState);
-
-				// Draw our geometry
-				auto drawArguments = nvrhi::DrawArguments().setVertexCount(
-					MeshFactory::GetMeshData(kCubeUUID).indices.size());
-				commandList->drawIndexed(drawArguments);
-			});
-	}
 }
 
 void D3E::EditorUtilsRenderSystem::Update(entt::registry& reg, D3E::Game* game,

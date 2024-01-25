@@ -11,13 +11,13 @@ namespace D3E
 	class LuaECSAdapter
 	{
 	public:
-		LuaECSAdapter(entt::registry& r);
+		explicit LuaECSAdapter(entt::registry& r);
 
 		sol::object GetComponent(entt::entity e, ComponentType type,
 		                         sol::this_state s);
 		sol::object
 		GetScriptComponent(entt::entity e,
-		                   const String& className, sol::this_state s);
+		                   const std::string& className, sol::this_state s);
 		sol::object FindWithBodyId(const JPH::BodyID& bodyId,
 		                           sol::this_state s);
 		sol::object FindWithCharacterBodyId(const JPH::BodyID& bodyId,
@@ -26,6 +26,7 @@ namespace D3E
 		                        sol::this_state s);
 		eastl::vector<entt::entity> FindAllWithTag(const std::string& tag);
 		void Destroy(entt::entity e);
+		void SelfDestroy(entt::entity e);
 		void DestroyMany(const eastl::vector<entt::entity>& entities);
 
 	private:

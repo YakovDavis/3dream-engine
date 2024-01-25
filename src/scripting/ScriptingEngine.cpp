@@ -5,6 +5,7 @@
 #include "EngineTypeBindings.h"
 #include "assetmng/ScriptFactory.h"
 #include "scripting/LuaECSAdapter.h"
+#include "scripting/type_adapters/InputDeviceAdapter.h"
 
 using namespace D3E;
 
@@ -37,7 +38,7 @@ void ScriptingEngine::Init(Game* g)
 
 	BindEngineTypes(luaState_);
 
-	luaState_["Component"] = new LuaECSAdapter(g->GetRegistry());
+	InitGlobalObjects();
 
 	if (!LoadDefaultEnvironment())
 		return;
@@ -54,6 +55,11 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c)
 			"ScriptingEngine initialization. Call "
 			"ScriptingEngine::Init() first.");
 
+		return false;
+	}
+
+	if (c.scriptUuid_ == EmptyIdString)
+	{
 		return false;
 	}
 
@@ -85,6 +91,7 @@ bool ScriptingEngine::LoadScript(ScriptComponent& c)
 		});
 
 	c.entryPoint_ = script.entryPoint;
+	c.loaded_ = true;
 
 	InitScriptComponent(c);
 
@@ -158,6 +165,12 @@ void ScriptingEngine::LoadStandardLibraries()
 	                         sol::lib::table);
 }
 
+void ScriptingEngine::InitGlobalObjects()
+{
+	luaState_["Component"] = new LuaECSAdapter(game_->GetRegistry());
+	luaState_["Input"] = new InputDeviceAdapter(game_->GetInputDevice());
+}
+
 void ScriptingEngine::InitScripts()
 {
 	if (!initialized_)
@@ -174,7 +187,6 @@ void ScriptingEngine::InitScripts()
 		[this](auto& sc)
 		{
 			LoadScript(sc);
-			InitScriptComponent(sc);
 			sc.Init();
 		});
 }

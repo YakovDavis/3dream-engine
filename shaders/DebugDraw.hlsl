@@ -1,6 +1,6 @@
 #pragma pack_matrix(row_major)
 
-#define MAX_BATCH_VERTEX_COUNT 16
+#define MAX_BATCH_VERTEX_COUNT 64
 
 struct PS_IN
 {

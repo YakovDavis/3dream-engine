@@ -37,6 +37,7 @@ void D3E::PhysicsUpdateSystem::Update(entt::registry& reg, Game* game, float dT)
 							transformComponent.rotation.x = body.GetRotation().GetX();
 							transformComponent.rotation.y = body.GetRotation().GetY();
 							transformComponent.rotation.z = body.GetRotation().GetZ();
+							transformComponent.rotation.w = body.GetRotation().GetW();
 						});
 
 					reg.patch<PhysicsComponent>(

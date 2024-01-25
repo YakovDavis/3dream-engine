@@ -3,8 +3,9 @@
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
-#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/TPSControllerComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/SkyboxComponent.h"
@@ -351,9 +352,9 @@ void D3E::CreationSystems::CreateDefaultCameraComponent(
 void D3E::CreationSystems::CreateDefaultLightComponent(entt::registry& registry,
                                                        entt::entity& entity)
 {
-	LightInitSystem::IsDirty = true;
 	LightComponent component = {};
 	registry.emplace<LightComponent>(entity, component);
+	LightInitSystem::IsDirty = true;
 }
 
 void D3E::CreationSystems::CreateDefaultStaticMeshComponent(
@@ -361,6 +362,7 @@ void D3E::CreationSystems::CreateDefaultStaticMeshComponent(
 {
 	StaticMeshComponent component = {};
 	registry.emplace<StaticMeshComponent>(entity, component);
+	StaticMeshInitSystem::IsDirty = true;
 }
 
 void D3E::CreationSystems::CreateDefaultSoundComponent(entt::registry& registry,
@@ -380,7 +382,7 @@ void D3E::CreationSystems::CreateDefaultSoundListenerComponent(
 void D3E::CreationSystems::CreateDefaultScriptComponent(
 	entt::registry& registry, entt::entity& entity)
 {
-	ScriptComponent component(entity, EmptyIdString);
+	ScriptComponent component(entity);
 	registry.emplace<ScriptComponent>(entity, component);
 }
 
@@ -438,3 +440,9 @@ void D3E::CreationSystems::CreateDefaultNavigationComponent(
 	registry.emplace<NavmeshComponent>(entity, nc);
 }
 
+void D3E::CreationSystems::CreateDefaultTPSControllerComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	TPSControllerComponent component = {};
+	registry.emplace<TPSControllerComponent>(entity, component);
+}

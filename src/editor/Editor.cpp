@@ -47,6 +47,14 @@ static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
 static bool boundSizing = false;
 static bool boundSizingSnap = false;
 
+#define INSPECTOR_DELETION(ComponentType) \
+	if (ImGui::IsKeyDown(ImGuiKey_LeftAlt) && ImGui::IsItemClicked(ImGuiMouseButton_Left))\
+	{ \
+		game_->GetRegistry().erase<ComponentType>(currentEntity); \
+		ImGui::TreePop(); \
+		continue; \
+	}
+
 #define HIERARCHY_DRAG_N_DROP \
 	if (ImGui::BeginDragDropSource()) \
 	{ \
@@ -440,13 +448,14 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent");
 	switch (createComponent)
 	{
 		case 0:
 		case 3:
 		case 4:
 		case 6:
+		case 10:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = true;
 			break;
@@ -514,8 +523,15 @@ void D3E::Editor::DrawInspector()
 						case 7:
 							CreationSystems::CreateDefaultSoundListenerComponent(game_->GetRegistry(), currentEntity);
 							break;
+						case 8:
+							CreationSystems::CreateDefaultScriptComponent(
+								game_->GetRegistry(), currentEntity);
+							break;
 						case 9:
 							CreationSystems::CreateDefaultNavigationComponent(
+								game_->GetRegistry(), currentEntity);
+						case 10:
+							CreationSystems::CreateDefaultTPSControllerComponent(
 								game_->GetRegistry(), currentEntity);
 					}
 				}
@@ -538,12 +554,14 @@ void D3E::Editor::DrawInspector()
 			size_t idx = 0;
 			for (auto componentName : currentComponents)
 			{
-				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
+				                                ImGuiTreeNodeFlags_OpenOnDoubleClick;
 				bool opened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", componentName.c_str());
 				if (opened)
 				{
 					if (componentName == "TransformComponent")
 					{
+						INSPECTOR_DELETION(TransformComponent)
 						//game_->GetRegistry().patch<TransformComponent>(currentEntity, [](auto& transform){ transform.position = {10, 10, 10, 1.0f};});
 						size_t fieldIdx = idx * 100;
 						bool positionOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Position");
@@ -679,6 +697,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "FPSControllerComponent")
 					{
+						INSPECTOR_DELETION(FPSControllerComponent)
 						float yaw, pitch, speed;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<FPSControllerComponent>(currentEntity).yaw);
@@ -724,8 +743,118 @@ void D3E::Editor::DrawInspector()
 							}
 						}
 					}
+					else if (componentName == "TPSControllerComponent")
+					{
+						INSPECTOR_DELETION(TPSControllerComponent)
+						float phi, theta, radius, sensitivityX, sensitivityY;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string radiusInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).radius);
+						if (ImGui::InputText("Radius", &radiusInput, input_text_flags))
+						{
+							if (!(radiusInput.empty()))
+							{
+								radius = std::stof(radiusInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [radius](auto &controller) { controller.radius = radius; });
+							}
+						}
+						std::string phiInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).phi);
+						if (ImGui::InputText("Horizontal rotation", &phiInput, input_text_flags))
+						{
+							if (!(phiInput.empty()))
+							{
+								phi = std::stof(phiInput);
+								phi +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (phi < -DirectX::XM_2PI)
+									phi += DirectX::XM_2PI;
+								while (phi > DirectX::XM_2PI)
+									phi -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [phi](auto &controller) { controller.phi = phi; });
+							}
+						}
+						std::string thetaInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).theta);
+						if (ImGui::InputText("Vertical rotation", &thetaInput, input_text_flags))
+						{
+							if (!(thetaInput.empty()))
+							{
+								theta = std::stof(phiInput);
+								theta +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (theta < -DirectX::XM_2PI)
+									theta += DirectX::XM_2PI;
+								while (theta > DirectX::XM_2PI)
+									theta -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [theta](auto &controller) { controller.theta = theta; });
+							}
+						}
+						std::string sensitivityXInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX);
+						if (ImGui::InputText("Sensitivity X", &sensitivityXInput, input_text_flags))
+						{
+							if (!(sensitivityXInput.empty()))
+							{
+								sensitivityX = std::stof(sensitivityXInput);
+								sensitivityX +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (sensitivityX < -DirectX::XM_2PI)
+									sensitivityX += DirectX::XM_2PI;
+								while (sensitivityX > DirectX::XM_2PI)
+									sensitivityX -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [sensitivityX](auto &controller) { controller.sensitivityX = sensitivityX; });
+							}
+						}
+						std::string sensitivityYInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityY);
+						if (ImGui::InputText("Sensitivity Y", &sensitivityYInput, input_text_flags))
+						{
+							if (!(sensitivityYInput.empty()))
+							{
+								sensitivityY = std::stof(sensitivityYInput);
+								sensitivityY +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (sensitivityY < -DirectX::XM_2PI)
+									sensitivityY += DirectX::XM_2PI;
+								while (sensitivityY > DirectX::XM_2PI)
+									sensitivityY -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [sensitivityY](auto &controller) { controller.sensitivityY = sensitivityY; });
+							}
+						}
+						bool isRMBActivated = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).isRMBActivated;
+						ImGui::Checkbox("Is RMB Activated", &isRMBActivated);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [isRMBActivated](auto &controller) { controller.isRMBActivated = isRMBActivated; });
+
+						bool limitTheta = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).limitTheta;
+						ImGui::Checkbox("Is vertical limited", &limitTheta);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [limitTheta](auto &controller) { controller.limitTheta = limitTheta; });
+
+						float upperThetaLimit, lowerThetaLimit;
+						std::string upperThetaLimitInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).upperThetaLimit);
+						if (ImGui::InputText("Upper vertical limit", &upperThetaLimitInput, input_text_flags))
+						{
+							if (!(upperThetaLimitInput.empty()))
+							{
+								upperThetaLimit = std::stof(upperThetaLimitInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [upperThetaLimit](auto &controller) { controller.upperThetaLimit = upperThetaLimit; });
+							}
+						}
+						std::string lowerThetaLimitInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).lowerThetaLimit);
+						if (ImGui::InputText("Lower vertical limit", &lowerThetaLimitInput, input_text_flags))
+						{
+							if (!(lowerThetaLimitInput.empty()))
+							{
+								lowerThetaLimit = std::stof(lowerThetaLimitInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [lowerThetaLimit](auto &controller) { controller.lowerThetaLimit = lowerThetaLimit; });
+							}
+						}
+
+						bool invertXAxis = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).invertXAxis;
+						ImGui::Checkbox("Invert X Axis", &invertXAxis);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [invertXAxis](auto &controller) { controller.invertXAxis = invertXAxis; });
+						bool invertYAxis = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).invertYAxis;
+						ImGui::Checkbox("Invert Y Axis", &invertYAxis);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [invertYAxis](auto &controller) { controller.invertYAxis = invertYAxis; });
+					}
 					else if (componentName == "PhysicsComponent")
 					{
+						INSPECTOR_DELETION(PhysicsComponent)
 						float friction, restitution;
 						int isSensorSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
@@ -833,6 +962,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "PhysicsCharacterComponent")
 					{
+						INSPECTOR_DELETION(PhysicsCharacterComponent)
 						float yaw, pitch, speed, jumpSpeed, friction, restitution;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						std::string yawInput = std::to_string(game_->GetRegistry().get<PhysicsCharacterComponent>(currentEntity).yaw_);
@@ -984,6 +1114,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "CameraComponent")
 					{
+						INSPECTOR_DELETION(CameraComponent)
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 						size_t fieldIdx = idx * 100;
 						bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Offset (initial)");
@@ -1090,6 +1221,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "LightComponent")
 					{
+						INSPECTOR_DELETION(LightComponent)
 						float intensity;
 						int castsShadowsSelection;
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
@@ -1231,6 +1363,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "StaticMeshComponent")
 					{
+						INSPECTOR_DELETION(StaticMeshComponent)
 						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_ReadOnly;
 						String meshUuid = game_->GetRegistry().get<StaticMeshComponent>(currentEntity).meshUuid;
 						std::string meshName;
@@ -1299,6 +1432,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "SoundComponent")
 					{
+						INSPECTOR_DELETION(SoundComponent)
 						int is3D, isLooping, isStreaming;
 						float volume;
 						is3D = game_->GetRegistry().get<SoundComponent>(currentEntity).is3D;
@@ -1399,6 +1533,7 @@ void D3E::Editor::DrawInspector()
 					}
 					else if (componentName == "ScriptComponent")
 					{
+						INSPECTOR_DELETION(ScriptComponent)
 						ImGuiInputTextFlags input_text_flags =
 							ImGuiInputTextFlags_ReadOnly;
 
@@ -1442,6 +1577,7 @@ void D3E::Editor::DrawInspector()
 					} else 
 					if (componentName == "NavmeshComponent")
 					{
+						INSPECTOR_DELETION(NavmeshComponent)
 						auto& nc = game_->GetRegistry().get<NavmeshComponent>(
 							currentEntity);
 

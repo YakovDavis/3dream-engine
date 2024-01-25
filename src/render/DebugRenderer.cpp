@@ -90,24 +90,21 @@ void D3E::DebugRenderer::Flush()
 		return;
 	}
 
-	Vector3 origin = {0, 0, 0};
-
-	auto playerView = game_->GetRegistry().view<const TransformComponent, const CameraComponent>();
-
-	const CameraComponent* camera = nullptr;
-
-	for(auto [entity, tc, cc] : playerView.each())
+	if (EngineState::currentPlayer == entt::null)
 	{
-		origin = tc.position + cc.offset;
-		camera = &cc;
-		break;
-	}
-
-	if (!camera)
-	{
-		Debug::LogWarning("[DebugRenderer] Camera not found");
 		return;
 	}
+	const TransformComponent* playerTransform = game_->GetRegistry().try_get<TransformComponent>(EngineState::currentPlayer);
+	if (!playerTransform)
+	{
+		return;
+	}
+	const CameraComponent* camera = game_->GetRegistry().try_get<CameraComponent>(EngineState::currentPlayer);
+	if (!camera)
+	{
+		return;
+	}
+	Vector3 origin = playerTransform->position + camera->offset;
 
 	PerObjectConstBuffer constBufferData1 = {};
 	const DirectX::SimpleMath::Matrix world = DirectX::SimpleMath::Matrix::Identity;
@@ -167,8 +164,7 @@ void D3E::DebugRenderer::QueueLine(const Vector3& from, const Vector3& to,
 	v2.pos = Vector4(to.x, to.y, to.z, 1.0f);
 	v2.col = color;
 
-	lineDrawQueue_.push(v1);
-	lineDrawQueue_.push(v2);
+	lineDrawQueue_.push({v1, v2});
 }
 
 void D3E::DebugRenderer::QueuePoint(const Vector3& location, float size)
@@ -180,22 +176,24 @@ void D3E::DebugRenderer::ProcessQueue()
 {
 	Flush();
 
-	while (lineDrawQueue_.size() > MAX_BATCH_VERTEX_COUNT)
+	while (lineDrawQueue_.size() > MAX_BATCH_VERTEX_COUNT / 2)
 	{
-		for (uint16_t i = 0; i < MAX_BATCH_VERTEX_COUNT; ++i)
+		for (uint16_t i = 0; i < MAX_BATCH_VERTEX_COUNT / 2; ++i)
 		{
-			linesData_.v[i] = lineDrawQueue_.front();
+			linesData_.v[i * 2] = lineDrawQueue_.front()[0];
+			linesData_.v[i * 2 + 1] = lineDrawQueue_.front()[1];
 			lineDrawQueue_.pop();
-			linesVertexCount_ = i + 1;
+			linesVertexCount_ += 2;
 		}
 		Flush();
 	}
 
 	for (uint16_t i = 0; i < lineDrawQueue_.size(); ++i)
 	{
-		linesData_.v[i] = lineDrawQueue_.front();
+		linesData_.v[i * 2] = lineDrawQueue_.front()[0];
+		linesData_.v[i * 2 + 1] = lineDrawQueue_.front()[1];
 		lineDrawQueue_.pop();
-		linesVertexCount_ = i + 1;
+		linesVertexCount_ += 2;
 	}
 	Flush();
 
@@ -217,4 +215,31 @@ void D3E::DebugRenderer::ProcessQueue()
 		pointsVertexCount_ = i + 1;
 	}
 	Flush();
+}
+
+void D3E::DebugRenderer::QueueAxisAlignedBox(const Vector3& center,
+                                             const Vector3& extents,
+                                             const Color& color)
+{
+	Vector3 v1 = center + Vector3(-extents.x, extents.y, extents.z);
+	Vector3 v2 = center + Vector3(extents.x, extents.y, extents.z);
+	Vector3 v3 = center + Vector3(extents.x, extents.y, -extents.z);
+	Vector3 v4 = center + Vector3(-extents.x, extents.y, -extents.z);
+	Vector3 v5 = center + Vector3(-extents.x, -extents.y, extents.z);
+	Vector3 v6 = center + Vector3(extents.x, -extents.y, extents.z);
+	Vector3 v7 = center + Vector3(extents.x, -extents.y, -extents.z);
+	Vector3 v8 = center + Vector3(-extents.x, -extents.y, -extents.z);
+
+	QueueLine(v1, v2, color);
+	QueueLine(v2, v3, color);
+	QueueLine(v3, v4, color);
+	QueueLine(v4, v1, color);
+	QueueLine(v5, v6, color);
+	QueueLine(v6, v7, color);
+	QueueLine(v7, v8, color);
+	QueueLine(v8, v5, color);
+	QueueLine(v1, v5, color);
+	QueueLine(v2, v6, color);
+	QueueLine(v3, v7, color);
+	QueueLine(v4, v8, color);
 }

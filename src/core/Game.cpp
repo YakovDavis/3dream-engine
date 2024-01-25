@@ -29,6 +29,7 @@
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
+#include "engine/systems/TPSControllerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "json.hpp"
@@ -52,7 +53,7 @@
 
 static json currentMapSavedState = json({{"type", "world"},
                                          {"uuid", D3E::EmptyIdStdStr},
-                                         {"filename", ""},
+                                         {"filename", "NewWorld"},
                                          {"entities", {}}});
 
 bool D3E::Game::MouseLockedByImGui = false;
@@ -182,10 +183,12 @@ void D3E::Game::Init()
 	DefaultAssetLoader::LoadEditorDebugAssets(gameRender_->GetDevice(),
 	                                          gameRender_->GetCommandList());
 
-	ScriptingEngine::GetInstance().Init(this);
 	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
+
+	// Initialization order is crucial: depends on InputDevice
+	ScriptingEngine::GetInstance().Init(this);
 
 	physicsInfo_ = new PhysicsInfo(this);
 
@@ -194,6 +197,7 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new TPSControllerSystem);
 	systems_.push_back(new ScriptInitSystem(registry_));
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
@@ -956,18 +960,17 @@ void D3E::Game::OnEditorSaveMapPressed()
 		if (currentMapSavedState.at("uuid") == D3E::EmptyIdStdStr)
 		{
 			currentMapSavedState.at("uuid") = UuidGenerator::NewGuidStdStr();
-			std::ofstream o(contentBrowserFilePath_ + "\\NewWorld.meta");
-			o << std::setw(4) << currentMapSavedState << std::endl;
-			o.close();
 		}
-		else
+		if (!currentMapSavedState.contains("filename"))
 		{
-			std::ofstream o(contentBrowserFilePath_ + "\\" +
-			                to_string(currentMapSavedState.at("filename")) +
-			                ".meta");
-			o << std::setw(4) << currentMapSavedState << std::endl;
-			o.close();
+			currentMapSavedState.emplace("filename", "NewWorld");
 		}
+
+		std::string filename = currentMapSavedState.at("filename");
+
+		std::ofstream o(contentBrowserFilePath_ + "\\" + filename + ".meta");
+		o << std::setw(4) << currentMapSavedState << std::endl;
+		o.close();
 	}
 }
 
@@ -1021,8 +1024,15 @@ void D3E::Game::OnObjectClicked(entt::entity entity)
 
 entt::entity D3E::Game::FindFirstNonEditorPlayer()
 {
-	auto playerView = registry_.view<const TransformComponent, const CameraComponent>();
-	return playerView.front();
+	auto playerView = registry_.view<const ObjectInfoComponent, const TransformComponent, const CameraComponent>();
+	for (auto [player, info, transform, camera] : playerView.each())
+	{
+		if (!info.internalObject)
+		{
+			return player;
+		}
+	}
+	return entt::null;
 }
 
 void D3E::Game::ParentEntitiesById(const D3E::String& childUuid,

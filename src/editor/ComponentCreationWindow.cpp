@@ -1247,5 +1247,119 @@ void D3E::ComponentCreationWindow::Draw()
 			ImGui::End();
 			break;
 		}
+		case 10:
+		{
+			ImGui::Begin("Create TPSControllerComponent", nullptr, flags);
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && editor_->lmbDownLastFrame)
+			{
+				ImGui::SetWindowFocus();
+			}
+
+			float phi, theta, radius, sensitivityX, sensitivityY;
+			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+			std::string radiusInput = std::to_string(tpsControllerComponent.radius);
+			if (ImGui::InputText("Radius", &radiusInput, input_text_flags))
+			{
+				if (!(radiusInput.empty()))
+				{
+					radius = std::stof(radiusInput);
+					tpsControllerComponent.radius = radius;
+				}
+			}
+			std::string phiInput = std::to_string(0.0f);
+			if (ImGui::InputText("Horizontal rotation", &phiInput, input_text_flags))
+			{
+				if (!(phiInput.empty()))
+				{
+					phi = std::stof(phiInput);
+					tpsControllerComponent.phi = phi;
+				}
+			}
+			std::string thetaInput = std::to_string(0.0f);
+			if (ImGui::InputText("Horizontal rotation", &thetaInput, input_text_flags))
+			{
+				if (!(thetaInput.empty()))
+				{
+					theta = std::stof(thetaInput);
+					tpsControllerComponent.theta = theta;
+				}
+			}
+			std::string sensitivityXInput = std::to_string(tpsControllerComponent.sensitivityX);
+			if (ImGui::InputText("Sensitivity X", &sensitivityXInput, input_text_flags))
+			{
+				if (!(sensitivityXInput.empty()))
+				{
+					sensitivityX = std::stof(sensitivityXInput);
+					if (sensitivityX > 0.0f)
+					{
+						tpsControllerComponent.sensitivityX = sensitivityX;
+					}
+				}
+			}
+			std::string sensitivityYInput = std::to_string(tpsControllerComponent.sensitivityY);
+			if (ImGui::InputText("Sensitivity Y", &sensitivityYInput, input_text_flags))
+			{
+				if (!(sensitivityYInput.empty()))
+				{
+					sensitivityY = std::stof(sensitivityYInput);
+					if (sensitivityY > 0.0f)
+					{
+						tpsControllerComponent.sensitivityY = sensitivityY;
+					}
+				}
+			}
+			bool isRMBActivated = false;
+			ImGui::Checkbox("Is RMB Activated", &isRMBActivated);
+			tpsControllerComponent.isRMBActivated = isRMBActivated;
+
+			bool limitTheta = false;
+			ImGui::Checkbox("Is vertical limited", &limitTheta);
+			tpsControllerComponent.limitTheta = limitTheta;
+
+			float upperThetaLimit, lowerThetaLimit;
+			std::string upperThetaLimitInput = std::to_string(DirectX::XM_PIDIV2);
+			if (ImGui::InputText("Upper vertical limit", &upperThetaLimitInput, input_text_flags))
+			{
+				if (!(upperThetaLimitInput.empty()))
+				{
+					upperThetaLimit = std::stof(upperThetaLimitInput);
+					tpsControllerComponent.upperThetaLimit = upperThetaLimit;
+				}
+			}
+			std::string lowerThetaLimitInput = std::to_string(DirectX::XM_PIDIV2);
+			if (ImGui::InputText("Lower vertical limit", &lowerThetaLimitInput, input_text_flags))
+			{
+				if (!(lowerThetaLimitInput.empty()))
+				{
+					lowerThetaLimit = std::stof(lowerThetaLimitInput);
+					tpsControllerComponent.lowerThetaLimit = lowerThetaLimit;
+				}
+			}
+
+			bool invertXAxis = false;
+			ImGui::Checkbox("Invert X Axis", &invertXAxis);
+			tpsControllerComponent.invertXAxis = invertXAxis;
+			bool invertYAxis = false;
+			ImGui::Checkbox("Invert Y Axis", &invertYAxis);
+			tpsControllerComponent.invertYAxis = invertYAxis;
+
+			ImGui::Separator();
+			ImGui::Button("Create", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				game_->GetRegistry().emplace<TPSControllerComponent>(currentEntity, tpsControllerComponent);
+				tpsControllerComponent = {};
+				open = false;
+			}
+			ImGui::SameLine();
+			ImGui::Button("Cancel", ImVec2(0, 0));
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				tpsControllerComponent = {};
+				open = false;
+			}
+			ImGui::End();
+			break;
+		}
 	}
 }

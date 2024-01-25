@@ -8,6 +8,7 @@
 #include "SimpleMath.h"
 #include "scripting/LuaECSAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
+#include "scripting/type_adapters/InputDeviceAdapter.h"
 #include "sol/sol.hpp"
 #include "utils/ECSUtils.h"
 
@@ -261,6 +262,13 @@ namespace D3E
 		adapter["find_all_with_tag"] = &LuaECSAdapter::FindAllWithTag;
 		adapter["destroy"] = &LuaECSAdapter::Destroy;
 		adapter["destroy_many"] = &LuaECSAdapter::DestroyMany;
+		adapter["self_destroy"] = &LuaECSAdapter::SelfDestroy;
+	}
+
+	static void BindInputAdapter(sol::state& state)
+	{
+		auto adapter = state.new_usertype<InputDeviceAdapter>("Input");
+		adapter["is_key_down"] = &InputDeviceAdapter::IsKeyDown;
 	}
 
 	static void BindEngineTypes(sol::state& state)
@@ -276,5 +284,6 @@ namespace D3E
 		BindBodyID(state);
 		BindBody(state);
 		BindECSAdapter(state);
+		BindInputAdapter(state);
 	}
 } // namespace D3E

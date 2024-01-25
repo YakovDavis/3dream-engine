@@ -1,4 +1,5 @@
 #include "D3E/Components/render/CameraComponent.h"
+#include "render/CameraUtils.h"
 #include "json.hpp"
 
 using namespace DirectX::SimpleMath;
@@ -56,5 +57,10 @@ namespace D3E
 		initialOffset = Vector3(tmp_initialOffset[0], tmp_initialOffset[1], tmp_initialOffset[2]);
 		forward = Vector3(tmp_forward[0], tmp_forward[1], tmp_forward[2]);
 		up = Vector3(tmp_up[0], tmp_up[1], tmp_up[2]);
+	}
+
+	CameraComponent::CameraComponent()
+	{
+		boundingFrustum = DirectX::BoundingFrustum((DirectX::CXMMATRIX)CameraUtils::GetProj(*this), false);
 	}
 }

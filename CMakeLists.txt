@@ -231,7 +231,14 @@ add_library("${PROJECT_NAME}" SHARED
         include/D3E/Components/navigation/NavmeshCore.h
         src/components/NavmeshComponent.cpp
         src/utils/MeshUtils.h
-        src/scripting/type_adapters/InfoAdapter.h)
+        src/scripting/type_adapters/InfoAdapter.h
+        include/D3E/Components/TPSControllerComponent.cpp
+        include/D3E/Components/TPSControllerComponent.h
+        src/engine/systems/TPSControllerSystem.cpp
+        src/engine/systems/TPSControllerSystem.h
+        src/scripting/type_adapters/InputDeviceAdapter.h
+        src/scripting/type_adapters/InputDeviceAdapter.cpp
+        )
 
 add_subdirectory(libs)
 
