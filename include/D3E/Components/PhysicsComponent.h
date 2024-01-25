@@ -44,6 +44,7 @@ namespace D3E
 		DirectX::SimpleMath::Vector3 angularVelocity_;
 		int heightMapSize_ = 0;
 		float* heightMap_ = nullptr;
+		bool isActive_ = true;
 
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;

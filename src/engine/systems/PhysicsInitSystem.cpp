@@ -127,7 +127,10 @@ void D3E::PhysicsInitSystem::Play(entt::registry& reg, D3E::Game* game)
 	view.each(
 		[&](const auto entity, auto& physicsComponent)
 		{
+		if (physicsComponent.isActive_)
+		{
 			bodyInterface.ActivateBody(physicsComponent.bodyID_);
+		}
 		});
 }
 
@@ -150,7 +153,10 @@ void D3E::PhysicsInitSystem::Pause(entt::registry& reg, D3E::Game* game)
 		view.each(
 			[&](const auto entity, auto& physicsComponent)
 			{
-				bodyInterface.ActivateBody(physicsComponent.bodyID_);
+				if (physicsComponent.isActive_)
+				{
+					bodyInterface.ActivateBody(physicsComponent.bodyID_);
+				}
 			});
 	}
 
@@ -307,7 +313,7 @@ void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::e
 
 	bodySettings.mIsSensor = physicsComponent.isSensor_;
 
-	if (game_->IsGameRunning())
+	if (game_->IsGameRunning() && physicsComponent.isActive_)
 	{
 		physicsComponent.bodyID_ = body_interface.CreateAndAddBody(bodySettings, EActivation::Activate);
 	}

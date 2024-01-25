@@ -41,7 +41,8 @@ namespace D3E
 		         {"velocity", std::vector({velocity_.x, velocity_.y, velocity_.z})},
 		         {"angular_velocity", std::vector({angularVelocity_.x, angularVelocity_.y, angularVelocity_.z})},
 		         {"height_map_size", heightMapSize_},
-		         {"height_map", heightMap}
+		         {"height_map", heightMap},
+		         {"is_active", isActive_}
 		};
 	}
 
@@ -65,6 +66,7 @@ namespace D3E
 		j.at("velocity").get_to(velocity);
 		j.at("angular_velocity").get_to(angularVelocity);
 		j.at("height_map_size").get_to(heightMapSize_);
+		j.at("is_active").get_to(isActive_);
 
 		if (heightMapSize_)
 		{
