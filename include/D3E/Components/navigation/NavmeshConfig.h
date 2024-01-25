@@ -4,7 +4,7 @@
 
 namespace D3E
 {
-	struct NavmeshConfig
+	struct D3EAPI NavmeshConfig
 	{
 		float cellSize = 0.3f;
 		float cellHeight = 0.2f;

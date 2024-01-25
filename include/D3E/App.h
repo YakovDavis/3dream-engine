@@ -10,7 +10,7 @@
 
 namespace D3E
 {
-	class App
+	class D3EAPI App
 	{
 	public:
 		virtual void Run() {}

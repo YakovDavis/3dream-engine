@@ -5,7 +5,7 @@
 
 namespace D3E
 {
-	struct SoundListenerComponent : public BaseComponent
+	struct D3EAPI SoundListenerComponent : public BaseComponent
 	{
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;

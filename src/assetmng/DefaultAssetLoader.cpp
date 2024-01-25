@@ -219,6 +219,7 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 
 	nvrhi::BindingLayoutDesc layoutDescTonemap = {};
 	layoutDescTonemap.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::PushConstants(0, 2 * sizeof(float)));
 	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
 	layoutDescTonemap.addItem(nvrhi::BindingLayoutItem::Sampler(0));
 	ShaderFactory::AddBindingLayout("TonemapP", layoutDescTonemap);

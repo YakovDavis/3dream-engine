@@ -8,7 +8,7 @@
 
 namespace D3E
 {
-	struct NavmeshComponent : public BaseComponent
+	struct D3EAPI NavmeshComponent : public BaseComponent
 	{
 		bool isBuilt = false;
 		NavmeshConfig config;

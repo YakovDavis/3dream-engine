@@ -22,7 +22,7 @@ namespace D3E
 	class PhysicsInfo;
 	class ChildTransformSynchronizationSystem;
 
-	class Game : public App
+	class D3EAPI Game : public App
 	{
 	public:
 		void Run() final;
@@ -113,6 +113,8 @@ namespace D3E
 		void FlushChildTransformSync();
 
 		void SignalParentingChange(const String& entityUuid, const String& prevParent);
+
+		PhysicsInfo* GetPhysicsInfo();
 
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;

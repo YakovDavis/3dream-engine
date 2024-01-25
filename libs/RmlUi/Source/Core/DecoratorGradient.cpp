@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019-2023 The RmlUi Team, and contributors
+ * Copyright (c) 2019 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,9 +47,15 @@ stop-color: #00ff00;
 
 namespace Rml {
 
-DecoratorGradient::DecoratorGradient() {}
+//=======================================================
 
-DecoratorGradient::~DecoratorGradient() {}
+DecoratorGradient::DecoratorGradient()
+{
+}
+
+DecoratorGradient::~DecoratorGradient()
+{
+}
 
 bool DecoratorGradient::Initialise(const Direction dir_, const Colourb start_, const Colourb stop_)
 {
@@ -61,7 +67,7 @@ bool DecoratorGradient::Initialise(const Direction dir_, const Colourb start_, c
 
 DecoratorDataHandle DecoratorGradient::GenerateElementData(Element* element) const
 {
-	Geometry* geometry = new Geometry();
+	Geometry* geometry = new Geometry(element);
 	const Box& box = element->GetBox();
 
 	const ComputedValues& computed = element->GetComputedValues();
@@ -81,8 +87,8 @@ DecoratorDataHandle DecoratorGradient::GenerateElementData(Element* element) con
 	Colourb colour_stop = stop;
 	colour_stop.alpha = (byte)(opacity * (float)colour_stop.alpha);
 
-	const Vector2f padding_offset = box.GetPosition(BoxArea::Padding);
-	const Vector2f padding_size = box.GetSize(BoxArea::Padding);
+	const Vector2f padding_offset = box.GetPosition(Box::PADDING);
+	const Vector2f padding_size = box.GetSize(Box::PADDING);
 
 	Vector<Vertex>& vertices = geometry->GetVertices();
 
@@ -114,8 +120,10 @@ void DecoratorGradient::ReleaseElementData(DecoratorDataHandle element_data) con
 void DecoratorGradient::RenderElement(Element* element, DecoratorDataHandle element_data) const
 {
 	auto* data = reinterpret_cast<Geometry*>(element_data);
-	data->Render(element->GetAbsoluteOffset(BoxArea::Border));
+	data->Render(element->GetAbsoluteOffset(Box::BORDER));
 }
+
+//=======================================================
 
 DecoratorGradientInstancer::DecoratorGradientInstancer()
 {
@@ -126,18 +134,22 @@ DecoratorGradientInstancer::DecoratorGradientInstancer()
 	RegisterShorthand("decorator", "direction, start-color, stop-color", ShorthandType::FallThrough);
 }
 
-DecoratorGradientInstancer::~DecoratorGradientInstancer() {}
-
-SharedPtr<Decorator> DecoratorGradientInstancer::InstanceDecorator(const String& /*name*/, const PropertyDictionary& properties_,
-	const DecoratorInstancerInterface& /*interface_*/)
+DecoratorGradientInstancer::~DecoratorGradientInstancer()
 {
-	DecoratorGradient::Direction dir = (DecoratorGradient::Direction)properties_.GetProperty(ids.direction)->Get<int>();
+}
+
+SharedPtr<Decorator> DecoratorGradientInstancer::InstanceDecorator(const String & RMLUI_UNUSED_PARAMETER(name), const PropertyDictionary& properties_,
+	const DecoratorInstancerInterface& RMLUI_UNUSED_PARAMETER(interface_))
+{
+	RMLUI_UNUSED(name);
+	RMLUI_UNUSED(interface_);
+
+	DecoratorGradient::Direction dir = (DecoratorGradient::Direction)properties_.GetProperty(ids.direction)->Get< int >();
 	Colourb start = properties_.GetProperty(ids.start)->Get<Colourb>();
 	Colourb stop = properties_.GetProperty(ids.stop)->Get<Colourb>();
 
 	auto decorator = MakeShared<DecoratorGradient>();
-	if (decorator->Initialise(dir, start, stop))
-	{
+	if (decorator->Initialise(dir, start, stop)) {
 		return decorator;
 	}
 

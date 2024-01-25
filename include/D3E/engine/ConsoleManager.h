@@ -7,7 +7,7 @@
 
 namespace D3E
 {
-	class ConsoleManager
+	class D3EAPI ConsoleManager
 	{
 	private:
 		static ConsoleManager* instance_;

@@ -8,7 +8,7 @@
 
 namespace D3E
 {
-	class AssetManager
+	class D3EAPI AssetManager
 	{
 	public:
 		static AssetManager& Get();

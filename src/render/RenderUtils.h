@@ -22,6 +22,9 @@ namespace D3E
 
 		static void GenerateMips(nvrhi::ITexture* texture, nvrhi::IDevice* device, nvrhi::ICommandList* commandList);
 
+		static void SetTonemapperExposure(float e);
+		static float GetTonemapperExposure();
+
 	private:
 		static GameRender* gameRender_;
 	};

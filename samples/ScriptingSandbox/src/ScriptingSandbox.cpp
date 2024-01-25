@@ -7,6 +7,8 @@
 #include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
 
+D3E_APP_CORE
+
 void ScriptingSandbox::Init()
 {
 	Game::Init();
