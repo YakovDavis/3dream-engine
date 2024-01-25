@@ -186,11 +186,10 @@ void D3E::Game::Init()
 	TimerManager::GetInstance().Init(this);
 
 	inputDevice_ = new InputDevice(this);
-
-	// Initialization order is crucial: depends on InputDevice
-	ScriptingEngine::GetInstance().Init(this);
-
 	physicsInfo_ = new PhysicsInfo(this);
+
+	// Initialization order is crucial: depends on InputDevice and PhysicsInfo
+	ScriptingEngine::GetInstance().Init(this);
 
 	gameRender_->PostAssetLoadInit();
 
@@ -201,7 +200,8 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptInitSystem(registry_));
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
-	childTransformSyncSystem = eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
+	childTransformSyncSystem =
+		eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
 	systems_.push_back(childTransformSyncSystem.get());
 	systems_.push_back(new PhysicsInitSystem(registry_, this,
 	                                         physicsInfo_->getPhysicsSystem()));
@@ -213,7 +213,8 @@ void D3E::Game::Init()
 	renderPPsystems_.push_back(new LightInitSystem(this));
 	renderPPsystems_.push_back(new LightRenderSystem);
 
-	editorSystems_.push_back(new ChildTransformSynchronizationSystem(registry_));
+	editorSystems_.push_back(
+		new ChildTransformSynchronizationSystem(registry_));
 	editorSystems_.push_back(new FPSControllerSystem);
 	editorSystems_.push_back(new EditorUtilsRenderSystem);
 
@@ -548,7 +549,8 @@ void D3E::Game::Pick()
 			selectedUuids.clear();
 		}
 		selectedUuids.insert(EditorIdManager::Get()->GetUuid(editorPickedId));
-		OnObjectClicked(uuidEntityList[EditorIdManager::Get()->GetUuid(editorPickedId)]);
+		OnObjectClicked(
+			uuidEntityList[EditorIdManager::Get()->GetUuid(editorPickedId)]);
 	}
 	EditorUtilsRenderSystem::isSelectionDirty = true;
 	CalculateGizmoTransformsOffsets();
@@ -615,7 +617,8 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 	gizmoOffsets_.clear();
 	for (const auto& uuid : selectedUuids)
 	{
-		auto info = registry_.try_get<ObjectInfoComponent>(uuidEntityList[uuid]);
+		auto info =
+			registry_.try_get<ObjectInfoComponent>(uuidEntityList[uuid]);
 		auto tc = registry_.try_get<TransformComponent>(uuidEntityList[uuid]);
 		if (!tc || !info)
 		{
@@ -626,17 +629,18 @@ void D3E::Game::CalculateGizmoTransformsOffsets()
 		{
 			gizmoOffsets_[uuid] *=
 				(DirectX::SimpleMath::Matrix::CreateScale(tc->scale) *
-				DirectX::SimpleMath::Matrix::CreateFromQuaternion(
-					tc->rotation) *
-				DirectX::SimpleMath::Matrix::CreateTranslation(tc->position));
+			     DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+					 tc->rotation) *
+			     DirectX::SimpleMath::Matrix::CreateTranslation(tc->position));
 		}
 		else
 		{
 			gizmoOffsets_[uuid] *=
 				(DirectX::SimpleMath::Matrix::CreateScale(tc->relativeScale) *
-				DirectX::SimpleMath::Matrix::CreateFromQuaternion(
-					tc->relativeRotation) *
-				DirectX::SimpleMath::Matrix::CreateTranslation(tc->relativePosition));
+			     DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+					 tc->relativeRotation) *
+			     DirectX::SimpleMath::Matrix::CreateTranslation(
+					 tc->relativePosition));
 		}
 	}
 }
@@ -713,7 +717,7 @@ void D3E::Game::OnEditorPlayPressed()
 
 		EngineState::currentPlayer = FindFirstNonEditorPlayer();
 
-		//physicsInfo_->setIsPaused(false);
+		// physicsInfo_->setIsPaused(false);
 	}
 }
 
@@ -759,7 +763,7 @@ void D3E::Game::ClearWorld()
 	EditorIdManager::Get()->UnregisterAll();
 	uuidEntityList.clear();
 	registry_.clear();
-	//CreationSystems::CreateSkybox(registry_);
+	// CreationSystems::CreateSkybox(registry_);
 #ifdef D3E_WITH_EDITOR
 	CreationSystems::CreateEditorDebugRender(registry_);
 	editorFakePlayer_ = CreationSystems::CreateEditorFakePlayer(registry_);
@@ -1024,7 +1028,9 @@ void D3E::Game::OnObjectClicked(entt::entity entity)
 
 entt::entity D3E::Game::FindFirstNonEditorPlayer()
 {
-	auto playerView = registry_.view<const ObjectInfoComponent, const TransformComponent, const CameraComponent>();
+	auto playerView =
+		registry_.view<const ObjectInfoComponent, const TransformComponent,
+	                   const CameraComponent>();
 	for (auto [player, info, transform, camera] : playerView.each())
 	{
 		if (!info.internalObject)
@@ -1039,7 +1045,8 @@ void D3E::Game::ParentEntitiesById(const D3E::String& childUuid,
                                    const D3E::String& parentUuid)
 {
 	entt::entity child, parent;
-	if (!FindEntityByID(child, childUuid) || !FindEntityByID(parent, parentUuid))
+	if (!FindEntityByID(child, childUuid) ||
+	    !FindEntityByID(parent, parentUuid))
 	{
 		return;
 	}
@@ -1055,16 +1062,24 @@ void D3E::Game::ParentEntitiesById(const D3E::String& childUuid,
 
 	childInfo->parentId = parentUuid;
 
-	auto parentMatrix = DirectX::SimpleMath::Matrix::CreateScale(parentTransform->scale) *
-	                    DirectX::SimpleMath::Matrix::CreateFromQuaternion(parentTransform->rotation) *
-	                    DirectX::SimpleMath::Matrix::CreateTranslation(parentTransform->position);
-	auto childMatrix = DirectX::SimpleMath::Matrix::CreateScale(childTransform->scale) *
-	                    DirectX::SimpleMath::Matrix::CreateFromQuaternion(childTransform->rotation) *
-	                    DirectX::SimpleMath::Matrix::CreateTranslation(childTransform->position);
+	auto parentMatrix =
+		DirectX::SimpleMath::Matrix::CreateScale(parentTransform->scale) *
+		DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+			parentTransform->rotation) *
+		DirectX::SimpleMath::Matrix::CreateTranslation(
+			parentTransform->position);
+	auto childMatrix =
+		DirectX::SimpleMath::Matrix::CreateScale(childTransform->scale) *
+		DirectX::SimpleMath::Matrix::CreateFromQuaternion(
+			childTransform->rotation) *
+		DirectX::SimpleMath::Matrix::CreateTranslation(
+			childTransform->position);
 
 	auto relChildMatrix = parentMatrix.Invert() * childMatrix;
 
-	relChildMatrix.Decompose(childTransform->relativeScale, childTransform->relativeRotation, childTransform->relativePosition);
+	relChildMatrix.Decompose(childTransform->relativeScale,
+	                         childTransform->relativeRotation,
+	                         childTransform->relativePosition);
 
 	childTransform->relativePosition.x *= 1.0f / parentTransform->scale.x;
 	childTransform->relativePosition.y *= 1.0f / parentTransform->scale.y;
@@ -1095,6 +1110,11 @@ void D3E::Game::SignalParentingChange(const D3E::String& entityUuid,
 	{
 		childTransformSyncSystem->OnParentUpdate(registry_, e, prevParent);
 	}
+}
+
+D3E::PhysicsInfo* D3E::Game::GetPhysicsInfo()
+{
+	return physicsInfo_;
 }
 
 void D3E::Game::UnparentEntityById(const D3E::String& childUuid)

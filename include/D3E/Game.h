@@ -114,6 +114,8 @@ namespace D3E
 
 		void SignalParentingChange(const String& entityUuid, const String& prevParent);
 
+		PhysicsInfo* GetPhysicsInfo();
+
 	protected:
 		DirectX::SimpleMath::Matrix gizmoTransform_;
 		eastl::unordered_map<D3E::String, DirectX::SimpleMath::Matrix> gizmoOffsets_;

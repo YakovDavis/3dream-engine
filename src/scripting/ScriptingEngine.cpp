@@ -3,9 +3,12 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "EngineTypeBindings.h"
+#include "RmlSolLua/RmlSolLua.h"
 #include "assetmng/ScriptFactory.h"
+#include "physics/PhysicsInfo.h"
 #include "scripting/LuaECSAdapter.h"
 #include "scripting/type_adapters/InputDeviceAdapter.h"
+#include "scripting/type_adapters/PhysicsActivationAdapter.h"
 
 using namespace D3E;
 
@@ -39,6 +42,8 @@ void ScriptingEngine::Init(Game* g)
 	BindEngineTypes(luaState_);
 
 	InitGlobalObjects();
+
+	InitRmlLuaBindings();
 
 	if (!LoadDefaultEnvironment())
 		return;
@@ -169,6 +174,13 @@ void ScriptingEngine::InitGlobalObjects()
 {
 	luaState_["Component"] = new LuaECSAdapter(game_->GetRegistry());
 	luaState_["Input"] = new InputDeviceAdapter(game_->GetInputDevice());
+	luaState_["Physics"] = new PhysicsActivationAdapter(
+		game_->GetRegistry(), game_->GetPhysicsInfo()->getPhysicsSystem());
+}
+
+void ScriptingEngine::InitRmlLuaBindings()
+{
+	Rml::SolLua::Initialise(&luaState_);
 }
 
 void ScriptingEngine::InitScripts()

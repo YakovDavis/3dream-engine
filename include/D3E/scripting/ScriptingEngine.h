@@ -31,6 +31,7 @@ namespace D3E
 		void Init(Game* g);
 		bool LoadScript(ScriptComponent& c);
 		void InitScriptComponent(ScriptComponent& c);
+		void InitRmlLuaBindings();
 		void InitScripts();
 		void StartScripts();
 		void FreeScripts();

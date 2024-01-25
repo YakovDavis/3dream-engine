@@ -9,6 +9,7 @@
 #include "scripting/LuaECSAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "scripting/type_adapters/InputDeviceAdapter.h"
+#include "scripting/type_adapters/PhysicsActivationAdapter.h"
 #include "sol/sol.hpp"
 #include "utils/ECSUtils.h"
 
@@ -271,6 +272,13 @@ namespace D3E
 		adapter["is_key_down"] = &InputDeviceAdapter::IsKeyDown;
 	}
 
+	static void BindPhysicsAdapter(sol::state& state)
+	{
+		auto adapter = state.new_usertype<PhysicsActivationAdapter>(
+			"Physics", sol::no_constructor);
+		adapter["set_active"] = &PhysicsActivationAdapter::SetActive;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -285,5 +293,6 @@ namespace D3E
 		BindBody(state);
 		BindECSAdapter(state);
 		BindInputAdapter(state);
+		BindPhysicsAdapter(state);
 	}
 } // namespace D3E
