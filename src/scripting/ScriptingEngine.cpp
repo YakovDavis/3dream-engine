@@ -43,7 +43,7 @@ void ScriptingEngine::Init(Game* g)
 
 	InitGlobalObjects();
 
-	InitRmlLuaBindings();
+	//InitRmlLuaBindings();
 
 	if (!LoadDefaultEnvironment())
 		return;
