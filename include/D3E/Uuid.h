@@ -16,7 +16,7 @@ namespace D3E
 		size_t operator()(const Uuid& ref) const;		
 	};
 
-	class UuidGenerator
+	class D3EAPI UuidGenerator
 	{
 	public:
 		UuidGenerator(UuidGenerator const&) = delete;

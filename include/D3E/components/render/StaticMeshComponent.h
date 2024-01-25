@@ -7,7 +7,7 @@
 
 namespace D3E
 {
-	struct StaticMeshComponent : public BaseComponent
+	struct D3EAPI StaticMeshComponent : public BaseComponent
 	{
 		String meshUuid = kCubeUUID;
 		String pipelineName = "GBuffer";

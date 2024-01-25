@@ -8,7 +8,7 @@
 
 namespace D3E
 {
-	struct SoundComponent : public BaseComponent
+	struct D3EAPI SoundComponent : public BaseComponent
 	{
 		bool is3D = false;
 		bool isLooping = false;

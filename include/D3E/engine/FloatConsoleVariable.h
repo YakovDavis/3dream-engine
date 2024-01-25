@@ -6,7 +6,7 @@
 
 namespace D3E
 {
-	class FloatConsoleVariable : public ConsoleVariable
+	class D3EAPI FloatConsoleVariable : public ConsoleVariable
 	{
 	private:
 		float value_;

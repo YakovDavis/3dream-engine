@@ -6,7 +6,7 @@
 
 namespace D3E
 {
-	struct CameraComponent : public BaseComponent
+	struct D3EAPI CameraComponent : public BaseComponent
 	{
 		DirectX::SimpleMath::Vector3 offset = {0, 0, 0};
 		DirectX::SimpleMath::Vector3 initialOffset = {0, 0, 0};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include "entt/entt.hpp"
 //#include "nvrhi/nvrhi.h"
 
@@ -14,7 +15,7 @@ namespace D3E
 {
 	class Game;
 
-	class GameSystem
+	class D3EAPI GameSystem
 	{
 	public:
 		virtual void Init() {}

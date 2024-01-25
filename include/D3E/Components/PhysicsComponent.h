@@ -25,7 +25,7 @@ namespace D3E
 		HeightFieldCollider
 	};
 
-	struct PhysicsComponent : public BaseComponent
+	struct D3EAPI PhysicsComponent : public BaseComponent
 	{
 		bool isInitialized_ = false;
 

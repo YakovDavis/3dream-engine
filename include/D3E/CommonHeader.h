@@ -5,6 +5,22 @@
 #include "EASTL/string.h"
 #include "json_fwd.hpp"
 
+#ifdef D3E_LIBRARY_EXPORTS
+#define D3EAPI __declspec(dllexport)
+#else
+#define D3EAPI __declspec(dllimport)
+#endif
+
+#define D3E_APP_CORE \
+	void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line) \
+	{ \
+		return new uint8_t[size]; \
+	} \
+	void * __cdecl operator new[](unsigned __int64 size, unsigned __int64 flags, unsigned __int64 debugFlags, char const * name, int a,unsigned int b, char const* file, int line) \
+	{ \
+		return new uint8_t[size]; \
+	}
+
 using json = nlohmann::json;
 
 namespace D3E

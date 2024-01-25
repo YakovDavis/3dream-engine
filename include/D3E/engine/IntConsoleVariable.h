@@ -6,7 +6,7 @@
 
 namespace D3E
 {
-	class IntConsoleVariable : public ConsoleVariable
+	class D3EAPI IntConsoleVariable : public ConsoleVariable
 	{
 	private:
 		int value_;

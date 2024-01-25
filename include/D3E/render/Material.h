@@ -12,7 +12,7 @@ namespace D3E
 		Lit
 	};
 
-	struct Material
+	struct D3EAPI Material
 	{
 		String uuid;
 		String name;

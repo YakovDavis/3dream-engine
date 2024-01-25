@@ -9,7 +9,7 @@ using namespace DirectX::SimpleMath;
 
 namespace D3E
 {
-	struct TransformComponent : public BaseComponent
+	struct D3EAPI TransformComponent : public BaseComponent
 	{
 		Vector3 position = Vector3(0.0f, 0.0f, 0.0f);
 		Quaternion rotation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include <cstdint>
 
 namespace D3E
 {
-	class TimerHandle
+	class D3EAPI TimerHandle
 	{
 		friend class TimerManager;
 		friend struct TimerHandleHash;
