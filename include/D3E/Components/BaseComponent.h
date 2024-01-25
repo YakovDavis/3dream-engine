@@ -4,7 +4,7 @@
 
 namespace D3E
 {
-	struct BaseComponent
+	struct D3EAPI BaseComponent
 	{
 		virtual void to_json(json& j) const = 0;
 		virtual void from_json(const json& j) = 0;

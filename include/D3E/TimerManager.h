@@ -10,7 +10,7 @@
 
 namespace D3E
 {
-	class TimerManager
+	class D3EAPI TimerManager
 	{
 	public:
 		TimerManager(const TimerManager&) = delete;

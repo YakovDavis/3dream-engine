@@ -9,7 +9,7 @@ namespace D3E
 {
 	class Game;
 
-	class ScriptingEngine
+	class D3EAPI ScriptingEngine
 	{
 	private:
 		bool initialized_;

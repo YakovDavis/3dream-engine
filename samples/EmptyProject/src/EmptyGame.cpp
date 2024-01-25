@@ -2,6 +2,8 @@
 
 #include "D3E/systems/CreationSystems.h"
 
+D3E_APP_CORE
+
 void EmptyGame::Init()
 {
 	Game::Init();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/CommonHeader.h"
 #include <cstdint>
 #include <functional>
 
@@ -39,7 +40,7 @@ namespace D3E
 		Executing
 	};
 
-	class Timer
+	class D3EAPI Timer
 	{
 		friend class TimerManager;
 

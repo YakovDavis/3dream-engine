@@ -8,7 +8,7 @@ using namespace DirectX::SimpleMath;
 
 namespace D3E
 {
-	struct MouseComponent : public BaseComponent
+	struct D3EAPI MouseComponent : public BaseComponent
 	{
 		Vector2 position = Vector2(0.0f, 0.0f);
 		Vector2 delta = Vector2(0.0f, 0.0f);

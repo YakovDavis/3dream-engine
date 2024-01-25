@@ -11,7 +11,7 @@
 
 namespace D3E
 {
-	struct ScriptComponent : public BaseComponent
+	struct D3EAPI ScriptComponent : public BaseComponent
 	{
 		friend class ScriptingEngine;
 

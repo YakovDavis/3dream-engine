@@ -8,7 +8,7 @@
 
 namespace D3E
 {
-	class CreationSystems
+	class D3EAPI CreationSystems
 	{
 	public:
 		static entt::entity CreateDefaultEmpty(entt::registry& registry);

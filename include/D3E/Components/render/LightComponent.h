@@ -14,7 +14,7 @@ namespace D3E
 		Spot
 	};
 
-	struct LightComponent : public BaseComponent
+	struct D3EAPI LightComponent : public BaseComponent
 	{
 		LightType lightType = LightType::Directional;
 		DirectX::SimpleMath::Vector3 offset = {0.f, 0.f, 0.f};

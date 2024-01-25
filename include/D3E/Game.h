@@ -22,7 +22,7 @@ namespace D3E
 	class PhysicsInfo;
 	class ChildTransformSynchronizationSystem;
 
-	class Game : public App
+	class D3EAPI Game : public App
 	{
 	public:
 		void Run() final;
