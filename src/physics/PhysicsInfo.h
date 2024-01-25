@@ -22,9 +22,12 @@ namespace D3E
 		PhysicsInfo(Game* game);
 		~PhysicsInfo();
 		void updatePhysics();
+		void draw();
+		void editorUpdate();
 		JPH::PhysicsSystem* getPhysicsSystem() { return physicsSystem_; }
 		bool getIsPaused() { return isPaused_; }
 		void setIsPaused(bool isPaused) { isPaused_ = isPaused; }
+		static constexpr float DELTA_TIME = 1.0f / 60.0f;
 
 	private:
 		JPH::PhysicsSystem* physicsSystem_;
@@ -41,7 +44,6 @@ namespace D3E
 		static constexpr int NUM_BODY_MUTEXES = 0;
 		static constexpr int MAX_BODY_PAIRS = 65536;
 		static constexpr int MAX_CONSTRAINTS = 10240;
-		static constexpr float DELTA_TIME = 1.0f / 60.0f;
 		static constexpr int COLLISION_STEPS = 1;
 	};
 }
