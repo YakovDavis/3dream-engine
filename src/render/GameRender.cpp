@@ -91,10 +91,18 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	gameFrameTextureDesc.setDebugName("Game Frame Texture");
 	gameFrameTexture_ = device_->createTexture(gameFrameTextureDesc);
 
+	gameFrameTextureDesc.setDebugName("LightPass Texture");
+	lightpassTexture_ = device_->createTexture(gameFrameTextureDesc);
+
 	nvrhi::FramebufferDesc gameFrameBufferDesc = {};
 	gameFrameBufferDesc.addColorAttachment(gameFrameTexture_);
 	gameFrameBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
 	gameFramebuffer_ = device_->createFramebuffer(gameFrameBufferDesc);
+
+	nvrhi::FramebufferDesc lightpassBufferDesc = {};
+	lightpassBufferDesc.addColorAttachment(lightpassTexture_);
+	lightpassBufferDesc.setDepthAttachment(nvrhiDepthBuffer);
+	lightpassFramebuffer_ = device_->createFramebuffer(lightpassBufferDesc);
 #endif
 
 	gameUi_ = D3E::GameUi::Init(parentGame, gameFramebuffer_);
@@ -163,11 +171,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	nvrhi::BindingSetDesc tonemapBSP = {};
 	tonemapBSP.addItem(nvrhi::BindingSetItem::PushConstants(0, 2 * sizeof(float)));
-#ifdef D3E_WITH_EDITOR
-	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gameFrameTexture_));
-#else
-	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, nvrhiFramebuffer[0])); // TODO: probably not going to work like this
-#endif
+	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, lightpassTexture_));
 	tonemapBSP.addItem(nvrhi::BindingSetItem::Sampler(0, TextureFactory::GetSampler("BaseCompute")));
 	ShaderFactory::AddBindingSetP("Tonemap", tonemapBSP, "TonemapP");
 
@@ -272,6 +276,7 @@ void D3E::GameRender::DrawOpaque(entt::registry& registry, eastl::vector<GameSys
 {
 	commandList_->open();
 	commandList_->beginMarker("Opaque");
+	commandList_->setTextureState(gameFrameTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
 	for (auto& sys : systems)
 	{
 		sys->Draw(registry, frameGBuffer, commandList_, device_);
@@ -292,8 +297,9 @@ void D3E::GameRender::PrepareFrame()
 	commandList_->clearTextureFloat(gbuffer_.metalRoughnessBuffer, nvrhi::AllSubresources, nvrhi::Color(0.0f));
 	commandList_->clearTextureUInt(gbuffer_.editorIdsBuffer, nvrhi::AllSubresources, 0);
 	commandList_->clearDepthStencilTexture(nvrhiDepthBuffer, nvrhi::AllSubresources, true, 1.0f, true, 0U);
+	nvrhi::utils::ClearColorAttachment(commandList_, lightpassFramebuffer_, 0, nvrhi::Color(0.2f));
 #ifdef D3E_WITH_EDITOR
-	nvrhi::utils::ClearColorAttachment(commandList_, gameFramebuffer_, 0, nvrhi::Color(0.2f));
+	nvrhi::utils::ClearColorAttachment(commandList_, gameFramebuffer_, 0, nvrhi::Color(0.0f));
 #endif
 	commandList_->close();
 	device_->executeCommandList(commandList_);
@@ -302,20 +308,14 @@ void D3E::GameRender::PrepareFrame()
 }
 
 void D3E::GameRender::DrawPostProcessSystems(entt::registry& registry,
-                                      eastl::vector<GameSystem*>& systems)
+                                      eastl::vector<GameSystem*>& systems, bool afterTonemapper)
 {
+	nvrhi::IFramebuffer* fb = afterTonemapper ? gameFramebuffer_ : lightpassFramebuffer_;
 	commandList_->open();
-#ifdef D3E_WITH_EDITOR
 	for (auto& sys : systems)
 	{
-		sys->Draw(registry, gameFramebuffer_, commandList_, device_);
+		sys->Draw(registry, fb, commandList_, device_);
 	}
-#else
-	for (auto& sys : systems)
-	{
-		sys->Draw(registry, currentFramebuffer, commandList_, device_);
-	}
-#endif
 	commandList_->close();
 
 	device_->executeCommandList(commandList_);
@@ -335,7 +335,6 @@ void D3E::GameRender::EndDraw(entt::registry& registry, eastl::vector<GameSystem
 	{
 		sys->PostDraw(registry, commandList_, device_);
 	}
-	gameUi_->Draw();
 }
 
 void D3E::GameRender::UpdateAnimations(float dT)
@@ -386,6 +385,11 @@ D3E::DebugRenderer* D3E::GameRender::GetDebugRenderer()
 
 void D3E::GameRender::DrawGUI()
 {
+	gameUi_->Draw();
+	commandList_->open();
+	commandList_->setTextureState(gameFrameTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
+	commandList_->close();
+	device_->executeCommandList(commandList_);
 #ifdef USE_IMGUI
 	editor_->EndDraw(nvrhiFramebuffer[GetCurrentFrameBuffer()], gameFramebuffer_);
 #endif // USE_IMGUI
@@ -517,6 +521,7 @@ void D3E::GameRender::DrawTonemapper(nvrhi::IFramebuffer* fb)
 
 	commandList_->open();
 	commandList_->beginMarker("Tonemapper");
+	commandList_->setTextureState(lightpassTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
 	commandList_->setGraphicsState(graphicsState);
 	commandList_->setPushConstants(&tonemapperConstants_, 2 * sizeof(float));
 	commandList_->draw(drawArguments);
@@ -529,7 +534,7 @@ void D3E::GameRender::DrawPostProcessEffects(entt::registry& registry)
 {
 	nvrhi::IFramebuffer* framebuffer = GetGameFramebuffer();
 
-	DrawSkybox(registry, framebuffer);
+	DrawSkybox(registry, lightpassFramebuffer_);
 	DrawTonemapper(framebuffer);
 }
 

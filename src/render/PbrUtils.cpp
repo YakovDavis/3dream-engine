@@ -85,8 +85,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 			m_envTexture = TextureFactory::GetTextureHandle(kEnvTextureUUID);
 
 			commandList->open();
-			commandList->beginTrackingTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::Common);
-			commandList->setTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::CopySource);
+			commandList->setPermanentTextureState(envTextureUnfiltered, nvrhi::ResourceStates::ShaderResource);
 			commandList->beginTrackingTextureState(m_envTexture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
 
 			// Copy 0th mipmap level into destination environment map.
@@ -95,8 +94,6 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 				auto currentSlice = nvrhi::TextureSlice().setMipLevel(0).setArraySlice(arraySlice);
 				commandList->copyTexture(m_envTexture, currentSlice, envTextureUnfiltered, currentSlice);
 			}
-
-			commandList->setTextureState(envTextureUnfiltered, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
 
 			commandList->commitBarriers();
 
@@ -145,6 +142,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 
 		nvrhi::TextureDesc irmapTexturDesc = {};
 		irmapTexturDesc.setDimension(nvrhi::TextureDimension::TextureCube);
+		irmapTexturDesc.setDebugName("IrMap");
 		irmapTexturDesc.setArraySize(6);
 		irmapTexturDesc.setWidth(32);
 		irmapTexturDesc.setHeight(32);
@@ -167,6 +165,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		commandList->beginTrackingTextureState(m_irmapTexture, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
 		commandList->setComputeState(computeState);
 		commandList->dispatch(m_irmapTexture->getDesc().width / 32, m_irmapTexture->getDesc().height / 32, 6);
+		commandList->setPermanentTextureState(m_irmapTexture, nvrhi::ResourceStates::ShaderResource);
 		commandList->close();
 		device->executeCommandList(commandList);
 	}
@@ -178,6 +177,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 
 		nvrhi::TextureDesc spBrdfTexturDesc = {};
 		spBrdfTexturDesc.setDimension(nvrhi::TextureDimension::Texture2D);
+		spBrdfTexturDesc.setDebugName("SpBRDF_LUT");
 		spBrdfTexturDesc.setArraySize(1);
 		spBrdfTexturDesc.setWidth(256);
 		spBrdfTexturDesc.setHeight(256);
@@ -206,6 +206,7 @@ void D3E::PbrUtils::Setup(nvrhi::IDevice* device, nvrhi::ICommandList* commandLi
 		commandList->beginTrackingTextureState(m_spBRDF_LUT, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
 		commandList->setComputeState(computeState);
 		commandList->dispatch(m_spBRDF_LUT->getDesc().width / 32, m_spBRDF_LUT->getDesc().height / 32, 1);
+		commandList->setPermanentTextureState(m_spBRDF_LUT, nvrhi::ResourceStates::ShaderResource);
 		commandList->close();
 		device->executeCommandList(commandList);
 	}
