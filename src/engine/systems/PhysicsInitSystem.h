@@ -20,7 +20,7 @@ namespace D3E
 		PhysicsInitSystem(entt::registry& registry, Game* game, JPH::PhysicsSystem* physicsSystem);
 		//void Update(entt::registry& reg, Game* game, float dT) override;
 		void PrePhysicsUpdate(entt::registry& reg, Game* game, float dT) override;
-		//void PostPhysicsUpdate(entt::registry& reg) override;
+		void PostPhysicsUpdate(entt::registry& reg) override;
 		void Play(entt::registry& reg, Game* game) override;
 		void Pause(entt::registry& reg, Game* game) override;
 
