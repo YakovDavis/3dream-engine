@@ -265,6 +265,8 @@ target_sources("${PROJECT_NAME}"
         src/engine/systems/TPSControllerSystem.h
         src/scripting/type_adapters/InputDeviceAdapter.h
         src/scripting/type_adapters/InputDeviceAdapter.cpp
+        src/scripting/type_adapters/PhysicsActivationAdapter.h
+        src/scripting/type_adapters/PhysicsActivationAdapter.cpp
         src/components/TPSControllerComponent.cpp
         )
 
