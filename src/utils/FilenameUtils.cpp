@@ -42,7 +42,7 @@ bool D3E::FilenameUtils::RenameAsset(std::filesystem::path& metaFilePath,
 	json j = json::parse(f);
 	f.close();
 
-	if (j.contains("filename"))
+	if (j.contains("filename") && (j.at("type") != "world"))
 	{
 		std::filesystem::path assetFile = MetaFilenameToFilePath(
 			std::string(j.at("filename")), metaFilePath.parent_path());
