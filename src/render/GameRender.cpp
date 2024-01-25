@@ -162,6 +162,7 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	ShaderFactory::AddBindingSetC("Pick", pickingBSC, "PickC");
 
 	nvrhi::BindingSetDesc tonemapBSP = {};
+	tonemapBSP.addItem(nvrhi::BindingSetItem::PushConstants(0, 2 * sizeof(float)));
 #ifdef D3E_WITH_EDITOR
 	tonemapBSP.addItem(nvrhi::BindingSetItem::Texture_SRV(0, gameFrameTexture_));
 #else
@@ -499,6 +500,7 @@ void D3E::GameRender::DrawTonemapper(nvrhi::IFramebuffer* fb)
 	commandList_->open();
 	commandList_->beginMarker("Tonemapper");
 	commandList_->setGraphicsState(graphicsState);
+	commandList_->setPushConstants(&tonemapperConstants_, 2 * sizeof(float));
 	commandList_->draw(drawArguments);
 	commandList_->endMarker();
 	commandList_->close();

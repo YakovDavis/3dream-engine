@@ -42,6 +42,7 @@ D3E::GameUi::GameUi(D3E::Game* game, nvrhi::IFramebuffer* fb) : game_(game), rml
 void D3E::GameUi::DestroyResources()
 {
 	Rml::Shutdown();
+	delete instance_->context_;
 }
 
 void D3E::GameUi::Update()
