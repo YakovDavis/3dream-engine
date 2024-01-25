@@ -69,6 +69,9 @@ namespace D3E
 		virtual void Present() = 0;
 		virtual UINT GetCurrentFrameBuffer() = 0;
 
+		void SetTonemapperExposure(float e) { tonemapperConstants_.tonemapperExposure_ = e; }
+		[[nodiscard]] float GetTonemapperExposure() const { return tonemapperConstants_.tonemapperExposure_; }
+
 		nvrhi::IFramebuffer* GetGameFramebuffer();
 
 		nvrhi::IBuffer* GetCsmConstantBuffer();
@@ -104,6 +107,12 @@ namespace D3E
 		D3E::GameUi* gameUi_;
 
 		D3E::Csm* shadowRenderer_;
+
+		struct TonemapperConstants
+		{
+			float tonemapperGamma_ = 2.2f;
+			float tonemapperExposure_ = 1.4f;
+		} tonemapperConstants_;
 
 #ifdef D3E_WITH_EDITOR
 		D3E::Editor* editor_;

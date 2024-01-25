@@ -120,3 +120,21 @@ D3E::DebugRenderer* D3E::RenderUtils::GetDebugRenderer()
 	}
 	return gameRender_->GetDebugRenderer();
 }
+
+void D3E::RenderUtils::SetTonemapperExposure(float e)
+{
+	if (!gameRender_)
+	{
+		return;
+	}
+	gameRender_->SetTonemapperExposure(e);
+}
+
+float D3E::RenderUtils::GetTonemapperExposure()
+{
+	if (!gameRender_)
+	{
+		return 0.0f;
+	}
+	return gameRender_->GetTonemapperExposure();
+}
