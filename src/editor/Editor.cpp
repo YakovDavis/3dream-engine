@@ -448,13 +448,14 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent");
 	switch (createComponent)
 	{
 		case 0:
 		case 3:
 		case 4:
 		case 6:
+		case 10:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = true;
 			break;
@@ -528,6 +529,9 @@ void D3E::Editor::DrawInspector()
 							break;
 						case 9:
 							CreationSystems::CreateDefaultNavigationComponent(
+								game_->GetRegistry(), currentEntity);
+						case 10:
+							CreationSystems::CreateDefaultTPSControllerComponent(
 								game_->GetRegistry(), currentEntity);
 					}
 				}
@@ -738,6 +742,115 @@ void D3E::Editor::DrawInspector()
 								}
 							}
 						}
+					}
+					else if (componentName == "TPSControllerComponent")
+					{
+						INSPECTOR_DELETION(TPSControllerComponent)
+						float phi, theta, radius, sensitivityX, sensitivityY;
+						ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
+						std::string radiusInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).radius);
+						if (ImGui::InputText("Radius", &radiusInput, input_text_flags))
+						{
+							if (!(radiusInput.empty()))
+							{
+								radius = std::stof(radiusInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [radius](auto &controller) { controller.radius = radius; });
+							}
+						}
+						std::string phiInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).phi);
+						if (ImGui::InputText("Horizontal rotation", &phiInput, input_text_flags))
+						{
+							if (!(phiInput.empty()))
+							{
+								phi = std::stof(phiInput);
+								phi +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (phi < -DirectX::XM_2PI)
+									phi += DirectX::XM_2PI;
+								while (phi > DirectX::XM_2PI)
+									phi -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [phi](auto &controller) { controller.phi = phi; });
+							}
+						}
+						std::string thetaInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).theta);
+						if (ImGui::InputText("Vertical rotation", &thetaInput, input_text_flags))
+						{
+							if (!(thetaInput.empty()))
+							{
+								theta = std::stof(phiInput);
+								theta +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (theta < -DirectX::XM_2PI)
+									theta += DirectX::XM_2PI;
+								while (theta > DirectX::XM_2PI)
+									theta -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [theta](auto &controller) { controller.theta = theta; });
+							}
+						}
+						std::string sensitivityXInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX);
+						if (ImGui::InputText("Sensitivity X", &sensitivityXInput, input_text_flags))
+						{
+							if (!(sensitivityXInput.empty()))
+							{
+								sensitivityX = std::stof(sensitivityXInput);
+								sensitivityX +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (sensitivityX < -DirectX::XM_2PI)
+									sensitivityX += DirectX::XM_2PI;
+								while (sensitivityX > DirectX::XM_2PI)
+									sensitivityX -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [sensitivityX](auto &controller) { controller.sensitivityX = sensitivityX; });
+							}
+						}
+						std::string sensitivityYInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityY);
+						if (ImGui::InputText("Sensitivity Y", &sensitivityYInput, input_text_flags))
+						{
+							if (!(sensitivityYInput.empty()))
+							{
+								sensitivityY = std::stof(sensitivityYInput);
+								sensitivityY +=
+									game_->GetRegistry().get<TPSControllerComponent>(currentEntity).sensitivityX * game_->GetInputDevice()->MouseOffsetInTick.x;
+								while (sensitivityY < -DirectX::XM_2PI)
+									sensitivityY += DirectX::XM_2PI;
+								while (sensitivityY > DirectX::XM_2PI)
+									sensitivityY -= DirectX::XM_2PI;
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [sensitivityY](auto &controller) { controller.sensitivityY = sensitivityY; });
+							}
+						}
+						bool isRMBActivated = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).isRMBActivated;
+						ImGui::Checkbox("Is RMB Activated", &isRMBActivated);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [isRMBActivated](auto &controller) { controller.isRMBActivated = isRMBActivated; });
+
+						bool limitTheta = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).limitTheta;
+						ImGui::Checkbox("Is vertical limited", &limitTheta);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [limitTheta](auto &controller) { controller.limitTheta = limitTheta; });
+
+						float upperThetaLimit, lowerThetaLimit;
+						std::string upperThetaLimitInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).upperThetaLimit);
+						if (ImGui::InputText("Upper vertical limit", &upperThetaLimitInput, input_text_flags))
+						{
+							if (!(upperThetaLimitInput.empty()))
+							{
+								upperThetaLimit = std::stof(upperThetaLimitInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [upperThetaLimit](auto &controller) { controller.upperThetaLimit = upperThetaLimit; });
+							}
+						}
+						std::string lowerThetaLimitInput = std::to_string(game_->GetRegistry().get<TPSControllerComponent>(currentEntity).lowerThetaLimit);
+						if (ImGui::InputText("Lower vertical limit", &lowerThetaLimitInput, input_text_flags))
+						{
+							if (!(lowerThetaLimitInput.empty()))
+							{
+								lowerThetaLimit = std::stof(lowerThetaLimitInput);
+								game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [lowerThetaLimit](auto &controller) { controller.lowerThetaLimit = lowerThetaLimit; });
+							}
+						}
+
+						bool invertXAxis = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).invertXAxis;
+						ImGui::Checkbox("Invert X Axis", &invertXAxis);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [invertXAxis](auto &controller) { controller.invertXAxis = invertXAxis; });
+						bool invertYAxis = game_->GetRegistry().get<TPSControllerComponent>(currentEntity).invertYAxis;
+						ImGui::Checkbox("Invert Y Axis", &invertYAxis);
+						game_->GetRegistry().patch<TPSControllerComponent>(currentEntity, [invertYAxis](auto &controller) { controller.invertYAxis = invertYAxis; });
 					}
 					else if (componentName == "PhysicsComponent")
 					{

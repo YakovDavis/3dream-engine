@@ -6,14 +6,15 @@
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/TPSControllerComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/SkyboxComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
-#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Game.h"
 #include "core/EngineState.h"
 #include "json.hpp"
@@ -31,6 +32,7 @@ void D3E::ComponentFactory::Initialize(D3E::Game* game)
 	typeNames_.insert({entt::type_id<ObjectInfoComponent>().hash(), "ObjectInfoComponent"});
 	typeNames_.insert({entt::type_id<TransformComponent>().hash(), "TransformComponent"});
 	typeNames_.insert({entt::type_id<FPSControllerComponent>().hash(), "FPSControllerComponent"});
+	typeNames_.insert({entt::type_id<TPSControllerComponent>().hash(), "TPSControllerComponent"});
 	typeNames_.insert({entt::type_id<MouseComponent>().hash(), "MouseComponent"});
 	typeNames_.insert({entt::type_id<PhysicsComponent>().hash(), "PhysicsComponent"});
 	typeNames_.insert({entt::type_id<PhysicsCharacterComponent>().hash(), "PhysicsCharacterComponent"});
@@ -71,6 +73,12 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			FPSControllerComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<FPSControllerComponent>(e, c);
+		}
+		else if (el.at("class") == "TPSControllerComponent")
+		{
+			TPSControllerComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<TPSControllerComponent>(e, c);
 		}
 		else if (el.at("class") == "MouseComponent")
 		{
@@ -185,6 +193,12 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 		{
 			json c;
 			game_->GetRegistry().get<FPSControllerComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
+		else if (el == "TPSControllerComponent")
+		{
+			json c;
+			game_->GetRegistry().get<TPSControllerComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
 		else if (el == "MouseComponent")

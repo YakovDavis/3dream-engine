@@ -3,8 +3,9 @@
 #include "D3E/CommonCpp.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
-#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/ScriptComponent.h"
+#include "D3E/Components/TPSControllerComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/SkyboxComponent.h"
@@ -439,3 +440,9 @@ void D3E::CreationSystems::CreateDefaultNavigationComponent(
 	registry.emplace<NavmeshComponent>(entity, nc);
 }
 
+void D3E::CreationSystems::CreateDefaultTPSControllerComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	TPSControllerComponent component = {};
+	registry.emplace<TPSControllerComponent>(entity, component);
+}

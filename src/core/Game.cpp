@@ -29,6 +29,7 @@
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
 #include "engine/systems/SoundEngineListenerSystem.h"
+#include "engine/systems/TPSControllerSystem.h"
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "json.hpp"
@@ -196,6 +197,7 @@ void D3E::Game::Init()
 	systems_.push_back(new StaticMeshInitSystem);
 	systems_.push_back(new StaticMeshRenderSystem);
 	systems_.push_back(new FPSControllerSystem);
+	systems_.push_back(new TPSControllerSystem);
 	systems_.push_back(new ScriptInitSystem(registry_));
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
@@ -1020,8 +1022,15 @@ void D3E::Game::OnObjectClicked(entt::entity entity)
 
 entt::entity D3E::Game::FindFirstNonEditorPlayer()
 {
-	auto playerView = registry_.view<const TransformComponent, const CameraComponent>();
-	return playerView.front();
+	auto playerView = registry_.view<const ObjectInfoComponent, const TransformComponent, const CameraComponent>();
+	for (auto [player, info, transform, camera] : playerView.each())
+	{
+		if (!info.internalObject)
+		{
+			return player;
+		}
+	}
+	return entt::null;
 }
 
 void D3E::Game::ParentEntitiesById(const D3E::String& childUuid,
