@@ -7,7 +7,7 @@
 
 namespace D3E
 {
-	class Debug
+	class D3EAPI Debug
 	{
 	private:
 		inline static const String filePath_ = R"(..\..\..\..\log.txt)";

@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019-2023 The RmlUi Team, and contributors
+ * Copyright (c) 2019 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@
 #ifndef RMLUI_CORE_STYLESHEETTYPES_H
 #define RMLUI_CORE_STYLESHEETTYPES_H
 
-#include "Factory.h"
 #include "PropertyDictionary.h"
+#include "Factory.h"
 #include "Types.h"
 #include "Utilities.h"
 
@@ -66,13 +66,8 @@ struct DecoratorDeclaration {
 };
 
 struct DecoratorDeclarationView {
-	DecoratorDeclarationView(const DecoratorDeclaration& declaration) :
-		type(declaration.type), instancer(declaration.instancer), properties(declaration.properties)
-	{}
-	DecoratorDeclarationView(const DecoratorSpecification* specification) :
-		type(specification->decorator_type), instancer(Factory::GetDecoratorInstancer(specification->decorator_type)),
-		properties(specification->properties)
-	{}
+	DecoratorDeclarationView(const DecoratorDeclaration& declaration) : type(declaration.type), instancer(declaration.instancer), properties(declaration.properties) {}
+	DecoratorDeclarationView(const DecoratorSpecification* specification) : type(specification->decorator_type), instancer(Factory::GetDecoratorInstancer(specification->decorator_type)), properties(specification->properties) {}
 
 	const String& type;
 	DecoratorInstancer* instancer;
@@ -84,20 +79,14 @@ struct DecoratorDeclarationList {
 	String value;
 };
 
-enum class MediaQueryModifier {
-	None,
-	Not // passes only if the query is false instead of true
-};
-
 struct MediaBlock {
 	MediaBlock() {}
-	MediaBlock(PropertyDictionary _properties, SharedPtr<StyleSheet> _stylesheet, MediaQueryModifier _modifier) :
-		properties(std::move(_properties)), stylesheet(std::move(_stylesheet)), modifier(_modifier)
+	MediaBlock(PropertyDictionary _properties, SharedPtr<StyleSheet> _stylesheet) :
+		properties(std::move(_properties)), stylesheet(std::move(_stylesheet))
 	{}
 
 	PropertyDictionary properties; // Media query properties
 	SharedPtr<StyleSheet> stylesheet;
-	MediaQueryModifier modifier = MediaQueryModifier::None;
 };
 using MediaBlockList = Vector<MediaBlock>;
 

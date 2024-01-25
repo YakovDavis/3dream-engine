@@ -9,7 +9,7 @@ using json = nlohmann::json;
 
 namespace D3E
 {
-	struct ObjectInfoComponent : public BaseComponent
+	struct D3EAPI ObjectInfoComponent : public BaseComponent
 	{
 		String parentId = EmptyIdString;
 		String name;

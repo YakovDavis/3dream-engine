@@ -5,7 +5,7 @@
 
 namespace D3E
 {
-	struct FPSControllerComponent : public BaseComponent
+	struct D3EAPI FPSControllerComponent : public BaseComponent
 	{
 		float yaw = 3.14f;
 		float pitch = 0.0f;

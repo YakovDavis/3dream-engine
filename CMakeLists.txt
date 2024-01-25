@@ -9,16 +9,55 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wv:18 /EHsc /bigobj")
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
 
 add_compile_options(/bigobj)
 
-add_library("${PROJECT_NAME}" SHARED
+add_library("${PROJECT_NAME}" SHARED)
+
+target_sources("${PROJECT_NAME}"
+        PUBLIC
         include/D3E/CommonHeader.h
         include/D3E/EntryPoint.h
         include/D3E/App.h
-        src/core/Game.cpp
         include/D3E/Game.h
+        include/D3E/Debug.h
+        include/D3E/components/render/StaticMeshComponent.h
+        include/D3E/components/render/CameraComponent.h
+        include/D3E/Components/TransformComponent.h
+        include/D3E/Components/FPSControllerComponent.h
+        include/D3E/Components/sound/SoundComponent.h
+        include/D3E/AssetManager.h
+        include/D3E/Components/ObjectInfoComponent.h
+        include/D3E/systems/CreationSystems.h
+        include/D3E/Components/sound/SoundListenerComponent.h
+        include/SimpleMath.h
+        include/SimpleMath.inl
+        include/D3E/render/Material.h
+        include/D3E/render/Material.h
+        include/D3E/Uuid.h
+        include/D3E/engine/ConsoleManager.h
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/ConsoleVariable.h
+        include/D3E/engine/IntConsoleVariable.h
+        include/D3E/engine/FloatConsoleVariable.h
+        include/D3E/Timer.h
+        include/D3E/TimerManager.h
+        include/D3E/Components/render/LightComponent.h
+        include/D3E/TimerHandle.h
+        include/D3E/scripting/ScriptingEngine.h
+        include/D3E/Components/ScriptComponent.h
+        include/D3E/Components/BaseComponent.h
+        include/D3E/Components/MouseComponent.h
+        include/D3E/Components/PhysicsComponent.h
+        include/D3E/Components/PhysicsCharacterComponent.h
+        include/D3E/Components/navigation/NavmeshComponent.h
+        include/D3E/Components/render/SkyboxComponent.h
+        include/D3E/Components/navigation/NavmeshConfig.h
+        include/D3E/Components/navigation/NavmeshCore.h
+        include/D3E/Components/TPSControllerComponent.h
+        PRIVATE
+        src/core/Game.cpp
         src/render/GameRender.cpp
         src/render/GameRender.h
         src/render/GameRenderD3D12.cpp
@@ -26,7 +65,6 @@ add_library("${PROJECT_NAME}" SHARED
         src/render/D3dUtil.h
         src/render/D3dUtil.cpp
         src/utils/Debug.cpp
-        include/D3E/Debug.h
         src/render/DisplayWin32.cpp
         src/render/DisplayWin32.h
         src/core/App.cpp
@@ -43,11 +81,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/assetmng/TextureFactory.h
         src/render/Vertex.h
         src/core/magic_enum.hpp
-        include/D3E/components/render/StaticMeshComponent.h
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
         src/engine/systems/CreationSystems.cpp
-        include/D3E/systems/CreationSystems.h
         src/render/PerObjectConstBuffer.h
         src/render/systems/StaticMeshRenderSystem.cpp
         src/render/systems/StaticMeshRenderSystem.h
@@ -57,15 +93,9 @@ add_library("${PROJECT_NAME}" SHARED
         src/assetmng/MeshFactory.h
         src/render/CameraUtils.cpp
         src/render/CameraUtils.h
-        include/D3E/components/render/CameraComponent.h
-        include/D3E/Components/TransformComponent.h
-        include/D3E/Components/FPSControllerComponent.h
-        include/D3E/Components/sound/SoundComponent.h
         src/editor/EditorUtils.cpp
         src/editor/EditorUtils.h
         src/assetmng/AssetManager.cpp
-        include/D3E/AssetManager.h
-        include/D3E/Components/ObjectInfoComponent.h
         src/render/systems/StaticMeshInitSystem.cpp
         src/render/systems/StaticMeshInitSystem.h
         src/engine/systems/FPSControllerSystem.cpp
@@ -77,46 +107,31 @@ add_library("${PROJECT_NAME}" SHARED
         src/sound_engine/SoundEngine.cpp
         src/engine/systems/SoundEngineListenerSystem.h
         src/engine/systems/SoundEngineListenerSystem.cpp
-        include/D3E/Components/sound/SoundListenerComponent.h
         src/editor/Editor.cpp
         src/editor/Editor.h
         src/assetmng/DefaultAssetLoader.cpp
         src/core/SimpleMath.cpp
-        include/SimpleMath.h
-        include/SimpleMath.inl
         src/assetmng/Texture2DMetaData.h
         src/assetmng/Texture2DMetaData.cpp
-        include/D3E/Uuid.h
         src/utils/Uuid.cpp 
         src/engine/systems/ChildTransformSynchronizationSystem.h
         src/engine/systems/ChildTransformSynchronizationSystem.cpp
-        include/D3E/engine/ConsoleManager.h
         src/engine/ConsoleManager.cpp
-        include/D3E/engine/ConsoleVariable.h
-        include/D3E/engine/ConsoleVariable.h
-        include/D3E/engine/IntConsoleVariable.h
-        include/D3E/engine/FloatConsoleVariable.h
         src/assetmng/MeshMetaData.cpp
         src/assetmng/MeshMetaData.h
         src/assetmng/MeshMetaData.h
-        include/D3E/render/Material.h
-        include/D3E/render/Material.h
         src/render/GBuffer.h
         src/render/GBuffer.cpp
         src/render/LightPass.cpp
         src/render/LightPass.h
-        include/D3E/Components/render/LightComponent.h
         src/render/systems/LightRenderSystem.cpp
         src/render/systems/LightRenderSystem.h
         src/render/LightConstBuffer.h
         src/render/systems/LightInitSystem.cpp
         src/render/systems/LightInitSystem.h
         src/render/CsmConstBuffer.h
-        include/D3E/Timer.h
-        src/timers/Timer.cpp 
-        include/D3E/TimerManager.h
+        src/timers/Timer.cpp
         src/timers/TimerManager.cpp
-        include/D3E/TimerHandle.h 
         src/timers/TimerHandle.cpp
         src/render/components/GridComponent.h
         src/render/systems/EditorUtilsRenderSystem.cpp
@@ -126,22 +141,17 @@ add_library("${PROJECT_NAME}" SHARED
         src/editor/EditorConsole.cpp
         src/editor/EditorContentBrowser.cpp
         src/editor/EditorContentBrowser.h
-        include/D3E/Components/ScriptComponent.h
-        samples/ScriptingSandbox/src/ScriptingSandbox.h
-        samples/ScriptingSandbox/src/ScriptingSandbox.cpp
         src/assetmng/ScriptMetaData.h
         src/assetmng/ScriptMetaData.cpp 
         src/assetmng/ScriptFactory.h
         src/assetmng/ScriptFactory.cpp
         src/assetmng/ScriptData.h
-        include/D3E/scripting/ScriptingEngine.h
         src/scripting/ScriptingEngine.cpp
         src/scripting/EngineTypeBindings.h
         src/engine/systems/ScriptUpdateSystem.h
         src/engine/systems/ScriptUpdateSystem.cpp
         src/engine/systems/ScriptInitSystem.h
         src/engine/systems/ScriptInitSystem.cpp
-        include/D3E/Components/PhysicsComponent.h
         src/engine/systems/PhysicsInitSystem.h
         src/engine/systems/PhysicsInitSystem.cpp
         src/physics/ObjectLayers.h
@@ -149,13 +159,11 @@ add_library("${PROJECT_NAME}" SHARED
         src/physics/PhysicsInfo.h
         src/physics/PhysicsInfo.cpp
         src/engine/systems/PhysicsUpdateSystem.cpp
-        include/D3E/Components/MouseComponent.h
         src/render/systems/InputSyncSystem.cpp
         src/render/systems/InputSyncSystem.h
         src/editor/EditorIdManager.cpp
         src/editor/EditorIdManager.h
         src/render/PickConstBuffer.h
-        include/D3E/Components/PhysicsCharacterComponent.h
         src/engine/systems/CharacterInitSystem.h
         src/engine/systems/CharacterInitSystem.cpp
         src/assetmng/MaterialFactory.cpp
@@ -191,7 +199,6 @@ add_library("${PROJECT_NAME}" SHARED
         src/scripting/LuaECSAdapter.cpp
         src/engine/ComponentFactory.cpp
         src/engine/ComponentFactory.h
-        include/D3E/Components/BaseComponent.h
         src/assetmng/CDialogEventHandler.cpp
         src/assetmng/CDialogEventHandler.h
         src/render/RenderUtils.cpp
@@ -208,7 +215,6 @@ add_library("${PROJECT_NAME}" SHARED
         src/tinyexr/miniz.h
         src/tinyexr/tinyexr.h
         src/render/SkyboxCB.h
-        include/D3E/Components/render/SkyboxComponent.h
         src/assetmng/SkyboxVertex.h
         src/components/render/SkyboxComponent.cpp
         src/rmlui_backend/rmlui_backend.cpp
@@ -220,24 +226,46 @@ add_library("${PROJECT_NAME}" SHARED
         src/rmlui_backend/RmlUi_Include_Windows.h
         src/render/Csm.cpp
         src/render/Csm.h
-        include/D3E/Components/navigation/NavmeshComponent.h
         src/navigation/Context.h 
         src/navigation/Context.cpp 
         src/navigation/PerformanceTimer.h 
         src/navigation/PerformanceTimer.cpp
         src/navigation/NavmeshBuilder.h
         src/navigation/NavmeshBuilder.cpp
-        include/D3E/Components/navigation/NavmeshConfig.h
-        include/D3E/Components/navigation/NavmeshCore.h
         src/components/NavmeshComponent.cpp
         src/utils/MeshUtils.h
         src/scripting/type_adapters/InfoAdapter.h
-        include/D3E/Components/TPSControllerComponent.cpp
-        include/D3E/Components/TPSControllerComponent.h
+        src/RmlSolLua/RmlSolLua.h
+        src/RmlSolLua/RmlSolLua.cpp
+        src/RmlSolLua/bind/bind.cpp
+        src/RmlSolLua/bind/bind.h
+        src/RmlSolLua/bind/Colour.cpp
+        src/RmlSolLua/bind/Context.cpp
+        src/RmlSolLua/bind/Convert.cpp
+        src/RmlSolLua/bind/DataModel.cpp
+        src/RmlSolLua/bind/Document.cpp
+        src/RmlSolLua/bind/Element.cpp
+        src/RmlSolLua/bind/ElementDerived.cpp
+        src/RmlSolLua/bind/ElementForm.cpp
+        src/RmlSolLua/bind/Event.cpp
+        src/RmlSolLua/bind/Global.cpp
+        src/RmlSolLua/bind/Log.cpp
+        src/RmlSolLua/bind/Vector.cpp
+        src/RmlSolLua/plugin/SolLuaDataModel.cpp
+        src/RmlSolLua/plugin/SolLuaDataModel.h
+        src/RmlSolLua/plugin/SolLuaDocument.cpp
+        src/RmlSolLua/plugin/SolLuaDocument.h
+        src/RmlSolLua/plugin/SolLuaEventListener.cpp
+        src/RmlSolLua/plugin/SolLuaEventListener.h
+        src/RmlSolLua/plugin/SolLuaInstancer.cpp
+        src/RmlSolLua/plugin/SolLuaInstancer.h
+        src/RmlSolLua/plugin/SolLuaPlugin.cpp
+        src/RmlSolLua/plugin/SolLuaPlugin.h
         src/engine/systems/TPSControllerSystem.cpp
         src/engine/systems/TPSControllerSystem.h
         src/scripting/type_adapters/InputDeviceAdapter.h
         src/scripting/type_adapters/InputDeviceAdapter.cpp
+        src/components/TPSControllerComponent.cpp
         )
 
 add_subdirectory(libs)
@@ -258,7 +286,7 @@ if(WIN32)
     target_compile_definitions("${PROJECT_NAME}" PUBLIC NOMINMAX _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_WITH_EDITOR)
+target_compile_definitions("${PROJECT_NAME}" PUBLIC D3E_WITH_EDITOR D3E_LIBRARY_EXPORTS)
 
 set(WIN_FILE_LIBS "comctl32.lib propsys.lib shlwapi.lib")
 

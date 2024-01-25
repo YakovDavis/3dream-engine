@@ -4,7 +4,7 @@
  * For the latest information, see http://github.com/mikke89/RmlUi
  *
  * Copyright (c) 2008-2010 CodePoint Ltd, Shift Technology Ltd
- * Copyright (c) 2019-2023 The RmlUi Team, and contributors
+ * Copyright (c) 2019 The RmlUi Team, and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -44,12 +44,15 @@ PropertySpecification::PropertySpecification(size_t reserve_num_properties, size
 	// Increment reserve numbers by one because the 'invalid' property occupies the first element
 	properties(reserve_num_properties + 1), shorthands(reserve_num_shorthands + 1),
 	property_map(MakeUnique<PropertyIdNameMap>(reserve_num_properties + 1)), shorthand_map(MakeUnique<ShorthandIdNameMap>(reserve_num_shorthands + 1))
-{}
+{
+}
 
-PropertySpecification::~PropertySpecification() {}
+PropertySpecification::~PropertySpecification()
+{
+}
 
-PropertyDefinition& PropertySpecification::RegisterProperty(const String& property_name, const String& default_value, bool inherited,
-	bool forces_layout, PropertyId id)
+// Registers a property with a new definition.
+PropertyDefinition& PropertySpecification::RegisterProperty(const String& property_name, const String& default_value, bool inherited, bool forces_layout, PropertyId id)
 {
 	if (id == PropertyId::Invalid)
 		id = property_map->GetOrCreateId(property_name);
@@ -60,9 +63,7 @@ PropertyDefinition& PropertySpecification::RegisterProperty(const String& proper
 
 	if (index >= size_t(PropertyId::MaxNumIds))
 	{
-		Log::Message(Log::LT_ERROR,
-			"Fatal error while registering property '%s': Maximum number of allowed properties exceeded. Continuing execution may lead to crash.",
-			property_name.c_str());
+		Log::Message(Log::LT_ERROR, "Fatal error while registering property '%s': Maximum number of allowed properties exceeded. Continuing execution may lead to crash.", property_name.c_str());
 		RMLUI_ERROR;
 		return *properties[0];
 	}
@@ -79,7 +80,7 @@ PropertyDefinition& PropertySpecification::RegisterProperty(const String& proper
 	else
 	{
 		// Resize vector to hold the new index
-		properties.resize((index * 3) / 2 + 1);
+		properties.resize((index*3)/2 + 1);
 	}
 
 	// Create and insert the new property
@@ -93,6 +94,7 @@ PropertyDefinition& PropertySpecification::RegisterProperty(const String& proper
 	return *properties[index];
 }
 
+// Returns a property definition.
 const PropertyDefinition* PropertySpecification::GetProperty(PropertyId id) const
 {
 	if (id == PropertyId::Invalid || (size_t)id >= properties.size())
@@ -106,11 +108,13 @@ const PropertyDefinition* PropertySpecification::GetProperty(const String& prope
 	return GetProperty(property_map->GetId(property_name));
 }
 
+// Fetches a list of the names of all registered property definitions.
 const PropertyIdSet& PropertySpecification::GetRegisteredProperties() const
 {
 	return property_ids;
 }
 
+// Fetches a list of the names of all registered property definitions.
 const PropertyIdSet& PropertySpecification::GetRegisteredInheritedProperties() const
 {
 	return property_ids_inherited;
@@ -121,6 +125,7 @@ const PropertyIdSet& PropertySpecification::GetRegisteredPropertiesForcingLayout
 	return property_ids_forcing_layout;
 }
 
+// Registers a shorthand property definition.
 ShorthandId PropertySpecification::RegisterShorthand(const String& shorthand_name, const String& property_names, ShorthandType type, ShorthandId id)
 {
 	if (id == ShorthandId::Invalid)
@@ -161,7 +166,7 @@ ShorthandId PropertySpecification::RegisterShorthand(const String& shorthand_nam
 			// Test for valid shorthand id. The recursive types (and only those) can hold other shorthands.
 			if (shorthand_id != ShorthandId::Invalid && (type == ShorthandType::RecursiveRepeat || type == ShorthandType::RecursiveCommaSeparated))
 			{
-				if (const ShorthandDefinition* shorthand = GetShorthand(shorthand_id))
+				if (const ShorthandDefinition * shorthand = GetShorthand(shorthand_id))
 					item = ShorthandItem(shorthand_id, shorthand, optional);
 			}
 		}
@@ -204,6 +209,7 @@ ShorthandId PropertySpecification::RegisterShorthand(const String& shorthand_nam
 	return id;
 }
 
+// Returns a shorthand definition.
 const ShorthandDefinition* PropertySpecification::GetShorthand(ShorthandId id) const
 {
 	if (id == ShorthandId::Invalid || (size_t)id >= shorthands.size())
@@ -248,11 +254,12 @@ bool PropertySpecification::ParsePropertyDeclaration(PropertyDictionary& diction
 	Property new_property;
 	if (!property_definition->ParseValue(new_property, property_values[0]))
 		return false;
-
+	
 	dictionary.SetProperty(property_id, new_property);
 	return true;
 }
 
+// Parses a property declaration, setting any parsed and validated properties on the given dictionary.
 bool PropertySpecification::ParseShorthandDeclaration(PropertyDictionary& dictionary, ShorthandId shorthand_id, const String& property_value) const
 {
 	StringList property_values;
@@ -292,27 +299,30 @@ bool PropertySpecification::ParseShorthandDeclaration(PropertyDictionary& dictio
 
 	// If this definition is a 'box'-style shorthand (x-top, x-right, x-bottom, x-left, etc) and there are fewer
 	// than four values
-	if (shorthand_definition->type == ShorthandType::Box && property_values.size() < 4)
+	if (shorthand_definition->type == ShorthandType::Box &&
+		property_values.size() < 4)
 	{
 		// This array tells which property index each side is parsed from
-		Array<int, 4> box_side_to_value_index = {0, 0, 0, 0};
+		Array<int, 4> box_side_to_value_index = { 0,0,0,0 };
 		switch (property_values.size())
 		{
 		case 1:
 			// Only one value is defined, so it is parsed onto all four sides.
-			box_side_to_value_index = {0, 0, 0, 0};
+			box_side_to_value_index = { 0,0,0,0 };
 			break;
 		case 2:
 			// Two values are defined, so the first one is parsed onto the top and bottom value, the second onto
 			// the left and right.
-			box_side_to_value_index = {0, 1, 0, 1};
+			box_side_to_value_index = { 0,1,0,1 };
 			break;
 		case 3:
 			// Three values are defined, so the first is parsed into the top value, the second onto the left and
 			// right, and the third onto the bottom.
-			box_side_to_value_index = {0, 1, 2, 1};
+			box_side_to_value_index = { 0,1,2,1 };
 			break;
-		default: RMLUI_ERROR; break;
+		default:
+			RMLUI_ERROR;
+			break;
 		}
 
 		for (int i = 0; i < 4; i++)
@@ -404,7 +414,8 @@ bool PropertySpecification::ParseShorthandDeclaration(PropertyDictionary& dictio
 			dictionary.SetProperty(shorthand_definition->items[property_index].property_id, new_property);
 
 			// Increment the value index, unless we're replicating the last value and we're up to the last value.
-			if (shorthand_definition->type != ShorthandType::Replicate || value_index < property_values.size() - 1)
+			if (shorthand_definition->type != ShorthandType::Replicate ||
+				value_index < property_values.size() - 1)
 				value_index++;
 		}
 	}
@@ -412,6 +423,7 @@ bool PropertySpecification::ParseShorthandDeclaration(PropertyDictionary& dictio
 	return true;
 }
 
+// Sets all undefined properties in the dictionary to their defaults.
 void PropertySpecification::SetPropertyDefaults(PropertyDictionary& dictionary) const
 {
 	for (const auto& property : properties)
@@ -448,6 +460,7 @@ String PropertySpecification::PropertiesToString(const PropertyDictionary& dicti
 	return result;
 }
 
+
 bool PropertySpecification::ParsePropertyValues(StringList& values_list, const String& values, bool split_values) const
 {
 	String value;
@@ -469,20 +482,9 @@ bool PropertySpecification::ParsePropertyValues(StringList& values_list, const S
 
 		switch (state)
 		{
-		case VALUE:
-		{
-			if (character == ';')
+			case VALUE:
 			{
-				value = StringUtilities::StripWhitespace(value);
-				if (value.size() > 0)
-				{
-					values_list.push_back(value);
-					value.clear();
-				}
-			}
-			else if (StringUtilities::IsWhitespace(character))
-			{
-				if (split_values)
+				if (character == ';')
 				{
 					value = StringUtilities::StripWhitespace(value);
 					if (value.size() > 0)
@@ -491,97 +493,7 @@ bool PropertySpecification::ParsePropertyValues(StringList& values_list, const S
 						value.clear();
 					}
 				}
-				else
-					value += character;
-			}
-			else if (character == '"')
-			{
-				if (split_values)
-				{
-					value = StringUtilities::StripWhitespace(value);
-					if (value.size() > 0)
-					{
-						values_list.push_back(value);
-						value.clear();
-					}
-					state = VALUE_QUOTE;
-				}
-				else
-				{
-					value += ' ';
-					state = VALUE_QUOTE;
-				}
-			}
-			else if (character == '(')
-			{
-				open_parentheses = 1;
-				value += character;
-				state = VALUE_PARENTHESIS;
-			}
-			else
-			{
-				value += character;
-			}
-		}
-		break;
-
-		case VALUE_PARENTHESIS:
-		{
-			if (escape_character)
-			{
-				if (character == ')' || character == '(' || character == '\\')
-				{
-					value += character;
-				}
-				else
-				{
-					value += '\\';
-					value += character;
-				}
-			}
-			else
-			{
-				if (character == '(')
-				{
-					open_parentheses++;
-					value += character;
-				}
-				else if (character == ')')
-				{
-					open_parentheses--;
-					value += character;
-					if (open_parentheses == 0)
-						state = VALUE;
-				}
-				else if (character == '\\')
-				{
-					escape_next = true;
-				}
-				else
-				{
-					value += character;
-				}
-			}
-		}
-		break;
-
-		case VALUE_QUOTE:
-		{
-			if (escape_character)
-			{
-				if (character == '"' || character == '\\')
-				{
-					value += character;
-				}
-				else
-				{
-					value += '\\';
-					value += character;
-				}
-			}
-			else
-			{
-				if (character == '"')
+				else if (StringUtilities::IsWhitespace(character))
 				{
 					if (split_values)
 					{
@@ -593,19 +505,120 @@ bool PropertySpecification::ParsePropertyValues(StringList& values_list, const S
 						}
 					}
 					else
-						value += ' ';
-					state = VALUE;
+						value += character;
 				}
-				else if (character == '\\')
+				else if (character == '"')
 				{
-					escape_next = true;
+					if (split_values)
+					{
+						value = StringUtilities::StripWhitespace(value);
+						if (value.size() > 0)
+						{
+							values_list.push_back(value);
+							value.clear();
+						}
+						state = VALUE_QUOTE;
+					}
+					else
+					{
+						value += ' ';
+						state = VALUE_QUOTE;
+					}
+				}
+				else if (character == '(')
+				{
+					open_parentheses = 1;
+					value += character;
+					state = VALUE_PARENTHESIS;
 				}
 				else
 				{
 					value += character;
 				}
 			}
-		}
+			break;
+
+			case VALUE_PARENTHESIS:
+			{
+				if (escape_character)
+				{
+					if (character == ')' || character == '(' || character == '\\')
+					{
+						value += character;
+					}
+					else
+					{
+						value += '\\';
+						value += character;
+					}
+				}
+				else
+				{
+					if (character == '(')
+					{
+						open_parentheses++;
+						value += character;
+					}
+					else if (character == ')')
+					{
+						open_parentheses--;
+						value += character;
+						if (open_parentheses == 0)
+							state = VALUE;
+					}
+					else if (character == '\\')
+					{
+						escape_next = true;
+					}
+					else
+					{
+						value += character;
+					}
+				}
+			}
+			break;
+
+			case VALUE_QUOTE:
+			{
+				if (escape_character)
+				{
+					if (character == '"' || character == '\\')
+					{
+						value += character;
+					}
+					else
+					{
+						value += '\\';
+						value += character;
+					}
+				}
+				else
+				{
+					if (character == '"')
+					{
+						if (split_values)
+						{
+							value = StringUtilities::StripWhitespace(value);
+							if (value.size() > 0)
+							{
+								values_list.push_back(value);
+								value.clear();
+							}
+						}
+						else
+							value += ' ';
+						state = VALUE;
+					}
+					else if (character == '\\')
+					{
+						escape_next = true;
+					}
+					else
+					{
+						value += character;
+					}
+				}
+			}
 		}
 	}
 

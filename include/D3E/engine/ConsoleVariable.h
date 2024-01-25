@@ -1,11 +1,12 @@
-#ifndef D3ENGINE_CONSOLEVARIABLE_H
-#define D3ENGINE_CONSOLEVARIABLE_H
+#pragma once
+
+#include "D3E/CommonHeader.h"
 
 namespace  D3E
 {
 	enum ConsoleVariableType { tInt, tFloat };
 
-	class ConsoleVariable
+	class D3EAPI ConsoleVariable
 	{
 	public:
 		virtual ~ConsoleVariable() = default;
@@ -16,5 +17,3 @@ namespace  D3E
 		virtual ConsoleVariableType getType() = 0;
 	};
 }
-
-#endif // D3ENGINE_CONSOLEVARIABLE_H

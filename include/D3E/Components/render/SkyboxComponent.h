@@ -7,7 +7,7 @@
 
 namespace D3E
 {
-	struct SkyboxComponent : public BaseComponent
+	struct D3EAPI SkyboxComponent : public BaseComponent
 	{
 		nvrhi::BufferHandle constantBuffer;
 		eastl::vector<nvrhi::BindingSetHandle> bindingSets;

@@ -8,7 +8,7 @@
 
 namespace D3E
 {
-	struct PhysicsCharacterComponent : public BaseComponent
+	struct D3EAPI PhysicsCharacterComponent : public BaseComponent
 	{
 		JPH::Ref<JPH::Character> character_;
 		float maxSlopeAngle_ = JPH::DegreesToRadians(50.0f);

@@ -10,6 +10,8 @@
 
 #include <format>
 
+D3E_APP_CORE
+
 void NewCubeGame::Update(float deltaTime)
 {
 	Game::Update(deltaTime);
