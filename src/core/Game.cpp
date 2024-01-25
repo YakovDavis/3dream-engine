@@ -205,8 +205,8 @@ void D3E::Game::Init()
 	systems_.push_back(childTransformSyncSystem.get());
 	systems_.push_back(new PhysicsInitSystem(registry_, this,
 	                                         physicsInfo_->getPhysicsSystem()));
-	systems_.push_back(
-		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
+//	systems_.push_back(
+//		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new CharacterInitSystem(
 		registry_, this, physicsInfo_->getPhysicsSystem()));
 

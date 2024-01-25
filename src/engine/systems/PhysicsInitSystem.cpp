@@ -21,6 +21,8 @@
 
 #include "physics/ObjectLayers.h"
 
+#include <iostream>
+
 using namespace JPH;
 
 D3E::PhysicsInitSystem::PhysicsInitSystem(entt::registry& registry, Game* game, JPH::PhysicsSystem* physicsSystem) :
