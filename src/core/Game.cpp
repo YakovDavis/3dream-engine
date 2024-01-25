@@ -109,7 +109,7 @@ void D3E::Game::Run()
 
 		for (auto& sys : systems_)
 		{
-			sys->PrePhysicsUpdate(registry_, this, deltaTime_);
+			sys->PrePhysicsUpdate(registry_, this, PhysicsInfo::DELTA_TIME);
 		}
 
 		physicsInfo_->updatePhysics();

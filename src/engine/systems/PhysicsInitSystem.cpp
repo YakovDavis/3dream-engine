@@ -38,7 +38,41 @@ D3E::PhysicsInitSystem::PhysicsInitSystem(entt::registry& registry, Game* game, 
 			this);
 }
 
-void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
+void D3E::PhysicsInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game, float dT)
+{
+	auto view =
+		reg.view<PhysicsComponent>();
+
+	view.each(
+		[&, game, dT](const auto entity, auto& component)
+		{
+			const BodyLockInterfaceLocking& lockInterface = physicsSystem_->GetBodyLockInterface();
+			{
+				BodyLockWrite lock(lockInterface, component.bodyID_);
+				if (lock.Succeeded())
+				{
+					Body& body = lock.GetBody();
+					body.SetMotionType(component.motionType_);
+					body.SetIsSensor(component.isSensor_);
+					if (component.friction_ >= 0.0f)
+					{
+						body.SetFriction(component.friction_);
+					}
+					if (component.restitution_ >= 0.0f)
+					{
+						body.SetRestitution(component.restitution_);
+					}
+					if (component.motionType_ != JPH::EMotionType::Static)
+					{
+						body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
+						body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
+					}
+				}
+			}
+		});
+}
+
+/*void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 {
 	updateObserver_.each(
 		[&](const auto entity)
@@ -70,7 +104,7 @@ void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 		}
 		);
 
-}
+}*/
 
 void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
                              entt::entity entity)
