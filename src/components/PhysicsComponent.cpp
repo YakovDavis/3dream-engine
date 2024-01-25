@@ -66,7 +66,14 @@ namespace D3E
 		j.at("velocity").get_to(velocity);
 		j.at("angular_velocity").get_to(angularVelocity);
 		j.at("height_map_size").get_to(heightMapSize_);
-		j.at("is_active").get_to(isActive_);
+		if (j.contains("is_active"))
+		{
+			j.at("is_active").get_to(isActive_);
+		}
+		else
+		{
+			isActive_ = true;
+		}
 
 		if (heightMapSize_)
 		{
