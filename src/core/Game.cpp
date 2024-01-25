@@ -239,6 +239,8 @@ void D3E::Game::EditorUpdate(const float deltaTime)
 	{
 		sys->Update(registry_, this, deltaTime);
 	}
+
+	physicsInfo_->draw();
 }
 
 void D3E::Game::EditorDraw()

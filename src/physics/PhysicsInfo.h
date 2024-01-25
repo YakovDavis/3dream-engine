@@ -22,6 +22,8 @@ namespace D3E
 		PhysicsInfo(Game* game);
 		~PhysicsInfo();
 		void updatePhysics();
+		void draw();
+		void editorUpdate();
 		JPH::PhysicsSystem* getPhysicsSystem() { return physicsSystem_; }
 		bool getIsPaused() { return isPaused_; }
 		void setIsPaused(bool isPaused) { isPaused_ = isPaused; }

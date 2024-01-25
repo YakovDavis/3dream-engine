@@ -53,7 +53,17 @@ void D3E::PhysicsInfo::updatePhysics()
 	//std::cout << isPaused_ << "\n";
 	//physicsSystem_->Update(currentDeltaTime, COLLISION_STEPS, tempAllocator_, jobSystem_);
 	physicsSystem_->Update(DELTA_TIME, COLLISION_STEPS, tempAllocator_, jobSystem_);
+	draw();
+}
+
+void D3E::PhysicsInfo::editorUpdate()
+{
+	physicsSystem_->Update(0.0, COLLISION_STEPS, tempAllocator_, jobSystem_);
+	draw();
+}
+
+void D3E::PhysicsInfo::draw()
+{
 	BodyManager::DrawSettings settings;
 	physicsSystem_->DrawBodies(settings, joltRenderer_);
-
 }

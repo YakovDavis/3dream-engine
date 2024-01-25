@@ -95,6 +95,11 @@ void D3E::CharacterInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game,
 
 	auto [transform, camera, character] = view.get<TransformComponent, CameraComponent, PhysicsCharacterComponent>(characterController);
 
+	if (!character.character_)
+	{
+		return;
+	}
+
 	// Update scene time
 	character.time_ += dT;
 
@@ -199,6 +204,11 @@ void D3E::CharacterInitSystem::PostPhysicsUpdate(entt::registry& reg)
 	auto characterController = view.front();
 
 	auto character = view.get<PhysicsCharacterComponent>(characterController);
+
+	if (!character.character_)
+	{
+		return;
+	}
 
 	character.character_->PostSimulation(character.collisionTolerance_);
 
