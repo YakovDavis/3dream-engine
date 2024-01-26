@@ -35,10 +35,14 @@ namespace D3E
 	private:
 		static Game* game_;
 
+		static void LoadWorldInternal(const std::string& path);
+
 	public:
 		ECSUtils() = delete;
 
 		static void Init(Game* g);
+
+		static void LoadWorld(const std::string& path);
 
 		static std::optional<entt::entity>
 		GetEntityByBodyId(entt::registry& r, const JPH::BodyID& bodyId);

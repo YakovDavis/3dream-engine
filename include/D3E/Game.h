@@ -88,6 +88,8 @@ namespace D3E
 
 		void ClearWorld();
 
+		void LoadWorld(const std::string& path);
+
 		HRESULT AssetFileImport(String currentDir);
 
 		void AssetDeleteDialog(String filename);
