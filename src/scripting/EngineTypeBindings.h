@@ -278,6 +278,7 @@ namespace D3E
 		auto adapter = state.new_usertype<PhysicsActivationAdapter>(
 			"Physics", sol::no_constructor);
 		adapter["set_active"] = &PhysicsActivationAdapter::SetActive;
+		adapter["set_trigger"] = &PhysicsActivationAdapter::SetTrigger;
 	}
 
 	static void BindRender(sol::state& state)
