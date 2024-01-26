@@ -73,7 +73,7 @@ void D3E::RenderUtils::GenerateMips(nvrhi::ITexture* texture, nvrhi::IDevice* de
 	}
 
 	commandList->open();
-	commandList->beginTrackingTextureState(texture, nvrhi::AllSubresources, nvrhi::ResourceStates::UnorderedAccess);
+	commandList->beginTrackingTextureState(texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Common);
 
 	for(UINT level = 1, levelWidth=desc.width / 2, levelHeight=desc.height / 2; level < desc.mipLevels; ++level, levelWidth/=2, levelHeight/=2)
 	{

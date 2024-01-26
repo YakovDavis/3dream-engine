@@ -6,6 +6,7 @@
 #include "D3E/Components/TransformComponent.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
+#include "render/RenderUtils.h"`
 #include "scripting/LuaECSAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "scripting/type_adapters/InputDeviceAdapter.h"
@@ -279,6 +280,14 @@ namespace D3E
 		adapter["set_active"] = &PhysicsActivationAdapter::SetActive;
 	}
 
+	static void BindRender(sol::state& state)
+	{
+		auto render =
+			state.new_usertype<RenderUtils>("Render", sol::no_constructor);
+		render["set_tonemapper_exposure"] = &RenderUtils::SetTonemapperExposure;
+		render["get_tonemapper_exposure"] = &RenderUtils::GetTonemapperExposure;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -294,5 +303,6 @@ namespace D3E
 		BindECSAdapter(state);
 		BindInputAdapter(state);
 		BindPhysicsAdapter(state);
+		BindRender(state);
 	}
 } // namespace D3E

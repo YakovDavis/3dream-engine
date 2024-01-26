@@ -33,8 +33,8 @@ D3E::Csm::Csm(D3E::Game* game) :game_(game)
 	depthDesc.setMipLevels(1);
 	depthDesc.setClearValue(1.0f);
 	depthDesc.setFormat(nvrhi::Format::D32);
-	depthDesc.setInitialState(nvrhi::ResourceStates::DepthWrite);
-	//depthDesc.setKeepInitialState(true);
+	depthDesc.setInitialState(nvrhi::ResourceStates::ShaderResource);
+	depthDesc.setKeepInitialState(true);
 	depthDesc.setIsRenderTarget(true);
 	depthDesc.setIsTypeless(true);
 	depthDesc.setDebugName("Csm Texture");
@@ -137,6 +137,7 @@ void D3E::Csm::GenerateCascadeMaps()
 	commandList_->open();
 	commandList_->beginMarker("CascadeShadowMaps");
 	commandList_->beginTrackingTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
+	commandList_->setTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
 	commandList_->clearDepthStencilTexture(csmTexture_, nvrhi::AllSubresources, true, 1.0f, false, 0);
 
 	{
@@ -220,6 +221,7 @@ void D3E::Csm::GenerateCascadeMaps()
 			  });
 
 	commandList_->open();
+	commandList_->setTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
 	commandList_->endMarker();
 	commandList_->close();
 	device_->executeCommandList(commandList_);

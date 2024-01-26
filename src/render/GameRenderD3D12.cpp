@@ -96,8 +96,6 @@ void D3E::GameRenderD3D12::Init(eastl::vector<GameSystem*>& systems)
 
 	OnResize();
 
-	CreateNvrhiSwapChain();
-
 	Debug::LogMessage("[GameRenderD3D12] Init finished");
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentGame));
@@ -192,10 +190,6 @@ void D3E::GameRenderD3D12::InitD3D()
 
 void D3E::GameRenderD3D12::OnResize()
 {
-	D3E::GameRender::OnResize();
-
-	return;
-
 	Debug::Assert(md3dDevice, "[GameRenderD3D12] OnResize failed - invalid device");
 	Debug::Assert(mSwapChain, "[GameRenderD3D12] OnResize failed - invalid swap chain");
 	assert(mSwapChain);
@@ -206,44 +200,32 @@ void D3E::GameRenderD3D12::OnResize()
 	// Release all in-flight references to the render targets
 	device_->runGarbageCollection();
 
-	// Flush before changing any resources.
-	FlushCommandQueue();
+	// Set the events so that WaitForSingleObject in OneFrame will not hang later
+	for(auto e : mFrameFenceEvents)
+	{
+		SetEvent(e);
+	}
 
 	// Release the old buffers because ResizeBuffers requires that
 	nvrhiFramebuffer.clear();
-	mSwapChainBuffer.clear();
 	nvrhiSwapChain.clear();
+	mSwapChainBuffer.clear();
 
 	// Resize the swap chain.
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
 		displayWin32_->ClientWidth, displayWin32_->ClientHeight,
-		mBackBufferFormat,
-		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+		mSwapChainDesc.Format,
+		mSwapChainDesc.Flags));
 
 	mCurrBackBuffer = 0;
 
 	// Wait until resize is complete.
 	FlushCommandQueue();
 
-	// Update the viewport transform to cover the client area.
-	mScreenViewport.TopLeftX = 0;
-	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(displayWin32_->ClientWidth);
-	mScreenViewport.Height = static_cast<float>(displayWin32_->ClientHeight);
-	mScreenViewport.MinDepth = 0.0f;
-	mScreenViewport.MaxDepth = 1.0f;
+	CreateNvrhiSwapChain();
 
-	mScissorRect = {0, 0, displayWin32_->ClientWidth, displayWin32_->ClientHeight};
-
-	nvrhiFramebuffer.resize(SwapChainBufferCount);
-	for (uint32_t index = 0; index < SwapChainBufferCount; index++)
-	{
-		nvrhiFramebuffer[index] = GetDevice()->createFramebuffer(
-			nvrhi::FramebufferDesc().addColorAttachment(nvrhiSwapChain[index]));
-	}
-
-	EngineState::isViewportDirty = true;
+	D3E::GameRender::OnResize();
 }
 
 ID3D12Resource* D3E::GameRenderD3D12::CurrentBackBuffer() const
