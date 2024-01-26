@@ -33,7 +33,7 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 	nvrhi::GraphicsState graphicsState = {};
 	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("EditorHighlightPass"));
 	graphicsState.setFramebuffer(fb);
-	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
+	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())));
 	graphicsState.addBindingSet(ShaderFactory::GetBindingSetV("EditorHighlightPass"));
 	graphicsState.addBindingSet(ShaderFactory::GetBindingSetP("EditorHighlightPass"));
 	commandList->setGraphicsState(graphicsState);
@@ -93,7 +93,7 @@ void D3E::EditorUtilsRenderSystem::Draw(entt::registry& reg,
 						.setFramebuffer(fb)
 						.setViewport(
 							nvrhi::ViewportState().addViewportAndScissorRect(
-								nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
+								nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())))
 						.addBindingSet(ShaderFactory::GetBindingSetV(
 							kDebugLineBindingSetUUID))
 						.addBindingSet(ShaderFactory::GetBindingSetP(

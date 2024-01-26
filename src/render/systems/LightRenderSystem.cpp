@@ -58,7 +58,7 @@ void D3E::LightRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer* fb,
 				  nvrhi::GraphicsState graphicsState = {};
 		          graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("LightPass"));
 				  graphicsState.setFramebuffer(fb);
-				  graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
+				  graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportWidth())));
 				  graphicsState.addBindingSet(ShaderFactory::GetBindingSetV(info.id));
 				  graphicsState.addBindingSet(ShaderFactory::GetBindingSetP(info.id));
 				  commandList->setGraphicsState(graphicsState);

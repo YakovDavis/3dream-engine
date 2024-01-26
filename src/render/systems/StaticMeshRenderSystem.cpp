@@ -87,7 +87,7 @@ void D3E::StaticMeshRenderSystem::Draw(entt::registry& reg, nvrhi::IFramebuffer*
 				  auto graphicsState = nvrhi::GraphicsState()
 		                                   .setPipeline(renderModeCVar->getInt() == 0 ? defaultPSO : ShaderFactory::GetGraphicsPipeline("WireFrame"))
 		                                   .setFramebuffer(fb)
-		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
+		                                   .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())))
 		                                   .addBindingSet(ShaderFactory::GetBindingSetV(info.id))
 		                                   .addBindingSet(ShaderFactory::GetBindingSetP(info.id))
 		                                   .addVertexBuffer(MeshFactory::GetVertexBufferBinding(smc.meshUuid));

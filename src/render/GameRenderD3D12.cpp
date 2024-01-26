@@ -96,8 +96,6 @@ void D3E::GameRenderD3D12::Init(eastl::vector<GameSystem*>& systems)
 
 	OnResize();
 
-	CreateNvrhiSwapChain();
-
 	Debug::LogMessage("[GameRenderD3D12] Init finished");
 
 	ShaderFactory::Initialize(dynamic_cast<Game*>(parentGame));
@@ -210,16 +208,15 @@ void D3E::GameRenderD3D12::OnResize()
 
 	// Release the old buffers because ResizeBuffers requires that
 	nvrhiFramebuffer.clear();
-	nvrhiDepthBuffer.Reset();
 	nvrhiSwapChain.clear();
 	mSwapChainBuffer.clear();
 
 	// Resize the swap chain.
-	HRESULT res = mSwapChain->ResizeBuffers(
+	ThrowIfFailed(mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
 		displayWin32_->ClientWidth, displayWin32_->ClientHeight,
 		mSwapChainDesc.Format,
-		mSwapChainDesc.Flags);
+		mSwapChainDesc.Flags));
 
 	mCurrBackBuffer = 0;
 

@@ -43,10 +43,10 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 
 	commandList_ = device_->createCommandList();
 
-	/*auto depthDesc = nvrhi::TextureDesc()
+	auto depthDesc = nvrhi::TextureDesc()
 	                     .setDimension(nvrhi::TextureDimension::Texture2D)
-	                     .setWidth(display_->ClientWidth)
-	                     .setHeight(display_->ClientHeight)
+	                     .setWidth(EngineState::GetGameViewportWidth())
+	                     .setHeight(EngineState::GetGameViewportHeight())
 	                     .setFormat(nvrhi::Format::D24S8)
 	                     .setInitialState(nvrhi::ResourceStates::DepthWrite)
 	                     .setKeepInitialState(true)
@@ -54,16 +54,6 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 	                     .setDebugName("Depth Texture");
 
 	nvrhiDepthBuffer = device_->createTexture(depthDesc);
-
-	nvrhi::FramebufferDesc framebufferDesc0 = {};
-	framebufferDesc0.addColorAttachment(nvrhiSwapChain[0]);
-	framebufferDesc0.setDepthAttachment(nvrhiDepthBuffer);
-	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc0));
-
-	nvrhi::FramebufferDesc framebufferDesc1 = {};
-	framebufferDesc1.addColorAttachment(nvrhiSwapChain[1]);
-	framebufferDesc1.setDepthAttachment(nvrhiDepthBuffer);
-	nvrhiFramebuffer.push_back(device_->createFramebuffer(framebufferDesc1));*/
 
 	gbuffer_.Initialize(device_, commandList_, display_.get());
 	TextureFactory::RegisterGBuffer(&gbuffer_);
@@ -193,23 +183,11 @@ void D3E::GameRender::DestroyResources()
 
 void D3E::GameRender::OnResize()
 {
-	auto depthDesc = nvrhi::TextureDesc()
-	                     .setDimension(nvrhi::TextureDimension::Texture2D)
-	                     .setWidth(display_->ClientWidth)
-	                     .setHeight(display_->ClientHeight)
-	                     .setFormat(nvrhi::Format::D24S8)
-	                     .setInitialState(nvrhi::ResourceStates::DepthWrite)
-	                     .setKeepInitialState(true)
-	                     .setIsRenderTarget(true)
-	                     .setDebugName("Depth Texture");
-
-	nvrhiDepthBuffer = device_->createTexture(depthDesc);
-
 	nvrhiFramebuffer.resize(SwapChainBufferCount);
 	for (uint32_t index = 0; index < SwapChainBufferCount; index++)
 	{
 		nvrhiFramebuffer[index] = GetDevice()->createFramebuffer(
-			nvrhi::FramebufferDesc().addColorAttachment(nvrhiSwapChain[index]).setDepthAttachment(nvrhiDepthBuffer));
+			nvrhi::FramebufferDesc().addColorAttachment(nvrhiSwapChain[index]));
 	}
 
 	EngineState::isViewportDirty = true;
@@ -470,7 +448,7 @@ void D3E::GameRender::DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* 
 	auto graphicsState = nvrhi::GraphicsState()
 	                         .setPipeline(ShaderFactory::GetGraphicsPipeline("Skybox"))
 	                         .setFramebuffer(fb)
-	                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
+	                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())))
 	                         .addVertexBuffer(MeshFactory::GetVertexBufferBinding(kSkyboxMeshUUID))
 							 .setIndexBuffer(MeshFactory::GetIndexBufferBinding(kSkyboxMeshUUID));
 	graphicsState.bindings = {sc.bindingSets[0], sc.bindingSets[1]};
@@ -515,7 +493,7 @@ void D3E::GameRender::DrawTonemapper(nvrhi::IFramebuffer* fb)
 	graphicsState.setPipeline(ShaderFactory::GetGraphicsPipeline("Tonemap"));
 	graphicsState.bindings = {ShaderFactory::GetBindingSetV("Tonemap"), ShaderFactory::GetBindingSetP("Tonemap")};
 	graphicsState.framebuffer = fb;
-	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())));
+	graphicsState.setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())));
 
 	nvrhi::DrawArguments drawArguments = {3};
 
