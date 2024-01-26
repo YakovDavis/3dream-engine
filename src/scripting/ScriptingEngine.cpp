@@ -37,13 +37,13 @@ void ScriptingEngine::Init(Game* g)
 
 	Debug::LogMessage("[ScriptingEngine] Initializing...");
 
+	InitRmlLuaBindings();
+
 	LoadStandardLibraries();
 
 	BindEngineTypes(luaState_);
 
 	InitGlobalObjects();
-
-	//InitRmlLuaBindings();
 
 	if (!LoadDefaultEnvironment())
 		return;
