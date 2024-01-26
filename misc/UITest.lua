@@ -5,12 +5,12 @@ function UITest:start()
     if (self.uicontext == nil) then
         self.uicontext = rmlui.CreateContext('main', Vector2i:new(1280, 720), nil)
     end
-    rmlui.LoadFontFace('LatoLatin-Bold.ttf')
+    rmlui.LoadFontFace('assets/ui/LatoLatin-Bold.ttf')
     self.data = {}
     self.data['animal'] = 'dog'
     self.data['show_text'] = true
     self.datamodel = self.uicontext:OpenDataModel('animals', self.data)
-    self.document = self.uicontext:LoadDocument('hello_world.rml')
+    self.document = self.uicontext:LoadDocument('assets/ui/hello_world.rml')
 	self.document:Show()
 end
 
