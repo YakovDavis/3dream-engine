@@ -16,6 +16,9 @@ end
 function NativeScript:update(deltaTime)
 end
 
+function NativeScript:draw_gui()
+end
+
 function NativeScript:on_collision_enter(collision)
 end
 

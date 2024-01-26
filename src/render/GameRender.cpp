@@ -70,8 +70,8 @@ void D3E::GameRender::Init(eastl::vector<GameSystem*>& systems)
 #ifdef D3E_WITH_EDITOR
 	nvrhi::TextureDesc gameFrameTextureDesc = {};
 	gameFrameTextureDesc.format = nvrhi::Format::RGBA8_UNORM;
-	gameFrameTextureDesc.setWidth(display_->ClientWidth);
-	gameFrameTextureDesc.setHeight(display_->ClientHeight);
+	gameFrameTextureDesc.setWidth(EngineState::GetGameViewportWidth());
+	gameFrameTextureDesc.setHeight(EngineState::GetGameViewportHeight());
 	gameFrameTextureDesc.isRenderTarget = true;
 	gameFrameTextureDesc.sampleCount = 1;
 	gameFrameTextureDesc.sampleQuality = 0;
@@ -363,7 +363,6 @@ D3E::DebugRenderer* D3E::GameRender::GetDebugRenderer()
 
 void D3E::GameRender::DrawGUI()
 {
-	gameUi_->Draw();
 	commandList_->open();
 	commandList_->setTextureState(gameFrameTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
 	commandList_->close();
@@ -526,4 +525,14 @@ void D3E::GameRender::DrawDebug()
 	commandList_->endMarker();
 	commandList_->close();
 	device_->executeCommandList(commandList_);
+}
+
+void D3E::GameRender::OnGameStart()
+{
+	gameUi_->GameStart();
+}
+
+void D3E::GameRender::OnGameEnd()
+{
+	gameUi_->GameEnd();
 }
