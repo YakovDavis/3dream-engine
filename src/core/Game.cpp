@@ -1180,4 +1180,11 @@ void D3E::Game::LoadWorld(const string& path)
 	json j = json::parse(f);
 	f.close();
 	ComponentFactory::ResolveWorld(j);
+
+	AssetManager::Get().LoadScripts("assets/");
+	ScriptingEngine::GetInstance().Init(this);
+	ScriptingEngine::GetInstance().InitScripts();
+	ScriptingEngine::GetInstance().StartScripts();
+
+	EngineState::currentPlayer = FindFirstNonEditorPlayer();
 }
