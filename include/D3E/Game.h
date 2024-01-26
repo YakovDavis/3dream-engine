@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../src/engine/systems/PhysicsInitSystem.h"
 #include "App.h"
 #include "D3E/systems/GameSystem.h"
 #include "EASTL/hash_set.h"
@@ -177,5 +178,7 @@ namespace D3E
 		entt::entity editorFakePlayer_;
 
 		eastl::shared_ptr<ChildTransformSynchronizationSystem> childTransformSyncSystem;
+
+		eastl::shared_ptr<PhysicsInitSystem> physicsInitSystem_;
 	};
 } // namespace D3E

@@ -24,7 +24,6 @@
 #include "engine/systems/CharacterInitSystem.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
-#include "engine/systems/PhysicsInitSystem.h"
 #include "engine/systems/PhysicsUpdateSystem.h"
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
@@ -107,17 +106,24 @@ void D3E::Game::Run()
 
 		gameRender_->PrimitiveBatchStart();
 
-		for (auto& sys : systems_)
+		if (isGameRunning_)
 		{
-			sys->PrePhysicsUpdate(registry_, this, PhysicsInfo::DELTA_TIME);
+			for (auto& sys : systems_)
+			{
+				sys->PrePhysicsUpdate(registry_, this, PhysicsInfo::DELTA_TIME);
+			}
 		}
 
 		physicsInfo_->updatePhysics();
 
-		for (auto& sys : systems_)
+		if (isGameRunning_)
 		{
-			sys->PostPhysicsUpdate(registry_);
+			for (auto& sys : systems_)
+			{
+				sys->PostPhysicsUpdate(registry_);
+			}
 		}
+
 
 		if (isGameRunning_)
 		{
@@ -203,8 +209,8 @@ void D3E::Game::Init()
 	childTransformSyncSystem =
 		eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
 	systems_.push_back(childTransformSyncSystem.get());
-	systems_.push_back(new PhysicsInitSystem(registry_, this,
-	                                         physicsInfo_->getPhysicsSystem()));
+	physicsInitSystem_ = eastl::make_shared<PhysicsInitSystem>(registry_, this, physicsInfo_->getPhysicsSystem());
+	systems_.push_back(physicsInitSystem_.get());
 //	systems_.push_back(
 //		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new CharacterInitSystem(
@@ -217,6 +223,7 @@ void D3E::Game::Init()
 		new ChildTransformSynchronizationSystem(registry_));
 	editorSystems_.push_back(new FPSControllerSystem);
 	editorSystems_.push_back(new EditorUtilsRenderSystem);
+	editorSystems_.push_back(physicsInitSystem_.get());
 
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();

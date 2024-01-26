@@ -115,39 +115,23 @@ void D3E::PhysicsInitSystem::PostPhysicsUpdate(entt::registry& reg)
 		});
 }
 
-/*void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
+void D3E::PhysicsInitSystem::Update(entt::registry& reg, Game* game, float dT)
 {
-	updateObserver_.each(
-		[&](const auto entity)
-		{
-			auto& component = reg.get<PhysicsComponent>(entity);
-			const BodyLockInterfaceLocking& lockInterface = physicsSystem_->GetBodyLockInterface();
-			{
-				BodyLockWrite lock(lockInterface, component.bodyID_);
-				if (lock.Succeeded())
-				{
-					Body& body = lock.GetBody();
-					body.SetMotionType(component.motionType_);
-					body.SetIsSensor(component.isSensor_);
-					if (component.friction_ >= 0.0f)
-					{
-						body.SetFriction(component.friction_);
-					}
-					if (component.restitution_ >= 0.0f)
-					{
-						body.SetRestitution(component.restitution_);
-					}
-					if (component.motionType_ != JPH::EMotionType::Static)
-					{
-						body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
-						body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
-					}
-				}
-			}
-		}
-		);
+	if (!(game_->IsGameRunning()))
+	{
+		auto view =
+			reg.view<PhysicsComponent, TransformComponent>();
 
-}*/
+		view.each(
+			[&](const auto entity, auto& physC, auto& transformC)
+			{
+				BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+				bodyInterface.SetPositionAndRotation(physC.bodyID_, JPH::RVec3Arg(transformC.position.x, transformC.position.y, transformC.position.z),
+			                                         JPH::QuatArg(transformC.rotation.x, transformC.rotation.y, transformC.rotation.z, transformC.rotation.w), EActivation::DontActivate);
+			});
+
+	}
+}
 
 void D3E::PhysicsInitSystem::ComponentCreatedHandler(entt::registry& registry,
                              entt::entity entity)
