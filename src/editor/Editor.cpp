@@ -220,7 +220,7 @@ void D3E::Editor::DrawViewport(nvrhi::IFramebuffer* gameFramebuffer)
 	windowFlags = hoveringOnViewport ? ImGuiWindowFlags_NoMove : 0;
 
 	auto texture = gameFramebuffer->getDesc().colorAttachments[0].texture;
-	viewportDimensions.x = viewportInnerRect.GetHeight() / EngineState::GetViewportHeight() * EngineState::GetViewportWidth();
+	viewportDimensions.x = viewportInnerRect.GetHeight() / EngineState::GetGameViewportHeight() * EngineState::GetGameViewportWidth();
 	viewportDimensions.y = viewportInnerRect.GetHeight();
 	ImGui::Image(texture, viewportDimensions, ImVec2{0, 0}, ImVec2{1, 1});
 
@@ -1739,8 +1739,8 @@ bool D3E::Editor::IsMouseOnViewport()
 void D3E::Editor::GetMousePositionInViewport(int& mouseX, int& mouseY)
 {
 	Vector2 globalMousePos = game_->GetInputDevice()->MousePosition;
-	mouseX = static_cast<int>((globalMousePos.x - viewportInnerRect.Min.x) / viewportDimensions.x * EngineState::GetViewportWidth());
-	mouseY = static_cast<int>((globalMousePos.y - viewportInnerRect.Min.y) / viewportDimensions.y * EngineState::GetViewportHeight());
+	mouseX = static_cast<int>((globalMousePos.x - viewportInnerRect.Min.x) / viewportDimensions.x * EngineState::GetGameViewportWidth());
+	mouseY = static_cast<int>((globalMousePos.y - viewportInnerRect.Min.y) / viewportDimensions.y * EngineState::GetGameViewportHeight());
 }
 
 void D3E::Editor::DrawTransformEdit()

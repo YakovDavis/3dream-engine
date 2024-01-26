@@ -14,6 +14,8 @@ namespace D3E
 
 		static int viewportW, viewportH;
 
+		static int gameViewportW, gameViewportH;
+
 		static bool isInitialized;
 
 		static void RefreshViewport();
@@ -25,6 +27,9 @@ namespace D3E
 
 		static int GetViewportWidth();
 		static int GetViewportHeight();
+
+		static int GetGameViewportWidth();
+		static int GetGameViewportHeight();
 
 		static entt::entity currentPlayer;
 

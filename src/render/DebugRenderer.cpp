@@ -123,7 +123,7 @@ void D3E::DebugRenderer::Flush()
 		auto graphicsState = nvrhi::GraphicsState()
 		                         .setPipeline(ShaderFactory::GetGraphicsPipeline("DebugDraw"))
 		                         .setFramebuffer(framebuffer_)
-		                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight())))
+		                         .setViewport(nvrhi::ViewportState().addViewportAndScissorRect(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight())))
 		                         .addBindingSet(ShaderFactory::GetBindingSetV(kDebugDrawLinesBindingSetUuid))
 		                         .addBindingSet(ShaderFactory::GetBindingSetP(kDebugDrawLinesBindingSetUuid));
 		commandList_->setGraphicsState(graphicsState);

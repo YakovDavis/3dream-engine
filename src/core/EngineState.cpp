@@ -47,3 +47,13 @@ void D3E::EngineState::Initialize(D3E::Game* game)
 	game_ = game;
 	isInitialized = true;
 }
+
+int D3E::EngineState::GetGameViewportWidth()
+{
+	return 1280;
+}
+
+int D3E::EngineState::GetGameViewportHeight()
+{
+	return 720;
+}

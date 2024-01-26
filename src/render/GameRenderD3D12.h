@@ -71,11 +71,6 @@ namespace D3E
 		int mCurrBackBuffer = 0;
 		eastl::vector<nvrhi::RefCountPtr<ID3D12Resource>> mSwapChainBuffer;
 
-		D3D12_VIEWPORT mScreenViewport{};
-		D3D12_RECT mScissorRect{};
-
-		// Derived class should set these in derived constructor to customize starting values.
-		std::string mMainWndCaption = "d3d App";
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 

@@ -57,7 +57,7 @@ namespace D3E
 		virtual void PrepareFrame();
 		virtual void BeginDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawOpaque(entt::registry& registry, eastl::vector<GameSystem*>& systems);
-		virtual void DrawPostProcessSystems(entt::registry& registry, eastl::vector<GameSystem*>& systems);
+		virtual void DrawPostProcessSystems(entt::registry& registry, eastl::vector<GameSystem*>& systems, bool afterTonemapper);
 		virtual void DrawPostProcessEffects(entt::registry& registry);
 		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawGUI();
@@ -84,6 +84,9 @@ namespace D3E
 		virtual ~GameRender() = default;
 
 	protected:
+		int SwapChainBufferCount = 2;
+		int mCurrBackBuffer = 0;
+
 		Game* parentGame;
 
 		nvrhi::DeviceHandle device_;
@@ -113,6 +116,9 @@ namespace D3E
 			float tonemapperGamma_ = 2.2f;
 			float tonemapperExposure_ = 1.4f;
 		} tonemapperConstants_;
+
+		nvrhi::TextureHandle lightpassTexture_;
+		nvrhi::FramebufferHandle lightpassFramebuffer_;
 
 #ifdef D3E_WITH_EDITOR
 		D3E::Editor* editor_;
