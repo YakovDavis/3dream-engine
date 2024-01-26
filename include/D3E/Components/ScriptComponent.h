@@ -55,6 +55,16 @@ namespace D3E
 			ValidateCallResult(update_(self_, deltaTime));
 		}
 
+		void DrawGUI()
+		{
+			if (!loaded_)
+			{
+				return;
+			}
+
+			ValidateCallResult(drawGui_(self_));
+		}
+
 		void OnCollisionEnter(const JPH::BodyID& bodyId)
 		{
 			if (!loaded_)
@@ -125,6 +135,7 @@ namespace D3E
 		sol::function init_;
 		sol::function start_;
 		sol::function update_;
+		sol::function drawGui_;
 		sol::function onCollisionEnter_;
 		sol::function onCollisionStay_;
 		sol::function onCollisionExit_;

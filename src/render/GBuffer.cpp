@@ -1,6 +1,7 @@
 #include "GBuffer.h"
 
 #include "Display.h"
+#include "core/EngineState.h"
 
 void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
                          nvrhi::ICommandList* commandList,
@@ -8,8 +9,8 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 {
 	nvrhi::TextureDesc albedoDesc = {};
 	albedoDesc.format = nvrhi::Format::RGBA8_UNORM;
-	albedoDesc.setWidth(display->ClientWidth);
-	albedoDesc.setHeight(display->ClientHeight);
+	albedoDesc.setWidth(EngineState::GetGameViewportWidth());
+	albedoDesc.setHeight(EngineState::GetGameViewportHeight());
 	albedoDesc.isRenderTarget = true;
 	albedoDesc.sampleCount = 1;
 	albedoDesc.sampleQuality = 0;
@@ -21,8 +22,8 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 
 	nvrhi::TextureDesc positionDesc = {};
 	positionDesc.format = nvrhi::Format::RGBA32_FLOAT;
-	positionDesc.setWidth(display->ClientWidth);
-	positionDesc.setHeight(display->ClientHeight);
+	positionDesc.setWidth(EngineState::GetGameViewportWidth());
+	positionDesc.setHeight(EngineState::GetGameViewportHeight());
 	positionDesc.isRenderTarget = true;
 	positionDesc.sampleCount = 1;
 	positionDesc.sampleQuality = 0;
@@ -34,8 +35,8 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 
 	nvrhi::TextureDesc normalDesc = {};
 	normalDesc.format = nvrhi::Format::RGBA32_FLOAT;
-	normalDesc.setWidth(display->ClientWidth);
-	normalDesc.setHeight(display->ClientHeight);
+	normalDesc.setWidth(EngineState::GetGameViewportWidth());
+	normalDesc.setHeight(EngineState::GetGameViewportHeight());
 	normalDesc.isRenderTarget = true;
 	normalDesc.sampleCount = 1;
 	normalDesc.sampleQuality = 0;
@@ -47,8 +48,8 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 
 	nvrhi::TextureDesc metalRoughnessDesc = {};
 	metalRoughnessDesc.format = nvrhi::Format::RGBA32_FLOAT;
-	metalRoughnessDesc.setWidth(display->ClientWidth);
-	metalRoughnessDesc.setHeight(display->ClientHeight);
+	metalRoughnessDesc.setWidth(EngineState::GetGameViewportWidth());
+	metalRoughnessDesc.setHeight(EngineState::GetGameViewportHeight());
 	metalRoughnessDesc.isRenderTarget = true;
 	metalRoughnessDesc.sampleCount = 1;
 	metalRoughnessDesc.sampleQuality = 0;
@@ -60,8 +61,8 @@ void D3E::GBuffer::Initialize(nvrhi::IDevice* device,
 
 	nvrhi::TextureDesc editorIdsDesc = {};
 	editorIdsDesc.format = nvrhi::Format::R32_UINT;
-	editorIdsDesc.setWidth(display->ClientWidth);
-	editorIdsDesc.setHeight(display->ClientHeight);
+	editorIdsDesc.setWidth(EngineState::GetGameViewportWidth());
+	editorIdsDesc.setHeight(EngineState::GetGameViewportHeight());
 	editorIdsDesc.isRenderTarget = true;
 	editorIdsDesc.sampleCount = 1;
 	editorIdsDesc.sampleQuality = 0;

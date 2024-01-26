@@ -15,6 +15,7 @@ namespace D3E
 	public:
 		PhysicsActivationAdapter(entt::registry& registry, JPH::PhysicsSystem* physicsSystem);
 		void SetActive(entt::entity entity, bool isActive);
+		void SetTrigger(entt::entity entity, bool isTrigger);
 
 	private:
 		entt::registry& registry_;

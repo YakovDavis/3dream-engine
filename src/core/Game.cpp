@@ -310,6 +310,15 @@ void D3E::Game::Draw()
 	{
 		gameRender_->DrawDebug();
 	}
+	if (isGameRunning_)
+	{
+		auto script_view = registry_.view<ScriptComponent>();
+		for (auto [entity, sc] : script_view.each())
+		{
+			sc.DrawGUI();
+		}
+	}
+
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->DrawGUI();
@@ -719,6 +728,8 @@ void D3E::Game::OnEditorPlayPressed()
 		selectedUuids.clear();
 		EditorUtilsRenderSystem::isSelectionDirty = true;
 
+		gameRender_->OnGameStart();
+
 		AssetManager::Get().LoadScripts("assets/");
 		ScriptingEngine::GetInstance().Init(this);
 		ScriptingEngine::GetInstance().InitScripts();
@@ -763,6 +774,9 @@ void D3E::Game::OnEditorStopPressed()
 		}
 		ClearWorld();
 		ComponentFactory::ResolveWorld(currentMapSavedState);
+
+		gameRender_->OnGameEnd();
+
 		ScriptingEngine::GetInstance().Clear();
 		// physicsInfo_->setIsPaused(true);
 
@@ -1157,4 +1171,13 @@ void D3E::Game::UnparentEntityById(const D3E::String& childUuid)
 	registry_.patch<TransformComponent>(child);
 
 	FlushChildTransformSync();
+}
+
+void D3E::Game::LoadWorld(const string& path)
+{
+	ClearWorld();
+	std::ifstream f("assets/" + path);
+	json j = json::parse(f);
+	f.close();
+	ComponentFactory::ResolveWorld(j);
 }

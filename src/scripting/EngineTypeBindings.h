@@ -265,6 +265,7 @@ namespace D3E
 		adapter["destroy"] = &LuaECSAdapter::Destroy;
 		adapter["destroy_many"] = &LuaECSAdapter::DestroyMany;
 		adapter["self_destroy"] = &LuaECSAdapter::SelfDestroy;
+		adapter["load_world"] = &ECSUtils::LoadWorld;
 	}
 
 	static void BindInputAdapter(sol::state& state)
@@ -278,6 +279,7 @@ namespace D3E
 		auto adapter = state.new_usertype<PhysicsActivationAdapter>(
 			"Physics", sol::no_constructor);
 		adapter["set_active"] = &PhysicsActivationAdapter::SetActive;
+		adapter["set_trigger"] = &PhysicsActivationAdapter::SetTrigger;
 	}
 
 	static void BindRender(sol::state& state)

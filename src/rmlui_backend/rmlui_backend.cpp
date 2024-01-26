@@ -35,8 +35,8 @@ Rml::CompiledGeometryHandle D3E::RmlUi_NVRHI::CompileGeometry(Rml::Vertex* verti
 	for (int i = 0; i < num_vertices; i++)
 	{
 		RmlVertex vert = {};
-		vert.pos.x = 2.0f * (vertices[i].position.x / static_cast<float>(EngineState::GetViewportWidth()) - 0.5f);
-		vert.pos.y = 2.0f * (0.5f - vertices[i].position.y / static_cast<float>(EngineState::GetViewportHeight()));
+		vert.pos.x = 2.0f * (vertices[i].position.x / static_cast<float>(EngineState::GetGameViewportWidth()) - 0.5f);
+		vert.pos.y = 2.0f * (0.5f - vertices[i].position.y / static_cast<float>(EngineState::GetGameViewportHeight()));
 		vert.tex.x = vertices[i].tex_coord.x;
 		vert.tex.y = vertices[i].tex_coord.y;
 		vert.col.x = static_cast<float>(vertices[i].colour.red) / 255.0f;
@@ -93,8 +93,8 @@ void D3E::RmlUi_NVRHI::RenderCompiledGeometry(
 {
 	assert(compiledGeometryCache_.find(geometry) != compiledGeometryCache_.end());
 
-	cbData.gTranslate.x = 2.0f * translation.x / static_cast<float>(EngineState::GetViewportWidth());
-	cbData.gTranslate.y = 2.0f * -translation.y / static_cast<float>(EngineState::GetViewportHeight());
+	cbData.gTranslate.x = 2.0f * translation.x / static_cast<float>(EngineState::GetGameViewportWidth());
+	cbData.gTranslate.y = 2.0f * -translation.y / static_cast<float>(EngineState::GetGameViewportHeight());
 
 	commandList_->open();
 	commandList_->writeBuffer(constantBuffer_, &cbData, sizeof(cbData));
@@ -150,7 +150,7 @@ void D3E::RmlUi_NVRHI::EnableScissorRegion(bool enable)
 		viewportState_.scissorRects = { scissorsRect_ };
 		return;
 	}
-	viewportState_.scissorRects = { nvrhi::Rect(0, EngineState::GetViewportWidth(), 0, EngineState::GetViewportHeight()) };
+	viewportState_.scissorRects = { nvrhi::Rect(0, EngineState::GetGameViewportWidth(), 0, EngineState::GetGameViewportHeight()) };
 }
 
 void D3E::RmlUi_NVRHI::SetScissorRegion(int x, int y, int width, int height)
@@ -336,6 +336,8 @@ D3E::RmlUi_NVRHI::RmlUi_NVRHI(Game* game, nvrhi::IFramebuffer* fb) : game_(game)
 	blendState.targets[0].blendEnable = true;
 	blendState.targets[0].destBlend = nvrhi::BlendFactor::OneMinusSrcAlpha;
 	blendState.targets[0].srcBlend = nvrhi::BlendFactor::SrcAlpha;
+	blendState.targets[0].destBlendAlpha = nvrhi::BlendFactor::One;
+	blendState.targets[0].srcBlendAlpha = nvrhi::BlendFactor::Zero;
 	blendState.targets[0].blendOp = nvrhi::BlendOp::Add;
 
 	nvrhi::RenderState renderState = {};
@@ -367,8 +369,8 @@ D3E::RmlUi_NVRHI::RmlUi_NVRHI(Game* game, nvrhi::IFramebuffer* fb) : game_(game)
 	psoTex_ = ShaderFactory::GetGraphicsPipeline("RmlUiTex");
 
 	viewportState_ = {};
-	viewportState_.addViewport(nvrhi::Viewport(EngineState::GetViewportWidth(), EngineState::GetViewportHeight()));
-	viewportState_.scissorRects = { nvrhi::Rect(0, EngineState::GetViewportWidth(), 0, EngineState::GetViewportHeight()) };
+	viewportState_.addViewport(nvrhi::Viewport(EngineState::GetGameViewportWidth(), EngineState::GetGameViewportHeight()));
+	viewportState_.scissorRects = { nvrhi::Rect(0, EngineState::GetGameViewportWidth(), 0, EngineState::GetGameViewportHeight()) };
 	graphicsState_.setViewport(viewportState_);
 
 	auto samplerDesc = nvrhi::SamplerDesc();
