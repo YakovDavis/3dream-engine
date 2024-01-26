@@ -130,6 +130,9 @@ void ScriptingEngine::InitScriptComponent(ScriptComponent& c)
 	c.update_ = userType["update"];
 	c.update_.set_error_handler(luaState_["error_handler"]);
 
+	c.drawGui_ = userType["draw_gui"];
+	c.drawGui_.set_error_handler(luaState_["error_handler"]);
+
 	c.onCollisionEnter_ = userType["on_collision_enter"];
 	c.onCollisionEnter_.set_error_handler(luaState_["error_handler"]);
 

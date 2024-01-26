@@ -62,6 +62,9 @@ namespace D3E
 		virtual void EndDraw(entt::registry& registry, eastl::vector<GameSystem*>& systems);
 		virtual void DrawGUI();
 
+		void OnGameStart();
+		void OnGameEnd();
+
 		void DrawDebug();
 		void DrawTonemapper(nvrhi::IFramebuffer* fb);
 		void DrawSkybox(entt::registry& registry, nvrhi::IFramebuffer* fb);

@@ -25,7 +25,9 @@ namespace D3E
 		void PostInputInit();
 
 		void Update();
-		void Draw();
+
+		void GameStart();
+		void GameEnd();
 
 		static void DestroyResources();
 
@@ -36,13 +38,7 @@ namespace D3E
 		Game *game_;
 		RmlUi_NVRHI rmlUiNvrhi_;
 		SystemInterface_Win32 rmlUiWin32_;
-		Rml::Context* context_;
 		bool lmbPressedLastUpdate = false;
-
-		struct ApplicationData {
-			bool show_text = true;
-			Rml::String animal = "dog";
-		} my_data;
 
 	private:
 		GameUi(Game *game, nvrhi::IFramebuffer* fb);
