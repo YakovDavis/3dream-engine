@@ -228,6 +228,8 @@ void D3E::Game::Init()
 	soundEngine_ = &SoundEngine::GetInstance();
 	soundEngine_->Init();
 
+	ConsoleManager::getInstance()->registerConsoleVariable("debugDrawOn", 1);
+
 	ClearWorld();
 
 #ifdef D3E_WITH_EDITOR
@@ -265,7 +267,10 @@ void D3E::Game::EditorDraw()
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_, false);
 	gameRender_->DrawPostProcessEffects(registry_);
 	gameRender_->DrawPostProcessSystems(registry_, editorSystems_, true);
-	gameRender_->DrawDebug();
+	if (ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->getInt())
+	{
+		gameRender_->DrawDebug();
+	}
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->EndDraw(registry_, editorSystems_);
@@ -301,7 +306,10 @@ void D3E::Game::Draw()
 	gameRender_->DrawOpaque(registry_, systems_);
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_, false);
 	gameRender_->DrawPostProcessEffects(registry_);
-	gameRender_->DrawDebug();
+	if (ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->getInt())
+	{
+		gameRender_->DrawDebug();
+	}
 	gameRender_->EndDraw(registry_, systems_);
 	gameRender_->EndDraw(registry_, renderPPsystems_);
 	gameRender_->DrawGUI();
@@ -717,6 +725,7 @@ void D3E::Game::OnEditorPlayPressed()
 		ScriptingEngine::GetInstance().StartScripts();
 
 		isGameRunning_ = true;
+		ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->setInt(0);
 		for (auto& sys : systems_)
 		{
 			sys->Play(registry_, this);
@@ -747,6 +756,7 @@ void D3E::Game::OnEditorStopPressed()
 	{
 		isGameRunning_ = false;
 		isGamePaused_ = false;
+		ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->setInt(1);
 		for (auto& sys : systems_)
 		{
 			sys->Stop(registry_, this);
