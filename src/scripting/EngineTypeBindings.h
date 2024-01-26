@@ -265,6 +265,7 @@ namespace D3E
 		adapter["destroy"] = &LuaECSAdapter::Destroy;
 		adapter["destroy_many"] = &LuaECSAdapter::DestroyMany;
 		adapter["self_destroy"] = &LuaECSAdapter::SelfDestroy;
+		adapter["load_world"] = &ECSUtils::LoadWorld;
 	}
 
 	static void BindInputAdapter(sol::state& state)

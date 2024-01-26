@@ -1,5 +1,6 @@
 #include "utils/ECSUtils.h"
 
+#include "D3E/TimerManager.h"
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Game.h"
@@ -102,4 +103,14 @@ D3E::ECSUtils::GetEntitiesWithScript(entt::registry& r, const String& className)
 	}
 
 	return entities;
+}
+
+void D3E::ECSUtils::LoadWorld(const std::string& path)
+{
+	TimerManager::GetInstance().SetTimerForNextTick( [path](){ LoadWorldInternal(path); });
+}
+
+void D3E::ECSUtils::LoadWorldInternal(const std::string& path)
+{
+	game_->LoadWorld(path);
 }
