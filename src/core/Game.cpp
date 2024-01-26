@@ -1148,3 +1148,12 @@ void D3E::Game::UnparentEntityById(const D3E::String& childUuid)
 
 	FlushChildTransformSync();
 }
+
+void D3E::Game::LoadWorld(const string& path)
+{
+	ClearWorld();
+	std::ifstream f("assets/" + path);
+	json j = json::parse(f);
+	f.close();
+	ComponentFactory::ResolveWorld(j);
+}
