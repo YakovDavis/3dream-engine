@@ -56,7 +56,8 @@ target_sources("${PROJECT_NAME}"
         include/D3E/Components/navigation/NavmeshConfig.h
         include/D3E/Components/navigation/NavmeshCore.h
         include/D3E/Components/TPSControllerComponent.h
-        include/D3E/Components/AiComponent.h
+        include/D3E/Components/AiAgentComponent.h
+        include/D3E/ai/FSM.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -276,7 +277,7 @@ target_sources("${PROJECT_NAME}"
         src/ai/structures/PriorityQueue.h
         src/ai/graph/Edge.h
         src/ai/GoapPlanner.h 
-        src/components/AiComponent.cpp)
+        src/components/AiAgentComponent.cpp)
 
 add_subdirectory(libs)
 
