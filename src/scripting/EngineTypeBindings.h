@@ -4,6 +4,7 @@
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Debug.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
 #include "render/RenderUtils.h"`
@@ -290,6 +291,23 @@ namespace D3E
 		render["get_tonemapper_exposure"] = &RenderUtils::GetTonemapperExposure;
 	}
 
+	static void BindDebug(sol::state& state)
+	{
+		struct Logger
+		{
+		};
+
+		auto logger = state.new_usertype<Logger>("Log", sol::no_constructor);
+		logger["message"] = [](const std::string& msg)
+		{ Debug::LogMessage(msg.c_str()); };
+		logger["warning"] = [](const std::string& msg)
+		{ Debug::LogWarning(msg.c_str()); };
+		logger["error"] = [](const std::string& msg)
+		{ Debug::LogError(msg.c_str()); };
+		logger["assert"] = [](bool condition, const std::string& msg)
+		{ Debug::Assert(condition, msg.c_str()); };
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -306,5 +324,6 @@ namespace D3E
 		BindInputAdapter(state);
 		BindPhysicsAdapter(state);
 		BindRender(state);
+		BindDebug(state);
 	}
 } // namespace D3E
