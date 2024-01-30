@@ -56,6 +56,7 @@ target_sources("${PROJECT_NAME}"
         include/D3E/Components/navigation/NavmeshConfig.h
         include/D3E/Components/navigation/NavmeshCore.h
         include/D3E/Components/TPSControllerComponent.h
+        include/D3E/Components/AiComponent.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -79,7 +80,7 @@ target_sources("${PROJECT_NAME}"
         src/render/NvrhiMessageCallback.h
         src/assetmng/TextureFactory.cpp
         src/assetmng/TextureFactory.h
-        src/render/Vertex.h
+        src/ai/graph/Vertex.h
         src/core/magic_enum.hpp
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
@@ -268,7 +269,14 @@ target_sources("${PROJECT_NAME}"
         src/scripting/type_adapters/PhysicsActivationAdapter.h
         src/scripting/type_adapters/PhysicsActivationAdapter.cpp
         src/components/TPSControllerComponent.cpp
-        )
+        src/ai/State.h
+        src/ai/Action.h
+        src/ai/Agent.h 
+        src/ai/Goal.h
+        src/ai/structures/PriorityQueue.h
+        src/ai/graph/Edge.h
+        src/ai/GoapPlanner.h 
+        src/components/AiComponent.cpp)
 
 add_subdirectory(libs)
 

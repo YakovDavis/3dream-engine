@@ -15,6 +15,7 @@
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/AiComponent.h"
 #include "D3E/Game.h"
 #include "core/EngineState.h"
 #include "json.hpp"
@@ -44,6 +45,7 @@ void D3E::ComponentFactory::Initialize(D3E::Game* game)
 	typeNames_.insert({entt::type_id<SoundComponent>().hash(), "SoundComponent"});
 	typeNames_.insert({entt::type_id<SoundListenerComponent>().hash(), "SoundListenerComponent"});
 	typeNames_.insert({entt::type_id<NavmeshComponent>().hash(), "NavmeshComponent"});
+	typeNames_.insert({entt::type_id<AiComponent>().hash(), "AiComponent"});
 }
 
 void D3E::ComponentFactory::DestroyResources()
@@ -141,6 +143,12 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			SoundListenerComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<SoundListenerComponent>(e, c);
+		}
+		else if (el.at("class") == "AiComponent")
+		{
+			AiComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<AiComponent>(e, c);
 		}
 	}
 	return e;
@@ -259,6 +267,12 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 		{
 			json c;
 			game_->GetRegistry().get<SoundListenerComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
+		else if (el == "AiComponent")
+		{
+			json c;
+			game_->GetRegistry().get<AiComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
 	}
