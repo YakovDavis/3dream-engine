@@ -448,7 +448,7 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent\0AIAgent");
 	switch (createComponent)
 	{
 		case 0:
@@ -463,6 +463,7 @@ void D3E::Editor::DrawInspector()
 		case 7:
 		case 8:
 		case 9:
+		case 11:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = false;
 			break;
@@ -530,9 +531,15 @@ void D3E::Editor::DrawInspector()
 						case 9:
 							CreationSystems::CreateDefaultNavigationComponent(
 								game_->GetRegistry(), currentEntity);
+							break;
 						case 10:
 							CreationSystems::CreateDefaultTPSControllerComponent(
 								game_->GetRegistry(), currentEntity);
+							break;
+						case 11:
+							CreationSystems::
+								CreateDefaultAIAgentComponent(
+									game_->GetRegistry(), currentEntity);
 					}
 				}
 			}

@@ -1,6 +1,7 @@
 #include "D3E/systems/CreationSystems.h"
 
 #include "D3E/CommonCpp.h"
+#include "D3E/Components/AiAgentComponent.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
 #include "D3E/Components/ScriptComponent.h"
@@ -386,7 +387,8 @@ void D3E::CreationSystems::CreateDefaultScriptComponent(
 	registry.emplace<ScriptComponent>(entity, component);
 }
 
-entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
+entt::entity
+D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
 {
 	const auto e = registry.create();
 
@@ -445,4 +447,11 @@ void D3E::CreationSystems::CreateDefaultTPSControllerComponent(
 {
 	TPSControllerComponent component = {};
 	registry.emplace<TPSControllerComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultAIAgentComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	AiAgentComponent component = {};
+	registry.emplace<AiAgentComponent>(entity, component);
 }
