@@ -66,6 +66,7 @@ target_sources("${PROJECT_NAME}"
         include/D3E/ai/graph/Edge.h
         include/D3E/ai/GoapPlanner.h 
         include/D3E/ai/graph/Vertex.h
+        include/D3E/ai/FunctionalAction.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -280,7 +281,9 @@ target_sources("${PROJECT_NAME}"
         src/components/AiAgentComponent.cpp
         src/ai/FSM.cpp
         src/ai/Agent.cpp
-        src/ai/State.cpp)
+        src/ai/State.cpp
+        src/ai/FunctionlAgent.cpp 
+        src/ai/Action.cpp)
 
 add_subdirectory(libs)
 

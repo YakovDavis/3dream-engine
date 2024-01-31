@@ -1,8 +1,10 @@
 #pragma once
 
 #include "D3E/Components/BaseComponent.h"
-#include "D3E/ai/FSM.h"
 #include "D3E/ai/Agent.h"
+#include "D3E/ai/FSM.h"
+#include "D3E/ai/FunctionalAction.h"
+#include "EASTL/unordered_map.h"
 
 namespace D3E
 {
@@ -14,6 +16,9 @@ namespace D3E
 		FSMState moveTo;
 		FSMState perform;
 
+		eastl::unordered_map<Action, FunctionalAction, ActionHash>
+			actionMapping;
+
 		AiAgentComponent();
 
 		void CreateIdle();
@@ -23,7 +28,7 @@ namespace D3E
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;
 
-		void Update() const;
+		void Update();
 	};
 
 	void to_json(json& j, const AiAgentComponent& t);

@@ -2,12 +2,14 @@
 
 #include "D3E/CommonHeader.h"
 #include "D3E/Debug.h"
+#include "D3E/ai/FunctionalAction.h"
 #include "D3E/ai/GoapPlanner.h"
 #include "json.hpp"
 
 using namespace D3E;
 
-AiAgentComponent::AiAgentComponent() : agent("DefaultName"), fsm()
+AiAgentComponent::AiAgentComponent()
+	: agent("DefaultName"), fsm(), actionMapping()
 {
 	CreateIdle();
 	CreateMoveTo();
@@ -24,11 +26,12 @@ void AiAgentComponent::CreateIdle()
 
 		if (plan.empty())
 		{
-			Debug::LogWarning(std::format("[AiAgentComponent] : name: {}, Plan "
-			                              "for goal: {} was not found!",
-			                              agent.GetName().c_str(),
-			                              agent.GetGoalToPlan().name.c_str())
-			                      .c_str());
+			Debug::LogWarning(
+				std::format("[AiAgentComponent] : Agent: {}, Plan "
+			                "for goal: {} was not found!",
+			                agent.GetName().c_str(),
+			                agent.GetGoalToPlan().name.c_str())
+					.c_str());
 
 			fsm.Pop();
 			fsm.Push(idle);
@@ -44,26 +47,59 @@ void AiAgentComponent::CreateIdle()
 }
 void AiAgentComponent::CreateMoveTo()
 {
-	moveTo = [this]() {};
+	moveTo = [this]()
+	{
+		// TODO(Denis): Implement
+		Debug::LogMessage("Moving");
+		fsm.Pop();
+	};
 }
 void AiAgentComponent::CreatePerform()
 {
-	perform = [this]() {};
+	perform = [this]()
+	{
+		if (!agent.HasPlan())
+		{
+			Debug::LogWarning(
+				std::format("[AiAgentComponent]: Agent: {} done its plan.",
+			                agent.GetName().c_str())
+					.c_str());
+
+			fsm.Pop();
+			fsm.Push(idle);
+
+			return;
+		}
+
+		// Extract action
+		// Remove dequeue if it is done
+
+		auto& action = actionMapping.at(agent.PeekAction());
+		if (action.IsDone())
+		{
+			agent.PopAction();
+
+			return;
+		}
+
+		// Check if action requires to be in range of some object
+		auto inRange = action.IsRanged() ? action.InRange() : true;
+
+		if (!inRange)
+		{
+			fsm.Pop();
+			fsm.Push(moveTo);
+
+			return;
+		}
+
+		action.Perform();
+	};
 }
 
-void AiAgentComponent::Update() const
+void AiAgentComponent::Update()
 {
-	if (fsm.Empty())
-	{
-		return;
-	}
-
-	if (fsm.Current() == nullptr)
-	{
-		return;
-	}
-
-	fsm.Current()();
+	fsm.Update();
 }
 
 void AiAgentComponent::to_json(json& j) const

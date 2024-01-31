@@ -26,6 +26,10 @@ namespace D3E
 		const eastl::vector<Action>& GetActions() const;
 		void AddAction(const Action& a);
 		void SetPlan(const eastl::vector<Action>& actions);
+		void ClearPlan();
+		const Action& PeekAction() const;
+		Action PopAction();
+		bool HasPlan() const;
 
 	private:
 		eastl::queue<Action> plan_;

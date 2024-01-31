@@ -94,3 +94,26 @@ void Agent::SetPlan(const eastl::vector<Action>& actions)
 		plan_.push(a);
 	}
 }
+
+void Agent::ClearPlan()
+{
+	plan_ = {};
+}
+
+const Action& Agent::PeekAction() const
+{
+	return plan_.front();
+}
+
+Action Agent::PopAction()
+{
+	Action a = plan_.front();
+	plan_.pop();
+
+	return a;
+}
+
+bool Agent::HasPlan() const
+{
+	return !plan_.empty();
+}

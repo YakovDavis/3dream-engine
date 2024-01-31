@@ -14,10 +14,12 @@ namespace D3E
 	public:
 		FSM();
 
-		FSMState Pop();
+		const FSMState& Peek() const;
+		void Pop();
 		void Push(const FSMState& s);
 		const FSMState& Current() const;
 		bool Empty() const;
+		void Update();
 
 	private:
 		eastl::stack<FSMState> states_;

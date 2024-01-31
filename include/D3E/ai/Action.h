@@ -12,6 +12,8 @@ namespace D3E
 		Action(const Action& other) = default;
 		explicit Action(const String& name) : name_(name), cost_(1) {}
 
+		const String& GetName() const { return name_; }
+
 		int GetCost() const { return cost_; }
 
 		void SetCost(int c) { cost_ = c; }
@@ -37,5 +39,16 @@ namespace D3E
 		int cost_;
 		State preconditions_;
 		State effects_;
+	};
+
+	bool operator==(const Action& lhs, const Action& rhs);
+	bool operator!=(const Action& lhs, const Action& rhs);
+
+	struct ActionHash
+	{
+		size_t operator()(const Action& e) const
+		{
+			return eastl::hash<eastl::string>()(e.GetName());
+		}
 	};
 } // namespace D3E

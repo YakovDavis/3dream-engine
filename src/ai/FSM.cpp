@@ -1,17 +1,23 @@
 #include "D3E/ai/FSM.h"
 
+#include "D3E/Debug.h"
+
+#include <format>
+
 using namespace D3E;
 
 FSM::FSM() : states_()
 {
 }
 
-FSMState FSM::Pop()
+const FSMState& FSM::Peek() const
 {
-	FSMState state = states_.top();
-	states_.pop();
+	return states_.top();
+}
 
-	return state;
+void FSM::Pop()
+{
+	states_.pop();
 }
 
 void FSM::Push(const FSMState& s)
@@ -27,4 +33,23 @@ const FSMState& FSM::Current() const
 bool FSM::Empty() const
 {
 	return states_.empty();
+}
+
+void FSM::Update()
+{
+	if (states_.empty())
+	{
+		Debug::LogWarning("[FSM] : Update(): states_ is empty!");
+
+		return;
+	}
+
+	if (!states_.top())
+	{
+		Debug::LogWarning("[FSM] : Update(): states_.top() is nullptr");
+
+		return;
+	}
+
+	states_.top()();
 }
