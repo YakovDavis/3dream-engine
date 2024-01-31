@@ -75,7 +75,7 @@ const State& Agent::GetCurrentState() const
 	return currentState_;
 }
 
-eastl::vector<Action> Agent::GetActions() const
+const eastl::vector<Action>& Agent::GetActions() const
 {
 	return actions_;
 }

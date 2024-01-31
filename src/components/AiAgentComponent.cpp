@@ -18,7 +18,7 @@ AiAgentComponent::AiAgentComponent() : agent("DefaultName"), fsm()
 
 void AiAgentComponent::CreateIdle()
 {
-	/*idle = [this]()
+	idle = [this]()
 	{
 		auto plan = GoapPlanner::Plan(agent);
 
@@ -26,8 +26,8 @@ void AiAgentComponent::CreateIdle()
 		{
 			Debug::LogWarning(std::format("[AiAgentComponent] : name: {}, Plan "
 			                              "for goal: {} was not found!",
-			                              agent.GetName(),
-			                              agent.GetGoalToPlan().name)
+			                              agent.GetName().c_str(),
+			                              agent.GetGoalToPlan().name.c_str())
 			                      .c_str());
 
 			fsm.Pop();
@@ -40,7 +40,7 @@ void AiAgentComponent::CreateIdle()
 
 		fsm.Pop();
 		fsm.Push(perform);
-	};*/
+	};
 }
 void AiAgentComponent::CreateMoveTo()
 {

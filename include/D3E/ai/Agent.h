@@ -23,7 +23,7 @@ namespace D3E
 		const eastl::vector<Goal>& GetGoals() const;
 		Goal GetGoalToPlan() const;
 		const State& GetCurrentState() const;
-		eastl::vector<Action> GetActions() const;
+		const eastl::vector<Action>& GetActions() const;
 		void AddAction(const Action& a);
 		void SetPlan(const eastl::vector<Action>& actions);
 
