@@ -5,6 +5,15 @@
 
 using namespace D3E;
 
+AiAgentComponent::AiAgentComponent() : agent("DefaultName"), fsm()
+{
+	CreateIdle();
+	CreateMoveTo();
+	CreatePerform();
+
+	fsm.Push(idle);
+}
+
 void AiAgentComponent::to_json(json& j) const
 {
 	j = json{{"type", "component"}, {"class", "AiAgentComponent"}};
@@ -12,6 +21,19 @@ void AiAgentComponent::to_json(json& j) const
 
 void AiAgentComponent::from_json(const json& j)
 {
+}
+
+void AiAgentComponent::CreateIdle()
+{
+	idle = []() {};
+}
+void AiAgentComponent::CreateMoveTo()
+{
+	moveTo = []() {};
+}
+void AiAgentComponent::CreatePerform()
+{
+	perform = []() {};
 }
 
 void AiAgentComponent::Update() const

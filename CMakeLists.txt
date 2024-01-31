@@ -278,7 +278,9 @@ target_sources("${PROJECT_NAME}"
         src/scripting/type_adapters/PhysicsActivationAdapter.cpp
         src/components/TPSControllerComponent.cpp        
         src/components/AiAgentComponent.cpp
-        src/ai/FSM.cpp)
+        src/ai/FSM.cpp
+        src/ai/Agent.cpp
+        src/ai/State.cpp)
 
 add_subdirectory(libs)
 
