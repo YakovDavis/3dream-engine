@@ -1,33 +1,48 @@
 #pragma once
 
 #include "EASTL/priority_queue.h"
+#include "EASTL/vector.h"
 
 namespace D3E
 {
+	template<typename T, typename TPriority> class PrioritizedItem
+	{
+	public:
+		PrioritizedItem(const T& item, const TPriority& priority)
+			: item_(item), priority_(priority)
+		{
+		}
+		PrioritizedItem(const PrioritizedItem& other)
+		{
+			item_ = other.item_;
+			priority_ = other.priority_;
+		}
+
+		const T& GetValue() const { return item_; }
+
+		TPriority GetPriority() const { return priority_; }
+
+	private:
+		T item_;
+		TPriority priority_;
+	};
+
+	template<typename T, typename TPriority>
+	bool operator>(const PrioritizedItem<T, TPriority>& lhs,
+	               const PrioritizedItem<T, TPriority>& rhs)
+	{
+		return lhs.GetPriority() > rhs.GetPriority();
+	}
+
+	template<typename T, typename TPriority>
+	bool operator<(const PrioritizedItem<T, TPriority>& lhs,
+	               const PrioritizedItem<T, TPriority>& rhs)
+	{
+		return lhs.GetPriority() > rhs.GetPriority();
+	}
+
 	template<typename TItem, typename TPriority> class PriorityQueue
 	{
-		class PrioritizedItem
-		{
-		public:
-			PrioritizedItem(const T& item, const TPriority& priority)
-				: item_(item), priority_(priority)
-			{
-			}
-			PrioritizedItem(const PrioritizedItem& other)
-			{
-				item_ = other.item_;
-				priority_ = other.priority_;
-			}
-
-			const T& GetValue() const { return item_; }
-
-			TPriority GetPriority() const { return priority_; }
-
-		private:
-			T item_;
-			TPriority priority_;
-		};
-
 		using PElement = PrioritizedItem<TItem, TPriority>;
 
 	public:
@@ -47,8 +62,8 @@ namespace D3E
 		}
 
 	private:
-		std::priority_queue<PElement, std::vector<PElement>,
-		                    std::greater<PElement>>
+		eastl::priority_queue<PElement, eastl::vector<PElement>,
+		                      eastl::greater<PElement>>
 			queue_;
 	};
 } // namespace D3E

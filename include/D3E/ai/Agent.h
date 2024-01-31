@@ -15,7 +15,9 @@ namespace D3E
 	public:
 		explicit Agent(const String& name);
 		Agent(const Agent& other);
-		
+
+		void SetName(const String& name);
+		const String& GetName() const;
 		void AddGoal(const Goal& g);
 		void RemoveGoal(const String& name);
 		const eastl::vector<Goal>& GetGoals() const;
@@ -23,6 +25,7 @@ namespace D3E
 		const State& GetCurrentState() const;
 		eastl::vector<Action> GetActions() const;
 		void AddAction(const Action& a);
+		void SetPlan(const eastl::vector<Action>& actions);
 
 	private:
 		eastl::queue<Action> plan_;

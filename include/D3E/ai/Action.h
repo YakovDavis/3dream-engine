@@ -8,6 +8,7 @@ namespace D3E
 	class Action
 	{
 	public:
+		Action() = default;
 		Action(const Action& other) = default;
 		explicit Action(const String& name) : name_(name), cost_(1) {}
 

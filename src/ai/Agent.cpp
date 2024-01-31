@@ -15,6 +15,16 @@ Agent::Agent(const Agent& other)
 	plan_ = other.plan_;
 }
 
+void Agent::SetName(const String& name)
+{
+	name_ = name;
+}
+
+const String& Agent::GetName() const
+{
+	return name_;
+}
+
 void Agent::AddGoal(const Goal& g)
 {
 	goals_.push_back(g);
@@ -73,4 +83,14 @@ eastl::vector<Action> Agent::GetActions() const
 void Agent::AddAction(const Action& a)
 {
 	actions_.push_back(a);
+}
+
+void Agent::SetPlan(const eastl::vector<Action>& actions)
+{
+	plan_ = {};
+
+	for (const auto& a : actions)
+	{
+		plan_.push(a);
+	}
 }

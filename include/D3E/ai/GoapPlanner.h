@@ -18,9 +18,10 @@ namespace D3E
 	{
 	public:
 		GoapPlanner() = delete;
+		GoapPlanner(const GoapPlanner& other) = delete;
 
 		static eastl::vector<Vertex>
-		GetNeighbors(const Vertex& current, const std::vector<Edge>& edges)
+		GetNeighbors(const Vertex& current, const eastl::vector<Edge>& edges)
 		{
 			eastl::vector<Vertex> neighbors;
 
@@ -88,7 +89,7 @@ namespace D3E
 		static eastl::vector<Action> Plan(const Agent& a)
 		{
 			auto actions = a.GetActions();
-			std::vector<Edge> edges;
+			eastl::vector<Edge> edges;
 
 			for (auto& a : actions)
 			{
@@ -97,11 +98,18 @@ namespace D3E
 
 			Vertex startState = Vertex(-1, a.GetCurrentState());
 			Vertex currentState = startState;
-			State goal = a.GetGoal().state;
 
-			PriorityQueue<Vertex, int> frontier;
-			eastl::unordered_map<Vertex, Vertex> previousState;
-			eastl::unordered_map<Vertex, int> cumulativeCost;
+			Goal goal = a.GetGoalToPlan();
+			if (goal.name == kNullGoalName)
+			{
+				return {};
+			}
+
+			State goalState = goal.state;
+
+			PriorityQueue<Vertex, int> frontier{};
+			eastl::unordered_map<Vertex, Vertex, VertexHash> previousState;
+			eastl::unordered_map<Vertex, int, VertexHash> cumulativeCost;
 			cumulativeCost[currentState] = 0;
 
 			frontier.Push(currentState, 0);
@@ -110,7 +118,7 @@ namespace D3E
 			{
 				currentState = frontier.Pop();
 
-				if (goal.MatchState(currentState.state))
+				if (goalState.MatchState(currentState.state))
 				{
 					break;
 				}
@@ -127,7 +135,7 @@ namespace D3E
 					{
 						cumulativeCost[nextState] = newCost;
 						auto priority =
-							newCost + Heuristic(currentState.state, goal);
+							newCost + Heuristic(currentState.state, goalState);
 
 						frontier.Push(nextState, newCost);
 						previousState[nextState] = currentState;
@@ -135,7 +143,7 @@ namespace D3E
 				}
 			}
 
-			std::vector<Action> path;
+			eastl::vector<Action> path;
 
 			while (currentState != startState)
 			{
@@ -143,7 +151,9 @@ namespace D3E
 				currentState = previousState[currentState];
 			}
 
-			std::reverse(path.begin(), path.end());
+			eastl::reverse(path.begin(), path.end());
+
+			return path;
 		}
 	};
 } // namespace D3E

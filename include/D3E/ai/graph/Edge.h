@@ -28,6 +28,14 @@ namespace D3E
 			return *this;
 		}
 	};
+
+	struct EdgeHash
+	{
+		size_t operator()(const Edge& e) const
+		{
+			return eastl::hash<int>()(e.id);
+		}
+	};
 } // namespace D3E
 
 namespace eastl
@@ -39,4 +47,4 @@ namespace eastl
 			return eastl::hash<int>()(a.id);
 		}
 	};
-} // namespace std
+} // namespace eastl

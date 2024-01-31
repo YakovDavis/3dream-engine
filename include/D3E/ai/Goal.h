@@ -7,8 +7,6 @@ namespace D3E
 {
 	struct Goal
 	{
-		const String kNullGoalName = "Empty Goal";
-
 		int priority;
 		String name;
 		State precondition;

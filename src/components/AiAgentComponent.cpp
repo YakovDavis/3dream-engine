@@ -1,6 +1,8 @@
 #include "D3E/Components/AiAgentComponent.h"
 
 #include "D3E/CommonHeader.h"
+#include "D3E/Debug.h"
+#include "D3E/ai/GoapPlanner.h"
 #include "json.hpp"
 
 using namespace D3E;
@@ -14,26 +16,39 @@ AiAgentComponent::AiAgentComponent() : agent("DefaultName"), fsm()
 	fsm.Push(idle);
 }
 
-void AiAgentComponent::to_json(json& j) const
-{
-	j = json{{"type", "component"}, {"class", "AiAgentComponent"}};
-}
-
-void AiAgentComponent::from_json(const json& j)
-{
-}
-
 void AiAgentComponent::CreateIdle()
 {
-	idle = []() {};
+	/*idle = [this]()
+	{
+		auto plan = GoapPlanner::Plan(agent);
+
+		if (plan.empty())
+		{
+			Debug::LogWarning(std::format("[AiAgentComponent] : name: {}, Plan "
+			                              "for goal: {} was not found!",
+			                              agent.GetName(),
+			                              agent.GetGoalToPlan().name)
+			                      .c_str());
+
+			fsm.Pop();
+			fsm.Push(idle);
+
+			return;
+		}
+
+		agent.SetPlan(plan);
+
+		fsm.Pop();
+		fsm.Push(perform);
+	};*/
 }
 void AiAgentComponent::CreateMoveTo()
 {
-	moveTo = []() {};
+	moveTo = [this]() {};
 }
 void AiAgentComponent::CreatePerform()
 {
-	perform = []() {};
+	perform = [this]() {};
 }
 
 void AiAgentComponent::Update() const
@@ -49,6 +64,15 @@ void AiAgentComponent::Update() const
 	}
 
 	fsm.Current()();
+}
+
+void AiAgentComponent::to_json(json& j) const
+{
+	j = json{{"type", "component"}, {"class", "AiAgentComponent"}};
+}
+
+void AiAgentComponent::from_json(const json& j)
+{
 }
 
 void to_json(json& j, const AiAgentComponent& t)
