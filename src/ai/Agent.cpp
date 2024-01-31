@@ -1,5 +1,9 @@
 #include "D3E/ai/Agent.h"
 
+#include "D3E/Debug.h"
+
+#include <format>
+
 using namespace D3E;
 
 Agent::Agent(const String& name)
@@ -82,6 +86,7 @@ const eastl::vector<Action>& Agent::GetActions() const
 
 void Agent::AddAction(const Action& a)
 {
+	// TODO(Denis): add facts to agent registry
 	actions_.push_back(a);
 }
 
@@ -116,4 +121,20 @@ Action Agent::PopAction()
 bool Agent::HasPlan() const
 {
 	return !plan_.empty();
+}
+
+void Agent::SetStateFact(const std::string& key, bool value)
+{
+	if (currentState_.facts.find(key.c_str()) == currentState_.facts.end())
+	{
+		Debug::LogWarning(
+			std::format(
+				"[Agent] : SetStateFact(): does not have fact with key: {}",
+				key)
+				.c_str());
+
+		return;
+	}
+
+	currentState_.facts[key.c_str()] = value;
 }

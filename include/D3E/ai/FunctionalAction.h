@@ -9,6 +9,7 @@ namespace D3E
 	class FunctionalAction
 	{
 	public:
+		FunctionalAction() = default;
 		FunctionalAction(const std::function<bool()> f);
 		FunctionalAction(const FunctionalAction& other);
 

@@ -28,6 +28,7 @@ namespace D3E
 		kLightComponent,
 		kCameraComponent,
 		kStaticMeshComponent,
+		kAiAgentComponent,
 	};
 
 	class ECSUtils
@@ -59,8 +60,9 @@ namespace D3E
 
 		static void DestroyEntity(entt::registry& r, entt::entity e);
 
-		static void DestroyEntities(entt::registry& r,
-		                           const eastl::vector<entt::entity>& entities);
+		static void
+		DestroyEntities(entt::registry& r,
+		                const eastl::vector<entt::entity>& entities);
 
 		static eastl::vector<entt::entity>
 		GetEntitiesWithScript(entt::registry& r, const String& className);

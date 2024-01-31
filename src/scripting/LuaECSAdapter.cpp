@@ -1,5 +1,6 @@
 #include "LuaECSAdapter.h"
 
+#include "D3E/Components/AiAgentComponent.h"
 #include "D3E/Components/ObjectInfoComponent.h"
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
@@ -9,6 +10,7 @@
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/TimerManager.h"
+#include "scripting/type_adapters/AiAgentAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "utils/ECSUtils.h"
 
@@ -67,6 +69,17 @@ sol::object LuaECSAdapter::GetComponent(entt::entity e, ComponentType type,
 		{
 			return sol::make_object(lua,
 			                        registry_.try_get<StaticMeshComponent>(e));
+		}
+		case ComponentType::kAiAgentComponent:
+		{
+			auto aiAgent = registry_.try_get<AiAgentComponent>(e);
+
+			if (!aiAgent)
+			{
+				return sol::nil;
+			}
+
+			return sol::make_object(lua, AiAgentAdapter(aiAgent));
 		}
 		default:
 		{

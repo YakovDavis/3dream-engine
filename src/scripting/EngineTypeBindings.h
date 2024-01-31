@@ -5,10 +5,13 @@
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
 #include "D3E/Debug.h"
+#include "D3E/ai/Action.h"
+#include "D3E/ai/Goal.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
 #include "render/RenderUtils.h"`
 #include "scripting/LuaECSAdapter.h"
+#include "scripting/type_adapters/AiAgentAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "scripting/type_adapters/InputDeviceAdapter.h"
 #include "scripting/type_adapters/PhysicsActivationAdapter.h"
@@ -30,7 +33,8 @@ namespace D3E
 			ComponentType::kSoundComponent, "Light",
 			ComponentType::kLightComponent, "Camera",
 			ComponentType::kCameraComponent, "StaticMesh",
-			ComponentType::kStaticMeshComponent);
+			ComponentType::kStaticMeshComponent, "AiAgent",
+			ComponentType::kAiAgentComponent);
 	}
 
 	static void BindMatrix(sol::state& state)
@@ -308,6 +312,33 @@ namespace D3E
 		{ Debug::Assert(condition, msg.c_str()); };
 	}
 
+	static void BindAction(sol::state& state)
+	{
+		auto action = state.new_usertype<Action>(
+			"Action", sol::constructors<Action(const std::string&)>());
+		action["set_cost"] = &Action::SetCost;
+		action["add_precondition"] = &Action::AddPrecondition;
+		action["add_effect"] = &Action::AddEffect;
+	}
+
+	static void BindGoal(sol::state& state)
+	{
+		auto goal = state.new_usertype<Goal>(
+			"Goal", sol::constructors<Goal(const std::string&, int)>());
+		goal["add_precondition"] = &Goal::AddPrecondition;
+		goal["add_target"] = &Goal::AddTarget;
+	}
+
+	static void BindAiAgentAdapter(sol::state& state)
+	{
+		auto agent =
+			state.new_usertype<AiAgentAdapter>("Agent", sol::no_constructor);
+		agent["add_goal"] = &AiAgentAdapter::AddGoal;
+		agent["add_action"] = &AiAgentAdapter::AddAction;
+		agent["set_name"] = &AiAgentAdapter::SetName;
+		agent["set_state_fact"] = &AiAgentAdapter::SetStateFact;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -325,5 +356,8 @@ namespace D3E
 		BindPhysicsAdapter(state);
 		BindRender(state);
 		BindDebug(state);
+		BindAction(state);
+		BindGoal(state);
+		BindAiAgentAdapter(state);
 	}
 } // namespace D3E

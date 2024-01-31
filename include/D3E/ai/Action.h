@@ -3,6 +3,8 @@
 #include "D3E/CommonHeader.h"
 #include "State.h"
 
+#include <string>
+
 namespace D3E
 {
 	class Action
@@ -10,7 +12,9 @@ namespace D3E
 	public:
 		Action() = default;
 		Action(const Action& other) = default;
-		explicit Action(const String& name) : name_(name), cost_(1) {}
+		explicit Action(const std::string& name) : name_(name.c_str()), cost_(1)
+		{
+		}
 
 		const String& GetName() const { return name_; }
 
@@ -22,14 +26,14 @@ namespace D3E
 
 		const State& GetEffects() const { return effects_; }
 
-		void AddPrecondition(const String& fact, bool value)
+		void AddPrecondition(const std::string& fact, bool value)
 		{
-			preconditions_.facts[fact] = value;
+			preconditions_.facts[fact.c_str()] = value;
 		}
 
-		void AddEffect(const String& fact, bool value)
+		void AddEffect(const std::string& fact, bool value)
 		{
-			effects_.facts[fact] = value;
+			effects_.facts[fact.c_str()] = value;
 		}
 
 		void Print() const {}
