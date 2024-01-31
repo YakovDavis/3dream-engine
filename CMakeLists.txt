@@ -58,6 +58,14 @@ target_sources("${PROJECT_NAME}"
         include/D3E/Components/TPSControllerComponent.h
         include/D3E/Components/AiAgentComponent.h
         include/D3E/ai/FSM.h
+        include/D3E/ai/Agent.h
+        include/D3E/ai/State.h
+        include/D3E/ai/Goal.h
+        include/D3E/ai/Action.h
+        include/D3E/structures/PriorityQueue.h
+        include/D3E/ai/graph/Edge.h
+        include/D3E/ai/GoapPlanner.h 
+        include/D3E/ai/graph/Vertex.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -80,8 +88,7 @@ target_sources("${PROJECT_NAME}"
         src/render/ShaderFactory.h
         src/render/NvrhiMessageCallback.h
         src/assetmng/TextureFactory.cpp
-        src/assetmng/TextureFactory.h
-        src/ai/graph/Vertex.h
+        src/assetmng/TextureFactory.h        
         src/core/magic_enum.hpp
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
@@ -269,15 +276,9 @@ target_sources("${PROJECT_NAME}"
         src/scripting/type_adapters/InputDeviceAdapter.cpp
         src/scripting/type_adapters/PhysicsActivationAdapter.h
         src/scripting/type_adapters/PhysicsActivationAdapter.cpp
-        src/components/TPSControllerComponent.cpp
-        src/ai/State.h
-        src/ai/Action.h
-        src/ai/Agent.h 
-        src/ai/Goal.h
-        src/ai/structures/PriorityQueue.h
-        src/ai/graph/Edge.h
-        src/ai/GoapPlanner.h 
-        src/components/AiAgentComponent.cpp)
+        src/components/TPSControllerComponent.cpp        
+        src/components/AiAgentComponent.cpp
+        src/ai/FSM.cpp)
 
 add_subdirectory(libs)
 

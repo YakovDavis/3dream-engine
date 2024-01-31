@@ -10,6 +10,8 @@ namespace D3E
 		FSM fsm;
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;
+
+		void Update() const;
 	};
 
 	void to_json(json& j, const AiAgentComponent& t);

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Action.h"
+#include "D3E/CommonHeader.h"
 #include "EASTL/vector.h"
-#include "ai/Action.h"
-#include "ai/Goal.h"
+#include "Goal.h"
+#include "State.h"
 
 namespace D3E
 {

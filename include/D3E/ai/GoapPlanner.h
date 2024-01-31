@@ -1,14 +1,14 @@
 #pragma once
 
+#include "D3E/ai/Action.h"
+#include "D3E/ai/Agent.h"
+#include "D3E/ai/Goal.h"
+#include "D3E/ai/State.h"
+#include "D3E/ai/graph/Edge.h"
+#include "D3E/ai/graph/Vertex.h"
+#include "D3E/structures/PriorityQueue.h"
 #include "EASTL/map.h"
 #include "EASTL/vector.h"
-#include "ai/Action.h"
-#include "ai/Agent.h"
-#include "ai/Goal.h"
-#include "ai/State.h"
-#include "ai/graph/Edge.h"
-#include "ai/graph/Vertex.h"
-#include "ai/structures/PriorityQueue.h"
 
 #include <format>
 
