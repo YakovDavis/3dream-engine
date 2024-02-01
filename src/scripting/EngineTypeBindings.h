@@ -7,6 +7,7 @@
 #include "D3E/Debug.h"
 #include "D3E/ai/Action.h"
 #include "D3E/ai/Goal.h"
+#include "D3E/time/time.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
 #include "render/RenderUtils.h"`
@@ -345,6 +346,15 @@ namespace D3E
 		agent["set_state_fact"] = &AiAgentAdapter::SetStateFact;
 	}
 
+	static void BindTime(sol::state& state)
+	{
+		struct CustomTime
+		{
+		};
+		auto time = state.new_usertype<CustomTime>("Time", sol::no_constructor);
+		time["delta_time"] = &Time::DeltaTime;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -365,5 +375,6 @@ namespace D3E
 		BindAction(state);
 		BindGoal(state);
 		BindAiAgentAdapter(state);
+		BindTime(state);
 	}
 } // namespace D3E

@@ -12,6 +12,7 @@
 #include "D3E/engine/ConsoleManager.h"
 #include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
+#include "D3E/time/Time.h"
 #include "EASTL/chrono.h"
 #include "EngineState.h"
 #include "assetmng/CDialogEventHandler.h"
@@ -169,6 +170,7 @@ void D3E::Game::Run()
 void D3E::Game::Init()
 {
 	D3E::ECSUtils::Init(this);
+	D3E::Time::GetInstance().Init(this);
 
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
