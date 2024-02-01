@@ -124,12 +124,15 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	loadedVertexShaders.push_back("GBuffer");
 	ShaderFactory::AddVertexShader("Csm", "Csm.hlsl", "VSMain");
 	loadedVertexShaders.push_back("Csm");
+	ShaderFactory::AddVertexShader("PointLightPass", "PointLightPass.hlsl", "VSMain");
+	loadedVertexShaders.push_back("PointLightPass");
 
 	ShaderFactory::AddVertexShader("Skybox", "Skybox.hlsl", "VSMain");
 
 	LoadDefaultInputLayouts();
 
 	ShaderFactory::AddVertexShader("LightPass", "LightPass.hlsl", "VSMain");
+	ShaderFactory::AddVertexShader("IblPass", "IblPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("Tonemap", "Tonemap.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "VSMain");
 	ShaderFactory::AddVertexShader("DebugDraw", "DebugDraw.hlsl", "VSMain");
@@ -138,7 +141,9 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 
 	ShaderFactory::AddPixelShader("SimpleForward", "SimpleForward.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("GBuffer", "GBuffer.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("IblPass", "IblPass.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("LightPass", "LightPass.hlsl", "PSMain");
+	ShaderFactory::AddPixelShader("PointLightPass", "PointLightPass.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("Skybox", "Skybox.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("Tonemap", "Tonemap.hlsl", "PSMain");
 	ShaderFactory::AddPixelShader("EditorHighlightPass", "EditorHighlightPass.hlsl", "PSMain");
@@ -160,10 +165,12 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	ShaderFactory::AddBindingLayout("GBufferV", layoutDescVDefault);
 	ShaderFactory::AddBindingLayout("CsmV", layoutDescVDefault);
 	ShaderFactory::AddBindingLayout("SkyboxV", layoutDescVDefault);
+	ShaderFactory::AddBindingLayout("PointLightPassV", layoutDescVDefault);
 
 	nvrhi::BindingLayoutDesc layoutDescVNull = {};
 	layoutDescVNull.setVisibility(nvrhi::ShaderType::Vertex);
 	ShaderFactory::AddBindingLayout("LightPassV", layoutDescVNull);
+	ShaderFactory::AddBindingLayout("IblPassV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("TonemapV", layoutDescVNull);
 	ShaderFactory::AddBindingLayout("EditorHighlightPassV", layoutDescVNull);
 
@@ -203,13 +210,33 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(2));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(3));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(4));
-	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(5));
-	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(6));
-	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(7));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(0));
 	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(1));
-	layoutDescLight.addItem(nvrhi::BindingLayoutItem::Sampler(2));
 	ShaderFactory::AddBindingLayout("LightPassP", layoutDescLight);
+
+	nvrhi::BindingLayoutDesc layoutDescIbl = {};
+	layoutDescIbl.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(1));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(2));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(3));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(4));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(5));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Texture_SRV(6));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	layoutDescIbl.addItem(nvrhi::BindingLayoutItem::Sampler(1));
+	ShaderFactory::AddBindingLayout("IblPassP", layoutDescIbl);
+
+	nvrhi::BindingLayoutDesc layoutDescPointLight = {};
+	layoutDescPointLight.setVisibility(nvrhi::ShaderType::Pixel);
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(1));
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(2));
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::Texture_SRV(3));
+	layoutDescPointLight.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+	ShaderFactory::AddBindingLayout("PointLightPassP", layoutDescPointLight);
 
 	nvrhi::BindingLayoutDesc layoutDescSky = {};
 	layoutDescSky.setVisibility(nvrhi::ShaderType::Pixel);
@@ -360,12 +387,23 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	nullDepthStencilState.setDepthFunc(nvrhi::ComparisonFunc::Always);
 	nullDepthStencilState.setStencilEnable(false);
 
-	nvrhi::GraphicsPipelineDesc lightpassPipelineDesc = {};
-	lightpassPipelineDesc.setInputLayout(nullptr);
-	lightpassPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("LightPass"));
-	lightpassPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("LightPass"));
-	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassV"));
-	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassP"));
+	nvrhi::GraphicsPipelineDesc iblPipelineDesc = {};
+	nvrhi::BlendState blendStateLightAdd = {};
+	blendStateLightAdd.targets[0].blendEnable = true;
+	blendStateLightAdd.targets[0].blendOp = nvrhi::BlendOp::Add;
+	blendStateLightAdd.targets[0].srcBlend = nvrhi::BlendFactor::One;
+	blendStateLightAdd.targets[0].destBlend = nvrhi::BlendFactor::One;
+	blendStateLightAdd.targets[0].blendOpAlpha = nvrhi::BlendOp::Add;
+	blendStateLightAdd.targets[0].srcBlendAlpha = nvrhi::BlendFactor::One;
+	blendStateLightAdd.targets[0].destBlendAlpha = nvrhi::BlendFactor::Zero;
+	blendStateLightAdd.targets[0].colorWriteMask = nvrhi::ColorMask::All;
+	blendStateLightAdd.disableAlphaToCoverage();
+	renderState.blendState = blendStateLightAdd;
+	iblPipelineDesc.setInputLayout(nullptr);
+	iblPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("IblPass"));
+	iblPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("IblPass"));
+	iblPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("IblPassV"));
+	iblPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("IblPassP"));
 	nvrhi::DepthStencilState::StencilOpDesc lightpassStencilOpDesc = {};
 	lightpassStencilOpDesc.passOp = nvrhi::StencilOp::Keep;
 	lightpassStencilOpDesc.stencilFunc = nvrhi::ComparisonFunc::Equal;
@@ -380,9 +418,32 @@ void D3E::DefaultAssetLoader::LoadDefaultPSOs(nvrhi::IFramebuffer* fb, nvrhi::IF
 	lightpassDSState.setStencilReadMask(0x01);
 	lightpassDSState.setStencilWriteMask(0x01);
 	renderState.depthStencilState = lightpassDSState;
+	iblPipelineDesc.setRenderState(renderState);
+	iblPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
+	ShaderFactory::AddGraphicsPipeline("IblPass", iblPipelineDesc, fb);
+
+	nvrhi::GraphicsPipelineDesc lightpassPipelineDesc = {};
+	lightpassPipelineDesc.setInputLayout(nullptr);
+	lightpassPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("LightPass"));
+	lightpassPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("LightPass"));
+	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassV"));
+	lightpassPipelineDesc.addBindingLayout(ShaderFactory::GetBindingLayout("LightPassP"));
 	lightpassPipelineDesc.setRenderState(renderState);
 	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleStrip;
 	ShaderFactory::AddGraphicsPipeline("LightPass", lightpassPipelineDesc, fb);
+
+	rasterState.setCullFront();
+	renderState.rasterState = rasterState;
+	lightpassPipelineDesc.setRenderState(renderState);
+	lightpassPipelineDesc.setInputLayout(ShaderFactory::GetInputLayout("PointLightPass"));
+	lightpassPipelineDesc.setVertexShader(ShaderFactory::GetVertexShader("PointLightPass"));
+	lightpassPipelineDesc.setPixelShader(ShaderFactory::GetPixelShader("PointLightPass"));
+	lightpassPipelineDesc.bindingLayouts = { ShaderFactory::GetBindingLayout("PointLightPassV"), ShaderFactory::GetBindingLayout("PointLightPassP") };
+	lightpassPipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
+	ShaderFactory::AddGraphicsPipeline("PointLightPass", lightpassPipelineDesc, fb);
+	rasterState.setCullBack();
+	renderState.rasterState = rasterState;
+	renderState.blendState = blendState;
 
 	nvrhi::GraphicsPipelineDesc tonemapPipelineDesc = {};
 	tonemapPipelineDesc.setInputLayout(nullptr);

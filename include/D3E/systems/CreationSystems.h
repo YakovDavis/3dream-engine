@@ -20,6 +20,7 @@ namespace D3E
 		static entt::entity CreatePhysicalCube(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const PhysicsComponent& physc);
 		static entt::entity CreateSM(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc, const String& meshUuid, const String& materialUuid);
 		static entt::entity CreateLight(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc);
+		static entt::entity CreatePointLight(entt::registry& registry, const ObjectInfoComponent& info, const TransformComponent& tc);
 		static entt::entity CreateDefaultPlayer(entt::registry& registry, const TransformComponent& tc);
 		static entt::entity CreateEditorDebugRender(entt::registry& registry);
 		static entt::entity CreateEditorFakePlayer(entt::registry& registry);

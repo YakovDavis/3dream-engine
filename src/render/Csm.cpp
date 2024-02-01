@@ -134,12 +134,6 @@ D3E::Csm* D3E::Csm::Init(D3E::Game* game)
 
 void D3E::Csm::GenerateCascadeMaps()
 {
-	commandList_->open();
-	commandList_->beginMarker("CascadeShadowMaps");
-	commandList_->beginTrackingTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
-	commandList_->setTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
-	commandList_->clearDepthStencilTexture(csmTexture_, nvrhi::AllSubresources, true, 1.0f, false, 0);
-
 	{
 		entt::entity dLight = entt::null;
 
@@ -147,7 +141,8 @@ void D3E::Csm::GenerateCascadeMaps()
 
 		for (auto light : view)
 		{
-			if (game_->GetRegistry().get<LightComponent>(light).lightType == LightType::Directional)
+			if (game_->GetRegistry().get<LightComponent>(light).lightType == LightType::Directional &&
+			    game_->GetRegistry().get<LightComponent>(light).initialized)
 			{
 				dLight = light;
 				break;
@@ -185,6 +180,11 @@ void D3E::Csm::GenerateCascadeMaps()
 
 	auto view = game_->GetRegistry().view<const ObjectInfoComponent, const TransformComponent, const StaticMeshComponent>();
 
+	commandList_->open();
+	commandList_->beginMarker("CascadeShadowMaps");
+	commandList_->beginTrackingTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::ShaderResource);
+	commandList_->setTextureState(csmTexture_, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+	commandList_->clearDepthStencilTexture(csmTexture_, nvrhi::AllSubresources, true, 1.0f, false, 0);
 	commandList_->writeBuffer(gsCB_, &gsCBData_, gsCB_->getDesc().byteSize);
 	commandList_->close();
 	device_->executeCommandList(commandList_);

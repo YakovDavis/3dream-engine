@@ -2,102 +2,44 @@
 
 #include "LightPassCommon.hlsl"
 
-#ifndef CASCADE_COUNT
-#define CASCADE_COUNT 4
-#endif
+struct VS_IN
+{
+	float4 pos : POSITION0;
+    float4 normal : NORMAL0;
+    float4 tangentU : TANGENT0;
+	float3 bitangent : BITANGENT;
+	float4 tex : TEXCOORD0;
+};
 
 struct PS_IN
 {
 	float4 pos : SV_POSITION;
- 	float2 tex : TEXCOORD;
-};
-cbuffer cbPerScene : register(b0)
-{
-	float4 gLightDir;
-	float4 gLightColor; // w = is shadow casting
-	float4 gEyePosition;
-	float4x4 gView;
 };
 
-cbuffer cbCascade : register(b1)
+cbuffer cbPerVolume : register(b0)
 {
-	float4x4 gViewProj[CASCADE_COUNT + 1];
-	float4 gDistances;
+	float4x4 gWorldViewProj;
+};
+
+cbuffer cbPerLight : register(b0)
+{
+	float4 gLightPos;
+	float4 gLightColor;
+	float4 gEyePosition;
 };
 
 Texture2D<float4> AlbedoBuffer : register(t0);
 Texture2D<float3> PositionBuffer : register(t1);
 Texture2D<float3> NormalBuffer : register(t2);
 Texture2D<float3> MetalRoughnessBuffer : register(t3);
-Texture2DArray CascadeShadowMap : register(t4);
 
 SamplerState DefaultSampler : register(s0);
-SamplerState DepthSampler : register(s1);
 
-PS_IN VSMain(uint id: SV_VertexID)
+PS_IN VSMain(VS_IN input)
 {
 	PS_IN output = (PS_IN)0;
-
-	output.tex = float2(id & 1, (id & 2) >> 1);
-	output.pos = float4(output.tex * float2(2, -2) + float2(-1, 1), 0, 1);
-	
+	output.pos = mul(float4(input.pos.xyz, 1.0f), gWorldViewProj);
 	return output;
-}
-
-float ShadowCalculation(float3 posWorldSpace, float4 posViewSpace, float dotN)
-{
-	float depthValue = abs(posViewSpace.z);
-
-	int layer = -1;
-	for (int i = 0; i < CASCADE_COUNT; ++i)
-	{
-		if (depthValue < gDistances[i])
-		{
-			layer = i;
-			break;
-		}
-	}
-	if (layer == -1)
-	{
-		layer = CASCADE_COUNT;
-	}
-
-	float4 posLightSpace = mul(float4(posWorldSpace.xyz, 1.0), gViewProj[layer]);
-	float3 projCoords = posLightSpace.xyz / posLightSpace.w;
-
-	projCoords.x = (projCoords.x + 1.0f) / 2.0f;
-	projCoords.y = (- projCoords.y + 1.0f) / 2.0f;
-	float currentDepth = projCoords.z;
-
-	if (currentDepth > 1.0f)
-	{
-		return 0.0f;
-	}
-
-	float bias = max(0.02f * (1.0f - dotN), 0.005f);
-	const float biasModifier = 0.5f;
-	if (layer == CASCADE_COUNT)
-	{
-		bias *= 1 / (1000.0 * biasModifier);
-	}
-	else
-	{
-		bias *= 1 / (gDistances[layer] * biasModifier);
-	}
-
-	// PCF
-	float shadow = 0.0f;
-	float2 texelSize = 1.0f / 2048.0f;
-	for (int x = -1; x <= 1; ++x)
-	{
-		for (int y = -1; y <= 1; ++y)
-		{
-			shadow += CascadeShadowMap.Sample(DepthSampler, float3(projCoords.xy + float2(x, y) * texelSize, layer)).r < currentDepth - bias;
-		}
-	}
-	shadow /= 9.0f;
-
-	return shadow;
 }
 
 float4 PSMain(PS_IN input) : SV_Target
@@ -124,7 +66,9 @@ float4 PSMain(PS_IN input) : SV_Target
 
 	// Direct lighting calculation.
 	float3 directLighting = 0.0;
-	float3 Li = -gLightDir.xyz;
+	float3 Li = gLightPos.xyz - worldPos;
+	float lightTravel = length(Li);
+	Li = normalize(Li);
 	float3 Lradiance = gLightColor.rgb;
 
 	// Half-vector between Li and Lo.
@@ -156,14 +100,6 @@ float4 PSMain(PS_IN input) : SV_Target
 
 	// Total contribution for this light.
 	directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
-
-	float4 viewPos = mul(float4(worldPos, 1.0f), gView);
-
-	[branch]
-	if (gLightColor.w > 0)
-	{
-		directLighting *= (1 - ShadowCalculation(worldPos, viewPos, dot(norm, gLightDir.xyz)));
-	}
-
+	directLighting *= 1.0f / (1.0f + lightTravel * lightTravel);
 	return float4(directLighting, 1.0);
 }

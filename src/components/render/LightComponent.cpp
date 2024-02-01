@@ -25,7 +25,8 @@ namespace D3E
 		         {"direction", std::vector({direction.x, direction.y, direction.z})},
 		         {"color", std::vector({color.x, color.y, color.z})},
 		         {"intensity", intensity},
-		         {"casts_shadows", castsShadows}
+		         {"casts_shadows", castsShadows},
+		         {"attenuation_limit_radius", attenuationLimitRadius}
 		};
 	}
 
@@ -42,6 +43,15 @@ namespace D3E
 		j.at("color").get_to(tmp_color);
 		j.at("intensity").get_to(intensity);
 		j.at("casts_shadows").get_to(castsShadows);
+
+		if (j.contains("attenuation_limit_radius"))
+		{
+			j.at("attenuation_limit_radius").get_to(attenuationLimitRadius);
+		}
+		else
+		{
+			attenuationLimitRadius = 50.0f;
+		}
 
 		auto c = magic_enum::enum_cast<LightType>(tmp_lightType);
 		if (c.has_value())
