@@ -20,10 +20,10 @@ namespace D3E
 		GoapPlanner() = delete;
 		GoapPlanner(const GoapPlanner& other) = delete;
 
-		static eastl::vector<Vertex>
-		GetNeighbors(const Vertex& current, const eastl::vector<Edge>& edges)
+		static eastl::vector<GraphVertex>
+		GetNeighbors(const GraphVertex& current, const eastl::vector<Edge>& edges)
 		{
-			eastl::vector<Vertex> neighbors;
+			eastl::vector<GraphVertex> neighbors;
 
 			for (auto& e : edges)
 			{
@@ -88,16 +88,15 @@ namespace D3E
 
 		static eastl::vector<Action> Plan(const Agent& a)
 		{
-			auto actions = a.GetActions();
 			eastl::vector<Edge> edges;
 
-			for (auto& a : actions)
+			for (auto& a : a.GetActions())
 			{
 				edges.push_back({(int)edges.size(), a});
 			}
 
-			Vertex startState = Vertex(-1, a.GetCurrentState());
-			Vertex currentState = startState;
+			GraphVertex startState = GraphVertex(-1, a.GetCurrentState());
+			GraphVertex currentState = startState;
 
 			Goal goal = a.GetGoalToPlan();
 			if (goal.name == kNullGoalName)
@@ -107,9 +106,9 @@ namespace D3E
 
 			State goalState = goal.state;
 
-			PriorityQueue<Vertex, int> frontier{};
-			eastl::unordered_map<Vertex, Vertex, VertexHash> previousState;
-			eastl::unordered_map<Vertex, int, VertexHash> cumulativeCost;
+			PriorityQueue<GraphVertex, int> frontier{};
+			eastl::unordered_map<GraphVertex, GraphVertex, VertexHash> previousState;
+			eastl::unordered_map<GraphVertex, int, VertexHash> cumulativeCost;
 			cumulativeCost[currentState] = 0;
 
 			frontier.Push(currentState, 0);

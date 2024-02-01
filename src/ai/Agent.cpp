@@ -75,7 +75,7 @@ Goal Agent::GetGoalToPlan() const
 
 	for (const auto& g : goals_)
 	{
-		if (g.state.MatchState(currentState_) && g.priority > goal.priority)
+		if (g.precondition.MatchState(currentState_) && g.priority > goal.priority)
 		{
 			goal = g;
 		}

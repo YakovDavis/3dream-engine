@@ -18,6 +18,16 @@ AiAgentComponent::AiAgentComponent()
 	fsm.Push(idle);
 }
 
+AiAgentComponent::AiAgentComponent(const AiAgentComponent& other)
+	: agent(other.agent), actionMapping(other.actionMapping), fsm()
+{
+	CreateIdle();
+	CreateMoveTo();
+	CreatePerform();
+
+	fsm.Push(idle);
+}
+
 void AiAgentComponent::CreateIdle()
 {
 	idle = [this]()

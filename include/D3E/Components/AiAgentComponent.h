@@ -20,6 +20,7 @@ namespace D3E
 			actionMapping;
 
 		AiAgentComponent();
+		AiAgentComponent(const AiAgentComponent& other);
 
 		void CreateIdle();
 		void CreateMoveTo();

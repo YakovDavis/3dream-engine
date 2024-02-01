@@ -5,35 +5,48 @@
 
 namespace D3E
 {
-	struct Vertex
+	struct GraphVertex
 	{
 		int previousActionId;
 		State state;
 
-		Vertex() : previousActionId(-1), state() {}
-		Vertex(int fromId, const State& s) : previousActionId(fromId), state(s)
+		GraphVertex() : previousActionId(-1), state() {}
+		GraphVertex(int fromId, const State& s) : previousActionId(fromId), state(s)
 		{
 		}
-		Vertex(const Vertex& other)
+		GraphVertex(const GraphVertex& other)
 			: previousActionId(other.previousActionId), state(other.state)
 		{
 		}
+
+		GraphVertex& operator=(const GraphVertex& other)
+		{
+			if (this == &other)
+			{
+				return *this;
+			}
+
+			previousActionId = other.previousActionId;
+			state = other.state;
+
+			return *this;
+		}
 	};
 
-	bool operator==(const Vertex& lhs, const Vertex& rhs)
+	bool operator==(const GraphVertex& lhs, const GraphVertex& rhs)
 	{
 		return lhs.previousActionId == rhs.previousActionId &&
 		       lhs.state == rhs.state;
 	}
 
-	bool operator!=(const Vertex& lhs, const Vertex& rhs)
+	bool operator!=(const GraphVertex& lhs, const GraphVertex& rhs)
 	{
 		return !(lhs == rhs);
 	}
 
 	struct VertexHash
 	{
-		size_t operator()(const Vertex& v) const
+		size_t operator()(const GraphVertex& v) const
 		{
 			return eastl::hash<int>()(v.previousActionId) +
 			       eastl::hash<eastl::string>()(v.state.name);
@@ -43,9 +56,9 @@ namespace D3E
 
 namespace std
 {
-	template<> struct hash<D3E::Vertex>
+	template<> struct hash<D3E::GraphVertex>
 	{
-		std::size_t operator()(const D3E::Vertex& v) const noexcept
+		std::size_t operator()(const D3E::GraphVertex& v) const noexcept
 		{
 			return eastl::hash<int>()(v.previousActionId) +
 			       eastl::hash<eastl::string>()(v.state.name);
