@@ -68,6 +68,8 @@ target_sources("${PROJECT_NAME}"
         include/D3E/ai/graph/Vertex.h
         include/D3E/ai/FunctionalAction.h
         include/D3E/time/Time.h
+        include/D3E/Components/navigation/NavigationAgentComponent.h
+        include/D3E/CrowdConfig.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -288,7 +290,10 @@ target_sources("${PROJECT_NAME}"
         src/scripting/type_adapters/AiAgentAdapter.h 
         src/engine/systems/AiManagementSystem.h 
         src/engine/systems/AiManagementSystem.cpp
-        src/time/Time.cpp)
+        src/time/Time.cpp
+        src/engine/systems/NavigationSystem.h
+        src/engine/systems/NavigationSystem.cpp
+        src/components/NavigationAgentComponent.cpp)
 
 add_subdirectory(libs)
 

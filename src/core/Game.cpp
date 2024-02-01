@@ -26,6 +26,7 @@
 #include "engine/systems/CharacterInitSystem.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/NavigationSystem.h"
 #include "engine/systems/PhysicsUpdateSystem.h"
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
@@ -209,6 +210,7 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
 	systems_.push_back(new AiManagementSystem());
+	systems_.push_back(new NavigationSystem(this));
 	childTransformSyncSystem =
 		eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
 	systems_.push_back(childTransformSyncSystem.get());
@@ -705,7 +707,7 @@ D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
 	return gizmoOffsets_.at(uuid);
 }
 
-void D3E::Game::BuildNavmesh(entt::entity e)
+bool D3E::Game::BuildNavmesh(entt::entity e)
 {
 	auto& nc = registry_.get<NavmeshComponent>(e);
 	auto& tc = registry_.get<TransformComponent>(e);
@@ -722,10 +724,13 @@ void D3E::Game::BuildNavmesh(entt::entity e)
 		eastl::make_unique<NavmeshBuilder>(&vertices, &indices);
 
 	auto r = nb->Build(nc);
+
 	if (!r)
 	{
 		Debug::LogError("[Game] : BuildNavmesh(): Navmesh was not built");
 	}
+
+	return r;
 }
 
 void D3E::Game::OnEditorPlayPressed()

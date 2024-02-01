@@ -6,6 +6,7 @@
 #include "D3E/Components/MouseComponent.h"
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/TPSControllerComponent.h"
+#include "D3E/Components/navigation/NavigationAgentComponent.h"
 #include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
@@ -454,4 +455,11 @@ void D3E::CreationSystems::CreateDefaultAIAgentComponent(
 {
 	AiAgentComponent component = {};
 	registry.emplace<AiAgentComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultNavigationAgentComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	NavigationAgentComponent component = {};
+	registry.emplace<NavigationAgentComponent>(entity, component);
 }
