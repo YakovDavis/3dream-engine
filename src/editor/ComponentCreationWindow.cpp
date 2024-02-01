@@ -134,121 +134,236 @@ void D3E::ComponentCreationWindow::Draw()
 			bool colliderParamsOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Collider Params");
 			if (colliderParamsOpened)
 			{
-				float x, y, z, w;
-				std::string xInput = std::to_string(physicsComponent.colliderParams_.x);
-				if (ImGui::InputText("x", &xInput, input_text_flags))
+				switch (selectedIdx)
 				{
-					if (!(xInput.empty()))
+					case 0:
 					{
-						x = std::stof(xInput);
-						physicsComponent.colliderParams_.x = x;
+						float radius;
+						std::string xInput =
+							std::to_string(physicsComponent.colliderParams_.x);
+						if (ImGui::InputText("Radius", &xInput,
+						                     input_text_flags))
+						{
+							if (!(xInput.empty()))
+							{
+								radius = std::stof(xInput);
+								physicsComponent.colliderParams_.x = radius;
+							}
+						}
+						if (physicsComponent.colliderParams_.x <= 0.0f)
+						{
+							physicsComponent.colliderParams_.x = 1.0f;
+						}
+						break;
 					}
-				}
-				std::string yInput = std::to_string(physicsComponent.colliderParams_.y);
-				if (ImGui::InputText("y", &yInput, input_text_flags))
-				{
-					if (!(yInput.empty()))
+					case 1:
 					{
-						y = std::stof(yInput);
-						physicsComponent.colliderParams_.y = y;
+						float x, y, z, convexRadius;
+						std::string xInput =
+							std::to_string(physicsComponent.colliderParams_.x);
+						if (ImGui::InputText("Half Extent X", &xInput,
+						                     input_text_flags))
+						{
+							if (!(xInput.empty()))
+							{
+								x = std::stof(xInput);
+								physicsComponent.colliderParams_.x = x;
+							}
+						}
+						std::string yInput =
+							std::to_string(physicsComponent.colliderParams_.y);
+						if (ImGui::InputText("Half Extent Y", &yInput,
+						                     input_text_flags))
+						{
+							if (!(yInput.empty()))
+							{
+								y = std::stof(yInput);
+								physicsComponent.colliderParams_.y = y;
+							}
+						}
+						std::string zInput =
+							std::to_string(physicsComponent.colliderParams_.z);
+						if (ImGui::InputText("Half Extent Z", &zInput,
+						                     input_text_flags))
+						{
+							if (!(zInput.empty()))
+							{
+								z = std::stof(zInput);
+								physicsComponent.colliderParams_.z = z;
+							}
+						}
+						std::string wInput =
+							std::to_string(physicsComponent.colliderParams_.w);
+						if (ImGui::InputText("Convex Radius", &wInput,
+						                     input_text_flags))
+						{
+							if (!(wInput.empty()))
+							{
+								convexRadius = std::stof(wInput);
+								physicsComponent.colliderParams_.w =
+									convexRadius;
+							}
+						}
+						if (physicsComponent.colliderParams_.x <= 0.0f)
+						{
+							physicsComponent.colliderParams_.x = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.y <= 0.0f)
+						{
+							physicsComponent.colliderParams_.y = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.z <= 0.0f)
+						{
+							physicsComponent.colliderParams_.z = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.w < 0.0f)
+						{
+							physicsComponent.colliderParams_.w = 0.0f;
+						}
+						break;
 					}
-				}
-				std::string zInput = std::to_string(physicsComponent.colliderParams_.z);
-				if (ImGui::InputText("z", &zInput, input_text_flags))
-				{
-					if (!(zInput.empty()))
+					case 2:
 					{
-						z = std::stof(zInput);
-						physicsComponent.colliderParams_.z = z;
+						float halfHeight, radius;
+						std::string xInput =
+							std::to_string(physicsComponent.colliderParams_.x);
+						if (ImGui::InputText("Half Height", &xInput,
+						                     input_text_flags))
+						{
+							if (!(xInput.empty()))
+							{
+								halfHeight = std::stof(xInput);
+								physicsComponent.colliderParams_.x = halfHeight;
+							}
+						}
+						std::string yInput =
+							std::to_string(physicsComponent.colliderParams_.y);
+						if (ImGui::InputText("Radius", &yInput,
+						                     input_text_flags))
+						{
+							if (!(yInput.empty()))
+							{
+								radius = std::stof(yInput);
+								physicsComponent.colliderParams_.y = radius;
+							}
+						}
+						if (physicsComponent.colliderParams_.x <= 0.0f)
+						{
+							physicsComponent.colliderParams_.x = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.y <= 0.0f)
+						{
+							physicsComponent.colliderParams_.y = 1.0f;
+						}
+						break;
 					}
-				}
-				std::string wInput = std::to_string(physicsComponent.colliderParams_.w);
-				if (ImGui::InputText("w", &wInput, input_text_flags))
-				{
-					if (!(wInput.empty()))
+					case 3:
 					{
-						w = std::stof(wInput);
-						physicsComponent.colliderParams_.w = w;
+						float halfHeight, topRadius, bottomRadius;
+						std::string xInput =
+							std::to_string(physicsComponent.colliderParams_.x);
+						if (ImGui::InputText("Half Height", &xInput,
+						                     input_text_flags))
+						{
+							if (!(xInput.empty()))
+							{
+								halfHeight = std::stof(xInput);
+								physicsComponent.colliderParams_.x = halfHeight;
+							}
+						}
+						std::string yInput =
+							std::to_string(physicsComponent.colliderParams_.y);
+						if (ImGui::InputText("Top Radius", &yInput,
+						                     input_text_flags))
+						{
+							if (!(yInput.empty()))
+							{
+								topRadius = std::stof(yInput);
+								physicsComponent.colliderParams_.y = topRadius;
+							}
+						}
+						std::string zInput =
+							std::to_string(physicsComponent.colliderParams_.z);
+						if (ImGui::InputText("Bottom Radius", &zInput,
+						                     input_text_flags))
+						{
+							if (!(zInput.empty()))
+							{
+								bottomRadius = std::stof(zInput);
+								physicsComponent.colliderParams_.z =
+									bottomRadius;
+							}
+						}
+						if (physicsComponent.colliderParams_.x <= 0.0f)
+						{
+							physicsComponent.colliderParams_.x = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.y <= 0.0f)
+						{
+							physicsComponent.colliderParams_.y = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.z <= 0.0f)
+						{
+							physicsComponent.colliderParams_.z = 1.0f;
+						}
+						break;
+					}
+					case 4:
+					{
+						float halfHeight, radius, convexRadius;
+						std::string xInput =
+							std::to_string(physicsComponent.colliderParams_.x);
+						if (ImGui::InputText("Half Height", &xInput,
+						                     input_text_flags))
+						{
+							if (!(xInput.empty()))
+							{
+								halfHeight = std::stof(xInput);
+								physicsComponent.colliderParams_.x = halfHeight;
+							}
+						}
+						std::string yInput =
+							std::to_string(physicsComponent.colliderParams_.y);
+						if (ImGui::InputText("Radius", &yInput,
+						                     input_text_flags))
+						{
+							if (!(yInput.empty()))
+							{
+								radius = std::stof(yInput);
+								physicsComponent.colliderParams_.y = radius;
+							}
+						}
+						std::string zInput =
+							std::to_string(physicsComponent.colliderParams_.z);
+						if (ImGui::InputText("Convex Radius", &zInput,
+						                     input_text_flags))
+						{
+							if (!(zInput.empty()))
+							{
+								convexRadius = std::stof(zInput);
+								physicsComponent.colliderParams_.z =
+									convexRadius;
+							}
+						}
+						if (physicsComponent.colliderParams_.x <= 0.0f)
+						{
+							physicsComponent.colliderParams_.x = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.y <= 0.0f)
+						{
+							physicsComponent.colliderParams_.y = 1.0f;
+						}
+						if (physicsComponent.colliderParams_.z < 0.0f)
+						{
+							physicsComponent.colliderParams_.z = 0.0f;
+						}
+						break;
 					}
 				}
 				ImGui::TreePop();
 			}
 			++idx;
-			switch (selectedIdx)
-			{
-				case 0:
-				{
-					if (physicsComponent.colliderParams_.x <= 0.0f)
-					{
-						physicsComponent.colliderParams_.x = 1.0f;
-					}
-					break;
-				}
-				case 1:
-				{
-					if (physicsComponent.colliderParams_.x <= 0.0f)
-					{
-						physicsComponent.colliderParams_.x = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.y <= 0.0f)
-					{
-						physicsComponent.colliderParams_.y = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.z <= 0.0f)
-					{
-						physicsComponent.colliderParams_.z = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.w < 0.0f)
-					{
-						physicsComponent.colliderParams_.w = 0.0f;
-					}
-					break;
-				}
-				case 2:
-				{
-					if (physicsComponent.colliderParams_.x <= 0.0f)
-					{
-						physicsComponent.colliderParams_.x = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.y <= 0.0f)
-					{
-						physicsComponent.colliderParams_.y = 1.0f;
-					}
-					break;
-				}
-				case 3:
-				{
-					if (physicsComponent.colliderParams_.x <= 0.0f)
-					{
-						physicsComponent.colliderParams_.x = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.y <= 0.0f)
-					{
-						physicsComponent.colliderParams_.y = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.z <= 0.0f)
-					{
-						physicsComponent.colliderParams_.z = 1.0f;
-					}
-					break;
-				}
-				case 4:
-				{
-					if (physicsComponent.colliderParams_.x <= 0.0f)
-					{
-						physicsComponent.colliderParams_.x = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.y <= 0.0f)
-					{
-						physicsComponent.colliderParams_.y = 1.0f;
-					}
-					if (physicsComponent.colliderParams_.z < 0.0f)
-					{
-						physicsComponent.colliderParams_.z = 0.0f;
-					}
-					break;
-				}
-			}
+
 
 			std::string massInput = std::to_string(physicsComponent.mass_);
 			if (ImGui::InputText("Mass", &massInput, input_text_flags))
