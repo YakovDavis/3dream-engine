@@ -36,6 +36,8 @@ namespace D3E
 		         {"friction", friction_},
 		         {"restitution", restitution_},
 		         {"has_offset_center_of_mass", hasOffsetCenterOfMass_},
+				 {"collider_offset", std::vector({colliderOffset_.x, colliderOffset_.y, colliderOffset_.z})},
+				 {"collider_rotation", std::vector({colliderRotation_.x, colliderRotation_.y, colliderRotation_.z, colliderRotation_.w})},
 		         {"center_of_mass_offset", std::vector({centerOfMassOffset_.x, centerOfMassOffset_.y, centerOfMassOffset_.z})},
 		         {"motion_type", magic_enum::enum_name(motionType_)},
 		         {"velocity", std::vector({velocity_.x, velocity_.y, velocity_.z})},
@@ -50,6 +52,8 @@ namespace D3E
 	{
 		std::string colliderType;
 		std::vector<float> colliderParams(4);
+		std::vector<float> colliderOffset(3);
+		std::vector<float> colliderRotation(4);
 		std::vector<float> centerOfMassOffset(3);
 		std::string motionType;
 		std::vector<float> velocity(3);
@@ -61,6 +65,22 @@ namespace D3E
 		j.at("friction").get_to(friction_);
 		j.at("restitution").get_to(restitution_);
 		j.at("has_offset_center_of_mass").get_to(hasOffsetCenterOfMass_);
+		if (j.contains("collider_offset"))
+		{
+			j.at("collider_offset").get_to(colliderOffset);
+		}
+		else
+		{
+			colliderOffset = { 0, 0, 0 };
+		}
+		if (j.contains("collider_rotation"))
+		{
+			j.at("collider_rotation").get_to(colliderRotation);
+		}
+		else
+		{
+			colliderOffset = { 0, 0, 0, 0 };
+		}
 		j.at("center_of_mass_offset").get_to(centerOfMassOffset);
 		j.at("motion_type").get_to(motionType);
 		j.at("velocity").get_to(velocity);
@@ -107,6 +127,8 @@ namespace D3E
 		}
 
 		colliderParams_ = DirectX::SimpleMath::Vector4(colliderParams[0], colliderParams[1], colliderParams[2], colliderParams[3]);
+		colliderOffset_ = DirectX::SimpleMath::Vector3(colliderOffset[0], colliderOffset[1], colliderOffset[2]);
+		colliderRotation_ = DirectX::SimpleMath::Vector3(colliderRotation[0], colliderRotation[1], colliderRotation[2], colliderRotation[3]);
 		centerOfMassOffset_ = DirectX::SimpleMath::Vector3(centerOfMassOffset[0], centerOfMassOffset[1], centerOfMassOffset[2]);
 		velocity_ = DirectX::SimpleMath::Vector3(velocity[0], velocity[1], velocity[2]);
 		angularVelocity_ = DirectX::SimpleMath::Vector3(angularVelocity[0], angularVelocity[1], angularVelocity[2]);

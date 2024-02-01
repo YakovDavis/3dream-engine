@@ -5,6 +5,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "input/InputDevice.h"
 #include "render/systems/LightInitSystem.h"
+#include "D3E/Components/render/StaticMeshComponent.h"
 
 D3E::ComponentCreationWindow::ComponentCreationWindow(D3E::Game* game, D3E::Editor* editor)
 {
@@ -127,7 +128,16 @@ void D3E::ComponentCreationWindow::Draw()
 			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll;
 			ColliderType colliderType = physicsComponent.colliderType_;
 			int selectedIdx = static_cast<int>(colliderType);
-			ImGui::Combo("Collider Type", &selectedIdx, "SphereCollider\0BoxCollider\0CapsuleCollider\0TaperedCapsuleCollider\0CylinderCollider\0\0");
+			auto* meshComponent = game_->GetRegistry().try_get<StaticMeshComponent>(currentEntity);
+			if (meshComponent)
+			{
+				ImGui::Combo("Collider Type", &selectedIdx, "SphereCollider\0BoxCollider\0CapsuleCollider\0TaperedCapsuleCollider\0CylinderCollider\0ConvexHullCollider\0MeshCollider\0\0");
+			}
+			else
+			{
+				ImGui::Combo("Collider Type", &selectedIdx, "SphereCollider\0BoxCollider\0CapsuleCollider\0TaperedCapsuleCollider\0CylinderCollider\0\0");
+			}
+			
 			physicsComponent.colliderType_ = static_cast<ColliderType>(selectedIdx);
 
 			size_t idx = 0;
@@ -359,6 +369,9 @@ void D3E::ComponentCreationWindow::Draw()
 						}
 						break;
 					}
+					case 5:
+					case 6:
+						break;
 				}
 				ImGui::TreePop();
 			}
@@ -401,6 +414,85 @@ void D3E::ComponentCreationWindow::Draw()
 					}
 				}
 			}
+
+			bool colliderOffsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Collider Offset");
+			if (colliderOffsetOpened)
+			{
+				float x, y, z;
+				std::string xInput = std::to_string(physicsComponent.colliderOffset_.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						physicsComponent.colliderOffset_.x = x;
+					}
+				}
+				std::string yInput = std::to_string(physicsComponent.colliderOffset_.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						physicsComponent.colliderOffset_.y = y;
+					}
+				}
+				std::string zInput = std::to_string(physicsComponent.colliderOffset_.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						physicsComponent.colliderOffset_.z = z;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
+
+			bool colliderRotationOpened = ImGui::TreeNodeEx((void*)(intptr_t)(idx), node_flags, "%s", "Collider Rotation");
+			if (colliderRotationOpened)
+			{
+				float x, y, z, w;
+				std::string xInput = std::to_string(physicsComponent.colliderRotation_.x);
+				if (ImGui::InputText("x", &xInput, input_text_flags))
+				{
+					if (!(xInput.empty()))
+					{
+						x = std::stof(xInput);
+						physicsComponent.colliderRotation_.x = x;
+					}
+				}
+				std::string yInput = std::to_string(physicsComponent.colliderRotation_.y);
+				if (ImGui::InputText("y", &yInput, input_text_flags))
+				{
+					if (!(yInput.empty()))
+					{
+						y = std::stof(yInput);
+						physicsComponent.colliderRotation_.y = y;
+					}
+				}
+				std::string zInput = std::to_string(physicsComponent.colliderRotation_.z);
+				if (ImGui::InputText("z", &zInput, input_text_flags))
+				{
+					if (!(zInput.empty()))
+					{
+						z = std::stof(zInput);
+						physicsComponent.colliderRotation_.z = z;
+					}
+				}
+				std::string wInput = std::to_string(physicsComponent.colliderRotation_.w);
+				if (ImGui::InputText("w", &wInput, input_text_flags))
+				{
+					if (!(wInput.empty()))
+					{
+						w = std::stof(wInput);
+						physicsComponent.colliderRotation_.w = w;
+					}
+				}
+				ImGui::TreePop();
+			}
+			++idx;
 
 			hasOffsetCenterOfMassSelection = physicsComponent.hasOffsetCenterOfMass_;
 			ImGui::RadioButton("Offset Center of Mass Off", &hasOffsetCenterOfMassSelection, 0);

@@ -36,6 +36,7 @@ namespace D3E
 		entt::observer updateObserver_;
 		Game* game_;
 		JPH::PhysicsSystem* physicsSystem_;
+		static constexpr float MARGIN = 1e-6;
 	};
 }
 
