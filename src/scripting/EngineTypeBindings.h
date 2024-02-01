@@ -10,6 +10,7 @@
 #include "D3E/time/time.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
+#include "navigation/NavigationManager.h"
 #include "render/RenderUtils.h"`
 #include "scripting/LuaECSAdapter.h"
 #include "scripting/type_adapters/AiAgentAdapter.h"
@@ -355,6 +356,17 @@ namespace D3E
 		time["delta_time"] = &Time::DeltaTime;
 	}
 
+	static void BindNavigationManager(sol::state& state)
+	{
+		struct Dummy
+		{
+		};
+		auto time =
+			state.new_usertype<Dummy>("Navigation", sol::no_constructor);
+		time["move_to"] = &NavigationManager::MoveTo;
+		time["cancel_target"] = &NavigationManager::CancelTarget;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -376,5 +388,6 @@ namespace D3E
 		BindGoal(state);
 		BindAiAgentAdapter(state);
 		BindTime(state);
+		BindNavigationManager(state);
 	}
 } // namespace D3E
