@@ -334,7 +334,13 @@ namespace D3E
 		auto agent =
 			state.new_usertype<AiAgentAdapter>("Agent", sol::no_constructor);
 		agent["add_goal"] = &AiAgentAdapter::AddGoal;
-		agent["add_action"] = &AiAgentAdapter::AddAction;
+		agent["add_action"] = sol::overload(
+			sol::resolve<const Action&, sol::function>(
+				&AiAgentAdapter::AddAction),
+			sol::resolve<void(const Action&, sol::table, sol::function)>(
+				&AiAgentAdapter::AddAction),
+			sol::resolve<const Action&, sol::table, sol::function,
+		                 sol::function>(&AiAgentAdapter::AddAction));
 		agent["set_name"] = &AiAgentAdapter::SetName;
 		agent["set_state_fact"] = &AiAgentAdapter::SetStateFact;
 	}

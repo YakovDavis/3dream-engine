@@ -19,9 +19,9 @@ namespace D3E
 
 		void AddGoal(const Goal& g) { agentComponent->agent.AddGoal(g); }
 
-		void AddAction(const Action& a, const sol::function& f)
+		void AddAction(const Action& a, sol::function action)
 		{
-			if (!f)
+			if (action == sol::nil)
 			{
 				Debug::LogError(
 					"[AiAgentAdapter] : AddAction(): function is null.");
@@ -29,8 +29,84 @@ namespace D3E
 			}
 
 			agentComponent->agent.AddAction(a);
-			agentComponent->actionMapping[a] =
-				FunctionalAction([&f]() { return static_cast<bool>(f()); });
+			agentComponent->actionMapping[a] = FunctionalAction(
+				[action]()
+				{
+					bool result = action();
+
+					return result;
+				});
+		}
+
+		void AddAction(const Action& a, sol::table self, sol::function action)
+		{
+			if (self == sol::nil)
+			{
+				Debug::LogError(
+					"[AiAgentAdapter] : AddAction(): self is null.");
+
+				return;
+			}
+
+			if (action == sol::nil)
+			{
+				Debug::LogError(
+					"[AiAgentAdapter] : AddAction(): action is null.");
+
+				return;
+			}
+
+			agentComponent->agent.AddAction(a);
+			agentComponent->actionMapping[a] = FunctionalAction(
+				[action, self]()
+				{
+					bool result = action(self);
+
+					return result;
+				});
+		}
+
+		void AddAction(const Action& a, sol::table self, sol::function action,
+		               sol::function inRange)
+		{
+			if (self == sol::nil)
+			{
+				Debug::LogError(
+					"[AiAgentAdapter] : AddAction(): self is null.");
+
+				return;
+			}
+
+			if (action == sol::nil)
+			{
+				Debug::LogError(
+					"[AiAgentAdapter] : AddAction(): action is null.");
+
+				return;
+			}
+
+			if (inRange == sol::nil)
+			{
+				Debug::LogError(
+					"[AiAgentAdapter] : AddAction(): inRange is null.");
+
+				return;
+			}
+
+			agentComponent->agent.AddAction(a);
+			agentComponent->actionMapping[a] = FunctionalAction(
+				[action, self]()
+				{
+					bool result = action(self);
+
+					return result;
+				},
+				[inRange, self]()
+				{
+					bool result = inRange(self);
+
+					return result;
+				});
 		}
 
 		void SetName(const std::string& name)

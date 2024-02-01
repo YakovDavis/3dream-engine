@@ -59,9 +59,23 @@ void AiAgentComponent::CreateMoveTo()
 {
 	moveTo = [this]()
 	{
-		// TODO(Denis): Implement
-		Debug::LogMessage("Moving");
-		fsm.Pop();
+		Debug::LogMessage(
+			std::format("[AiAgentComponent] : moveTo(): Agent: {} moving.",
+		                agent.GetName().c_str())
+				.c_str());
+
+		auto& action = actionMapping.at(agent.PeekAction());
+
+		if (action.InRange())
+		{
+			Debug::LogMessage(
+				std::format(
+					"[AiAgentComponent] : moveTo(): Agent: {} reached target.",
+					agent.GetName().c_str())
+					.c_str());
+
+			fsm.Pop();
+		}
 	};
 }
 void AiAgentComponent::CreatePerform()
@@ -81,9 +95,6 @@ void AiAgentComponent::CreatePerform()
 			return;
 		}
 
-		// Extract action
-		// Remove dequeue if it is done
-
 		auto& action = actionMapping.at(agent.PeekAction());
 		if (action.IsDone())
 		{
@@ -92,8 +103,7 @@ void AiAgentComponent::CreatePerform()
 			return;
 		}
 
-		// Check if action requires to be in range of some object
-		auto inRange = action.IsRanged() ? action.InRange() : true;
+		auto inRange = action.RequiresToBeInRange() ? action.InRange() : true;
 
 		if (!inRange)
 		{

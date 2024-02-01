@@ -90,9 +90,9 @@ namespace D3E
 		{
 			eastl::vector<Edge> edges;
 
-			for (auto& a : a.GetActions())
+			for (auto& action : a.GetActions())
 			{
-				edges.push_back({(int)edges.size(), a});
+				edges.push_back({(int)edges.size(), action});
 			}
 
 			GraphVertex startState = GraphVertex(-1, a.GetCurrentState());
