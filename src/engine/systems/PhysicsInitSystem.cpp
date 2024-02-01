@@ -69,6 +69,15 @@ void D3E::PhysicsInitSystem::PrePhysicsUpdate(entt::registry& reg, Game* game, f
 						body.SetLinearVelocity(Vec3Arg(component.velocity_.x, component.velocity_.y, component.velocity_.z));
 						body.SetAngularVelocity(Vec3Arg(component.angularVelocity_.x, component.angularVelocity_.y, component.angularVelocity_.z));
 					}
+					BodyInterface& bodyInterface = physicsSystem_->GetBodyInterface();
+					if (component.isActive_)
+					{
+						bodyInterface.ActivateBody(component.bodyID_);
+					}
+					else
+					{
+						bodyInterface.DeactivateBody(component.bodyID_);
+					}
 				}
 			}
 		});
