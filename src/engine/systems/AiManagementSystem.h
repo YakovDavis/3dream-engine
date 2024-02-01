@@ -18,5 +18,7 @@ namespace D3E
 		void Stop(entt::registry& reg, Game* game) override;
 
 	private:
+		bool isStopped_;
+		bool isPaused_;
 	};
 } // namespace D3E
