@@ -284,7 +284,9 @@ target_sources("${PROJECT_NAME}"
         src/ai/State.cpp
         src/ai/FunctionlAgent.cpp 
         src/ai/Action.cpp 
-        src/scripting/type_adapters/AiAgentAdapter.h)
+        src/scripting/type_adapters/AiAgentAdapter.h 
+        src/engine/systems/AiManagementSystem.h 
+        src/engine/systems/AiManagementSystem.cpp)
 
 add_subdirectory(libs)
 
