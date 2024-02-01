@@ -149,7 +149,7 @@ void NavigationSystem::InitAgents(entt::registry& reg, NavmeshComponent& nc)
 	auto view = reg.view<NavigationAgentComponent, TransformComponent>();
 
 	view.each(
-		[&, crowd](NavigationAgentComponent& ac, TransformComponent& tc)
+		[&ap, crowd](NavigationAgentComponent& ac, TransformComponent& tc)
 		{
 			auto& posV = tc.position;
 			float agentPos[3] = {posV.x, posV.y, posV.z};
@@ -158,12 +158,8 @@ void NavigationSystem::InitAgents(entt::registry& reg, NavmeshComponent& nc)
 			{
 				ac.idx = idx;
 
-				/*if (ac.targetRef)
-			        crowd->requestMoveTarget(idx, ac.targetRef,
-			                                 ac.targetPosition);*/
-
 				// Init trail
-				AgentTrail* trail = &nc.trails[idx];
+				AgentTrail* trail = &ac.trail;
 				for (int i = 0; i < kMaxTrails; ++i)
 					dtVcopy(&trail->trail[i * 3], &agentPos[0]);
 				trail->htrail = 0;
