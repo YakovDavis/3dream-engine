@@ -32,6 +32,16 @@ const String& Agent::GetName() const
 void Agent::AddGoal(const Goal& g)
 {
 	goals_.push_back(g);
+
+	for (const auto& f : g.precondition.facts)
+	{
+		currentState_.facts[f.first] = false;
+	}
+
+	for (const auto& f : g.state.facts)
+	{
+		currentState_.facts[f.first] = false;
+	}
 }
 
 void Agent::RemoveGoal(const String& name)
@@ -86,8 +96,17 @@ const eastl::vector<Action>& Agent::GetActions() const
 
 void Agent::AddAction(const Action& a)
 {
-	// TODO(Denis): add facts to agent registry
 	actions_.push_back(a);
+
+	for (const auto& f : a.GetPreconditions().facts)
+	{
+		currentState_.facts[f.first] = false;
+	}
+
+	for (const auto& f : a.GetEffects().facts)
+	{
+		currentState_.facts[f.first] = false;
+	}
 }
 
 void Agent::SetPlan(const eastl::vector<Action>& actions)
