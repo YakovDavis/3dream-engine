@@ -293,7 +293,9 @@ target_sources("${PROJECT_NAME}"
         src/time/Time.cpp
         src/engine/systems/NavigationSystem.h
         src/engine/systems/NavigationSystem.cpp
-        src/components/NavigationAgentComponent.cpp)
+        src/components/NavigationAgentComponent.cpp 
+        src/navigation/NavigationManager.h
+        src/navigation/NavigationManager.cpp)
 
 add_subdirectory(libs)
 

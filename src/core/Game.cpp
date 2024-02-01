@@ -35,6 +35,7 @@
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "json.hpp"
+#include "navigation/NavigationManager.h"
 #include "navigation/NavmeshBuilder.h"
 #include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
@@ -172,6 +173,7 @@ void D3E::Game::Init()
 {
 	D3E::ECSUtils::Init(this);
 	D3E::Time::GetInstance().Init(this);
+	D3E::NavigationManager::GetInstance().Init(this);
 
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();

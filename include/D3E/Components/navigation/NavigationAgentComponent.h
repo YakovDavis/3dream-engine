@@ -19,7 +19,6 @@ namespace D3E
 		int idx = -1;
 		dtPolyRef targetRef = 0;
 		float targetPosition[3] = {0};
-		AgentTrail trail = {};
 
 		void to_json(json& j) const override;
 		void from_json(const json& j) override;
