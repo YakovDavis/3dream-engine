@@ -94,6 +94,7 @@ D3E::CreationSystems::CreateLight(entt::registry& registry,
 	transform.scale = tc.scale;
 
 	LightComponent lc;
+	lc.intensity = 0.5f;
 
 	registry.emplace<ObjectInfoComponent>(e, infoComponent);
 	registry.emplace<TransformComponent>(e, transform);
@@ -445,4 +446,34 @@ void D3E::CreationSystems::CreateDefaultTPSControllerComponent(
 {
 	TPSControllerComponent component = {};
 	registry.emplace<TPSControllerComponent>(entity, component);
+}
+
+entt::entity D3E::CreationSystems::CreatePointLight(entt::registry& registry,
+                                       const D3E::ObjectInfoComponent& info,
+                                       const D3E::TransformComponent& tc)
+{
+	const auto e = registry.create();
+
+	ObjectInfoComponent infoComponent;
+	infoComponent.name = info.name;
+	infoComponent.id = UuidGenerator::NewGuidString();
+	infoComponent.editorId =
+		EditorIdManager::Get()->RegisterUuid(infoComponent.id);
+
+	TransformComponent transform(tc);
+	transform.position = tc.position;
+	transform.rotation = tc.rotation;
+	transform.scale = tc.scale;
+
+	LightComponent lc;
+	lc.color = Vector3(0, 0, 1);
+	lc.intensity = 10.0f;
+	lc.lightType = LightType::Point;
+
+	registry.emplace<ObjectInfoComponent>(e, infoComponent);
+	registry.emplace<TransformComponent>(e, transform);
+	registry.emplace<LightComponent>(e, lc);
+	LightInitSystem::IsDirty = true;
+
+	return e;
 }
