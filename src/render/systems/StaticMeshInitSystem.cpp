@@ -21,7 +21,7 @@ void D3E::StaticMeshInitSystem::PreDraw(entt::registry& reg, nvrhi::ICommandList
 
 	auto view = reg.view<const ObjectInfoComponent, StaticMeshComponent>();
 
-	view.each([device, commandList](const auto& info, auto& smc)
+	view.each([device](const auto& info, auto& smc)
 	          {
 					if (smc.initialized)
 					{

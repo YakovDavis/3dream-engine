@@ -13,7 +13,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
 
 add_compile_options(/bigobj)
 
-add_library("${PROJECT_NAME}" SHARED)
+add_library("${PROJECT_NAME}" SHARED
+        src/render/PointLightConstBuffer.h
+        src/render/LightVolumeConstBuffer.h
+        src/render/IblConstBuffer.h)
 
 target_sources("${PROJECT_NAME}"
         PUBLIC
@@ -122,8 +125,6 @@ target_sources("${PROJECT_NAME}"
         src/assetmng/MeshMetaData.h
         src/render/GBuffer.h
         src/render/GBuffer.cpp
-        src/render/LightPass.cpp
-        src/render/LightPass.h
         src/render/systems/LightRenderSystem.cpp
         src/render/systems/LightRenderSystem.h
         src/render/LightConstBuffer.h

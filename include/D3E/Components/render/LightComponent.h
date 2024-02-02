@@ -11,18 +11,20 @@ namespace D3E
 	{
 		Directional,
 		Point,
-		Spot
+		Spot // TODO
 	};
 
 	struct D3EAPI LightComponent : public BaseComponent
 	{
 		LightType lightType = LightType::Directional;
 		DirectX::SimpleMath::Vector3 offset = {0.f, 0.f, 0.f};
-		DirectX::SimpleMath::Vector3 direction = {1.0f/1.414f, -1.0f/1.414f, 0.f};
-		DirectX::SimpleMath::Vector3 color = 0.8f * DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
+		DirectX::SimpleMath::Vector3 direction = {1.0f/1.414f, -1.0f/1.414f, 0.f}; // not used for point
+		DirectX::SimpleMath::Vector3 color = DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
 		float intensity = 1.0f;
-		bool castsShadows = false;
+		bool castsShadows = true;
 		nvrhi::BufferHandle lightCBuffer;
+		nvrhi::BufferHandle volumeCBuffer; // not used for directional
+		float attenuationLimitRadius = 50.0f; // not used for directional
 		bool initialized = false;
 
 		void to_json(json& j) const override;

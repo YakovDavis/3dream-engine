@@ -9,7 +9,6 @@
 #include "EASTL/vector.h"
 #include "NvrhiMessageCallback.h"
 #include "nvrhi/nvrhi.h"
-#include "LightPass.h"
 
 #include <Windows.h>
 
