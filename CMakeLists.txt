@@ -286,7 +286,7 @@ target_sources("${PROJECT_NAME}"
         src/ai/FSM.cpp
         src/ai/Agent.cpp
         src/ai/State.cpp
-        src/ai/FunctionlAgent.cpp 
+        src/ai/FunctionalAction.cpp 
         src/ai/Action.cpp 
         src/scripting/type_adapters/AiAgentAdapter.h 
         src/engine/systems/AiManagementSystem.h 
