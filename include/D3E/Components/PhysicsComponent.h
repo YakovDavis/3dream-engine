@@ -38,6 +38,8 @@ namespace D3E
 		float restitution_ = 0.0f;
 		bool hasOffsetCenterOfMass_ = false;
 		bool isSensor_ = false;
+		DirectX::SimpleMath::Vector3 colliderOffset_ = DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f);
+		DirectX::SimpleMath::Vector4 colliderRotation_ = DirectX::SimpleMath::Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 		DirectX::SimpleMath::Vector3 centerOfMassOffset_;
 		JPH::EMotionType motionType_ = JPH::EMotionType::Static;
 		DirectX::SimpleMath::Vector3 velocity_;

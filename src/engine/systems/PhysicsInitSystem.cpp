@@ -13,6 +13,7 @@
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -308,9 +309,19 @@ void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::e
 	//ShapeSettings::ShapeResult shapeResult = physicsComponent.collider_->Create();
 	//ShapeRefC colliderRef = shapeResult.Get();
 	//*(physicsComponent.collider_) =
+
 	if (physicsComponent.hasOffsetCenterOfMass_)
 	{
 		OffsetCenterOfMassShapeSettings shapeSettings(Vec3Arg(physicsComponent.centerOfMassOffset_.x, physicsComponent.centerOfMassOffset_.y, physicsComponent.centerOfMassOffset_.z), physicsComponent.collider_);
+		ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+		physicsComponent.collider_ = shapeResult.Get();
+	}
+
+	if (physicsComponent.colliderOffset_.x > MARGIN || physicsComponent.colliderOffset_.y > MARGIN || physicsComponent.colliderOffset_.z > MARGIN
+		|| physicsComponent.colliderRotation_.x > MARGIN || physicsComponent.colliderRotation_.y > MARGIN || physicsComponent.colliderRotation_.z > MARGIN)
+	{
+		RotatedTranslatedShapeSettings shapeSettings(Vec3Arg(physicsComponent.colliderOffset_.x, physicsComponent.colliderOffset_.y, physicsComponent.colliderOffset_.z),
+			QuatArg(physicsComponent.colliderRotation_.x, physicsComponent.colliderRotation_.y, physicsComponent.colliderRotation_.z, physicsComponent.colliderRotation_.w), physicsComponent.collider_);
 		ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 		physicsComponent.collider_ = shapeResult.Get();
 	}
