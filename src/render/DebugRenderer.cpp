@@ -114,6 +114,8 @@ void D3E::DebugRenderer::Flush()
 	constBufferData1.gInvTrRotation = world.Invert().Transpose();
 	constBufferData1.gEditorId = 0;
 
+	commandList_->open();
+
 	if (linesVertexCount_ > 0)
 	{
 		commandList_->writeBuffer(linesCB_, &constBufferData1, sizeof(constBufferData1));
@@ -152,6 +154,9 @@ void D3E::DebugRenderer::Flush()
 	}
 	linesVertexCount_ = 0;
 	pointsVertexCount_ = 0;
+
+	commandList_->close();
+	device_->executeCommandList(commandList_);
 }
 
 void D3E::DebugRenderer::QueueLine(const Vector3& from, const Vector3& to,

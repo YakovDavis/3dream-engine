@@ -6,7 +6,7 @@
 #include "SimpleMath.h"
 #include "nvrhi/nvrhi.h"
 
-#define MAX_BATCH_VERTEX_COUNT 64
+#define MAX_BATCH_VERTEX_COUNT 2048
 
 using namespace DirectX::SimpleMath;
 

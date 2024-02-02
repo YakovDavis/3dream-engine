@@ -519,12 +519,16 @@ void D3E::GameRender::DrawDebug()
 {
 	commandList_->open();
 	commandList_->beginMarker("DebugDraw");
+	commandList_->close();
+	device_->executeCommandList(commandList_);
 	debugRenderer_->Begin(commandList_, gameFramebuffer_);
 	debugRenderer_->ProcessQueue();
 	debugRenderer_->End();
+	commandList_->open();
 	commandList_->endMarker();
 	commandList_->close();
 	device_->executeCommandList(commandList_);
+
 }
 
 void D3E::GameRender::OnGameStart()
