@@ -7,6 +7,8 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "DetourCommon.h"
+#include "render/GameRender.h"
+#include "render/DebugRenderer.h"
 
 using namespace D3E;
 
@@ -22,6 +24,9 @@ void NavigationSystem::Init()
 
 void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 {
+	using DirectX::SimpleMath::Vector3;
+	using DirectX::SimpleMath::Color;
+
 	auto navmeshView = reg.view<NavmeshComponent>();
 
 	if (navmeshView.empty())
@@ -35,30 +40,45 @@ void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 	auto nav = navmesh.navMesh;
 	auto crowd = navmesh.crowd;
 
-	crowd->update(dT, &crowdDebugInfo_);
+	game_->GetRender()->GetDebugRenderer()->QueueLine(
+		Vector3(-22, 0, -17), Vector3(-22, 0, -40),
+	                                                  Color(1, 0, 0));
 
-	for (int i = 0; i < crowd->getAgentCount(); ++i)
+	const dtNavMesh& mesh = *nav;
+
+	for (int i = 0; i < mesh.getMaxTiles(); ++i)
 	{
-		const dtCrowdAgent* ag = crowd->getAgent(i);
-
-		auto view = reg.view<NavigationAgentComponent>();
-		for (auto [e, navAgentComponent] : view.each())
+		const dtMeshTile* tile = mesh.getTile(i);
+		if (!tile->header)
+			continue;
+		
+		for (int i = 0; i < tile->header->vertCount - 2; i = i + 2)
 		{
-			if (navAgentComponent.idx == i)
-			{
-				// AgentTrail* trail = &navAgentComponent.trail;
+			const float* v1 = &tile->verts[i * 3];
+			const float* v2 = &tile->verts[(i + 1) * 3];
 
-				if (!ag->active)
-					continue;
-
-				// Update agent movement trail.
-				/*trail->htrail = (trail->htrail + 1) % kMaxTrails;
-				dtVcopy(&trail->trail[trail->htrail * 3], ag->npos);*/
-			}
+			game_->GetRender()->GetDebugRenderer()->QueueLine(Vector3(v1), Vector3(v2), Color(1, 0, 0));
 		}
 	}
 
-	crowdDebugInfo_.vod->normalizeSamples();
+	/*crowd->update(dT, &crowdDebugInfo_);
+
+	auto view = reg.view<NavigationAgentComponent, TransformComponent>();
+	for (auto [e, nc, tc] : view.each())
+	{
+		const dtCrowdAgent* ag = crowd->getAgent(nc.idx);
+
+		if (!ag->active)
+			continue;
+
+		auto pos = ag->npos;
+
+		tc.position.x = pos[0];
+		tc.position.y = pos[1];
+		tc.position.z = pos[2];
+	}*/
+
+	//crowdDebugInfo_.vod->normalizeSamples();
 }
 
 void NavigationSystem::Play(entt::registry& reg, Game* game)
@@ -66,6 +86,8 @@ void NavigationSystem::Play(entt::registry& reg, Game* game)
 	auto navMeshView = reg.view<NavmeshComponent>();
 	auto ne = navMeshView.front();
 	auto& nc = reg.get<NavmeshComponent>(ne);
+
+	// game_->GetRender()->GetDebugRenderer()->QueueLine();
 
 	if (!nc.isBuilt)
 	{
@@ -179,9 +201,9 @@ void NavigationSystem::InitAgents(entt::registry& reg, NavmeshComponent& nc)
 
 				// Init trail
 				/*AgentTrail* trail = &ac.trail;
-				for (int i = 0; i < kMaxTrails; ++i)
-					dtVcopy(&trail->trail[i * 3], &agentPos[0]);
-				trail->htrail = 0;*/
+			    for (int i = 0; i < kMaxTrails; ++i)
+			        dtVcopy(&trail->trail[i * 3], &agentPos[0]);
+			    trail->htrail = 0;*/
 			}
 		});
 }

@@ -745,11 +745,6 @@ void D3E::Game::OnEditorPlayPressed()
 
 		gameRender_->OnGameStart();
 
-		AssetManager::Get().LoadScripts("assets/");
-		ScriptingEngine::GetInstance().Init(this);
-		ScriptingEngine::GetInstance().InitScripts();
-		ScriptingEngine::GetInstance().StartScripts();
-
 		isGameRunning_ = true;
 		ConsoleManager::getInstance()
 			->findConsoleVariable("debugDrawOn")
@@ -758,6 +753,11 @@ void D3E::Game::OnEditorPlayPressed()
 		{
 			sys->Play(registry_, this);
 		}
+
+		AssetManager::Get().LoadScripts("assets/");
+		ScriptingEngine::GetInstance().Init(this);
+		ScriptingEngine::GetInstance().InitScripts();
+		ScriptingEngine::GetInstance().StartScripts();
 
 		EngineState::currentPlayer = FindFirstNonEditorPlayer();
 

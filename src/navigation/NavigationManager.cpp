@@ -49,9 +49,11 @@ void NavigationManager::MoveToInternal(entt::entity e,
 
 	const auto filter = crowd->getFilter(0);
 	const auto halfExtents = crowd->getQueryExtents();
+	
+	const float extents[] = {10, 10, 10};
 
 	float point[3] = {pos.x, pos.y, pos.z};
-	navQuery->findNearestPoly(point, halfExtents, filter, &agent.targetRef,
+	navQuery->findNearestPoly(point, extents, filter, &agent.targetRef,
 	                          agent.targetPosition);
 
 	const dtCrowdAgent* ag = crowd->getAgent(agent.idx);
