@@ -4,6 +4,7 @@
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/LightComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/ai/Action.h"
 #include "D3E/ai/Goal.h"
@@ -92,7 +93,8 @@ namespace D3E
 		                      Vector3(const Vector3&)>(),
 			sol::meta_function::addition,
 			sol::resolve<const Vector3&, const Vector3&>(::operator+),
-			sol::meta_function::subtraction, &Vector3::operator-,
+			sol::meta_function::subtraction,
+			sol::resolve<const Vector3&, const Vector3&>(::operator-),
 			sol::meta_function::equal_to, &Vector3::operator==,
 			sol::meta_function::multiplication,
 			sol::overload(
@@ -192,7 +194,7 @@ namespace D3E
 		auto transformComponentType =
 			state.new_usertype<TransformComponent>("TransformComponent");
 
-		transformComponentType["position"] = &D3E::TransformComponent::position;
+		transformComponentType["location"] = &D3E::TransformComponent::position;
 		transformComponentType["rotation"] = &D3E::TransformComponent::rotation;
 		transformComponentType["scale"] = &D3E::TransformComponent::scale;
 	}
@@ -314,6 +316,13 @@ namespace D3E
 		{ Debug::Assert(condition, msg.c_str()); };
 	}
 
+	static void BindLight(sol::state& state)
+	{
+		auto light =
+			state.new_usertype<LightComponent>("Light", sol::no_constructor);
+		light["intensity"] = &LightComponent::intensity;
+	}
+
 	static void BindAction(sol::state& state)
 	{
 		auto action = state.new_usertype<Action>(
@@ -389,5 +398,6 @@ namespace D3E
 		BindAiAgentAdapter(state);
 		BindTime(state);
 		BindNavigationManager(state);
+		BindLight(state);
 	}
 } // namespace D3E
