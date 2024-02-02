@@ -157,3 +157,9 @@ void Agent::SetStateFact(const std::string& key, bool value)
 
 	currentState_.facts[key.c_str()] = value;
 }
+
+void Agent::ApplyActionEffects()
+{
+	auto& a = PeekAction();
+	currentState_ = currentState_.CombineState(a.GetEffects());
+}

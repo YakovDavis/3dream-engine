@@ -3,24 +3,27 @@
 using namespace D3E;
 
 FunctionalAction::FunctionalAction()
-	: isDone_(false), isRanged_(false), action_(nullptr), inRange_(nullptr)
+	: isDone_(false), isRanged_(false), action_(nullptr), inRange_(nullptr),
+	  reachedTarget_(false)
 {
 }
 
 FunctionalAction::FunctionalAction(const std::function<bool()>& action)
-	: isDone_(false), isRanged_(false), action_(action), inRange_(nullptr)
+	: isDone_(false), isRanged_(false), action_(action), inRange_(nullptr),
+	  reachedTarget_(false)
 {
 }
 
 FunctionalAction::FunctionalAction(const std::function<bool()>& action,
                                    const std::function<bool()>& inRange)
-	: isDone_(false), isRanged_(true), action_(action), inRange_(inRange)
+	: isDone_(false), isRanged_(true), action_(action), inRange_(inRange),
+	  reachedTarget_(false)
 {
 }
 
 FunctionalAction::FunctionalAction(const FunctionalAction& other)
 	: isDone_(other.isDone_), isRanged_(other.isRanged_),
-	  action_(other.action_), inRange_(other.inRange_)
+	  action_(other.action_), inRange_(other.inRange_), reachedTarget_(false)
 {
 }
 
@@ -46,10 +49,23 @@ void FunctionalAction::Perform()
 
 bool FunctionalAction::InRange() const
 {
+	return reachedTarget_;
+}
+
+bool FunctionalAction::Move()
+{
 	if (!inRange_)
 	{
 		return false;
 	}
 
-	return inRange_();
+	reachedTarget_ = inRange_();
+
+	return reachedTarget_;
+}
+
+void FunctionalAction::Reset()
+{
+	isDone_ = false;
+	reachedTarget_ = false;
 }

@@ -245,3 +245,13 @@ void ScriptingEngine::Clear()
 	initialized_ = false;
 	luaState_ = {};
 }
+
+void ScriptingEngine::SetErrorHandler(sol::function f)
+{
+	GetInstance().SetErrorHandlerInternal(f);
+}
+
+void ScriptingEngine::SetErrorHandlerInternal(sol::function f)
+{
+	f.set_error_handler(luaState_["error_handler"]);
+}

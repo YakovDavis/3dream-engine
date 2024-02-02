@@ -6,6 +6,7 @@
 #include "D3E/ai/FunctionalAction.h"
 #include "D3E/ai/Goal.h"
 #include "D3E/ai/State.h"
+#include "D3E/scripting/ScriptingEngine.h"
 #include "sol/sol.hpp"
 
 #include <string>
@@ -93,16 +94,22 @@ namespace D3E
 				return;
 			}
 
+
+			ScriptingEngine::SetErrorHandler(action);
+			ScriptingEngine::SetErrorHandler(inRange);
+
 			agentComponent->agent.AddAction(a);
 			agentComponent->actionMapping[a] = FunctionalAction(
 				[action, self]()
 				{
+					ScriptingEngine::SetErrorHandler(action);
 					bool result = action(self);
 
 					return result;
 				},
 				[inRange, self]()
 				{
+					ScriptingEngine::SetErrorHandler(inRange);
 					bool result = inRange(self);
 
 					return result;

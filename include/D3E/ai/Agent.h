@@ -31,6 +31,7 @@ namespace D3E
 		Action PopAction();
 		bool HasPlan() const;
 		void SetStateFact(const std::string& key, bool value);
+		void ApplyActionEffects();
 
 	private:
 		eastl::queue<Action> plan_;

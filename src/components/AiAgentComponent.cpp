@@ -59,14 +59,9 @@ void AiAgentComponent::CreateMoveTo()
 {
 	moveTo = [this]()
 	{
-		Debug::LogMessage(
-			std::format("[AiAgentComponent] : moveTo(): Agent: {} moving.",
-		                agent.GetName().c_str())
-				.c_str());
-
 		auto& action = actionMapping.at(agent.PeekAction());
 
-		if (action.InRange())
+		if (action.Move())
 		{
 			Debug::LogMessage(
 				std::format(
@@ -98,6 +93,8 @@ void AiAgentComponent::CreatePerform()
 		auto& action = actionMapping.at(agent.PeekAction());
 		if (action.IsDone())
 		{
+			action.Reset();
+			agent.ApplyActionEffects();
 			agent.PopAction();
 
 			return;
@@ -107,7 +104,6 @@ void AiAgentComponent::CreatePerform()
 
 		if (!inRange)
 		{
-			fsm.Pop();
 			fsm.Push(moveTo);
 
 			return;

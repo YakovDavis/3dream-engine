@@ -17,10 +17,12 @@ namespace D3E
 		bool RequiresToBeInRange() const;
 		void Perform();
 		bool InRange() const;
-
+		bool Move();
+		void Reset();
 	private:
 		bool isDone_;
 		bool isRanged_;
+		bool reachedTarget_;
 		std::function<bool()> action_;
 		std::function<bool()> inRange_;
 	};

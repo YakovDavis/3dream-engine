@@ -24,7 +24,7 @@ void NavigationSystem::Init()
 
 void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 {
-	auto navmeshView = reg.view<NavmeshComponent>();
+	/*auto navmeshView = reg.view<NavmeshComponent>();
 
 	if (navmeshView.empty())
 	{
@@ -55,32 +55,32 @@ void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 		tc.position.x = pos[0];
 		tc.position.y = pos[1];
 		tc.position.z = pos[2];
-	}
+	}*/
 
 	// crowdDebugInfo_.vod->normalizeSamples();
 }
 
 void NavigationSystem::Play(entt::registry& reg, Game* game)
 {
-	auto navMeshView = reg.view<NavmeshComponent>();
-	auto ne = navMeshView.front();
-	auto& nc = reg.get<NavmeshComponent>(ne);
+	//auto navMeshView = reg.view<NavmeshComponent>();
+	//auto ne = navMeshView.front();
+	//auto& nc = reg.get<NavmeshComponent>(ne);
 
-	// game_->GetRender()->GetDebugRenderer()->QueueLine();
+	//// game_->GetRender()->GetDebugRenderer()->QueueLine();
 
-	if (!nc.isBuilt)
-	{
-		if (!game_->BuildNavmesh(ne))
-		{
-			Debug::LogError(
-				"[NavigationSystem] : Play(): navmesh was not built.");
+	//if (!nc.isBuilt)
+	//{
+	//	if (!game_->BuildNavmesh(ne))
+	//	{
+	//		Debug::LogError(
+	//			"[NavigationSystem] : Play(): navmesh was not built.");
 
-			return;
-		}
-	}
+	//		return;
+	//	}
+	//}
 
-	InitCrowd(nc);
-	InitAgents(reg, nc);
+	//InitCrowd(nc);
+	//InitAgents(reg, nc);
 }
 
 void NavigationSystem::Pause(entt::registry& reg, Game* game)
