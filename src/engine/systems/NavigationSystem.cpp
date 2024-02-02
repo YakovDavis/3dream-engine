@@ -7,8 +7,8 @@
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "DetourCommon.h"
-#include "render/GameRender.h"
 #include "render/DebugRenderer.h"
+#include "render/GameRender.h"
 
 using namespace D3E;
 
@@ -24,9 +24,6 @@ void NavigationSystem::Init()
 
 void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 {
-	using DirectX::SimpleMath::Vector3;
-	using DirectX::SimpleMath::Color;
-
 	auto navmeshView = reg.view<NavmeshComponent>();
 
 	if (navmeshView.empty())
@@ -41,27 +38,9 @@ void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 	auto crowd = navmesh.crowd;
 
 	game_->GetRender()->GetDebugRenderer()->QueueLine(
-		Vector3(-22, 0, -17), Vector3(-22, 0, -40),
-	                                                  Color(1, 0, 0));
+		Vector3(-13, 3, -25), Vector3(1, 3, -25), Color(255, 0, 0));
 
-	const dtNavMesh& mesh = *nav;
-
-	for (int i = 0; i < mesh.getMaxTiles(); ++i)
-	{
-		const dtMeshTile* tile = mesh.getTile(i);
-		if (!tile->header)
-			continue;
-		
-		for (int i = 0; i < tile->header->vertCount - 2; i = i + 2)
-		{
-			const float* v1 = &tile->verts[i * 3];
-			const float* v2 = &tile->verts[(i + 1) * 3];
-
-			game_->GetRender()->GetDebugRenderer()->QueueLine(Vector3(v1), Vector3(v2), Color(1, 0, 0));
-		}
-	}
-
-	/*crowd->update(dT, &crowdDebugInfo_);
+	crowd->update(dT, &crowdDebugInfo_);
 
 	auto view = reg.view<NavigationAgentComponent, TransformComponent>();
 	for (auto [e, nc, tc] : view.each())
@@ -76,9 +55,9 @@ void NavigationSystem::Update(entt::registry& reg, Game* game, float dT)
 		tc.position.x = pos[0];
 		tc.position.y = pos[1];
 		tc.position.z = pos[2];
-	}*/
+	}
 
-	//crowdDebugInfo_.vod->normalizeSamples();
+	// crowdDebugInfo_.vod->normalizeSamples();
 }
 
 void NavigationSystem::Play(entt::registry& reg, Game* game)

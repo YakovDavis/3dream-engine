@@ -5,7 +5,7 @@
 
 namespace D3E
 {
-	const int kMaxAganets = 16;
+	const int kMaxAganets = 128;
 	const int kMaxTrails = 8;
 
 	struct D3EAPI AgentTrail
