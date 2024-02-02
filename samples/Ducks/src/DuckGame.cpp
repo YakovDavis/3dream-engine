@@ -54,8 +54,11 @@ void NewCubeGame::Init()
 	D3E::CreationSystems::CreateSM(GetRegistry(), info, tc, D3E::kPlaneUUID, D3E::kDefaultGridMaterialUUID);
 
 	info.name = "DirectionalLight";
-
 	D3E::CreationSystems::CreateLight(GetRegistry(), info, tc);
+
+	info.name = "PointLight";
+	tc.position = Vector3(0, 1, 0);
+	D3E::CreationSystems::CreatePointLight(GetRegistry(), info, tc);
 
 	D3E::CreationSystems::CreateSkybox(GetRegistry());
 }

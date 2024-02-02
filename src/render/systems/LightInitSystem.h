@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3E/Components/render/LightComponent.h"
 #include "D3E/systems/GameSystem.h"
 
 namespace D3E
@@ -16,5 +17,8 @@ namespace D3E
 
 	private:
 		Game* game_;
+
+		void AddPointBSets(const String& uuid, const LightComponent& lc);
+		void AddDirectionalBSets(const String& uuid, const LightComponent& lc);
 	};
 }

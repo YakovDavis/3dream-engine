@@ -7,11 +7,11 @@
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
-#include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/navigation/NavigationAgentComponent.h"
 #include "D3E/Components/AiAgentComponent.h"
 #include "D3E/Debug.h"
@@ -29,12 +29,12 @@
 #include "nvrhi/nvrhi.h"
 #include "render/CameraUtils.h"
 #include "render/DisplayWin32.h"
+#include "render/systems/LightInitSystem.h"
 #include "render/systems/StaticMeshInitSystem.h"
 
 #include <assetmng/MaterialFactory.h>
-#include <sound_engine/SoundEngine.h>
-#include "misc/cpp/imgui_stdlib.h"
 #include <assetmng/MeshFactory.h>
+#include <sound_engine/SoundEngine.h>
 
 D3E::Editor* D3E::Editor::instance_;
 
@@ -1244,8 +1244,17 @@ void D3E::Editor::DrawInspector()
 						LightType lightType = game_->GetRegistry().get<LightComponent>(currentEntity).lightType;
 						int selectedIdx = lightType;
 						ImGui::Combo("Light Type", &selectedIdx, "Directional\0Point\0Spot\0\0");
-						game_->GetRegistry().patch<LightComponent>(currentEntity, [selectedIdx](auto& component) {component.lightType =
-									static_cast<LightType>(selectedIdx);});
+						if (selectedIdx != lightType)
+						{
+							game_->GetRegistry().patch<LightComponent>(
+								currentEntity,
+								[selectedIdx](auto& component) {
+									component.lightType =
+										static_cast<LightType>(selectedIdx);
+									component.initialized = false;
+								});
+							LightInitSystem::IsDirty = true;
+						}
 						size_t fieldIdx = idx * 100;
 						bool offsetOpened = ImGui::TreeNodeEx((void*)(intptr_t)(fieldIdx), node_flags, "%s", "Offset");
 						if (offsetOpened)
