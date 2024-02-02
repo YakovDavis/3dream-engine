@@ -8,8 +8,6 @@
 
 #define MAX_BATCH_VERTEX_COUNT 2048
 
-using namespace DirectX::SimpleMath;
-
 namespace D3E
 {
 	const String kDebugDrawLinesBindingSetUuid = "8e1e9acb-29b4-42a6-9362-312ade993165";
@@ -22,8 +20,8 @@ namespace D3E
 	public:
 		struct VertexPosCol
 		{
-			Vector4 pos;
-			Color col;
+			DirectX::SimpleMath::Vector4 pos;
+			DirectX::SimpleMath::Color col;
 		};
 		struct DebugCB
 		{
@@ -32,12 +30,12 @@ namespace D3E
 
 		explicit DebugRenderer(nvrhi::IDevice* device, Game* game);
 
-		void QueueAxisAlignedBox(const Vector3& center, const Vector3& extents, const Color& color);
+		void QueueAxisAlignedBox(const DirectX::SimpleMath::Vector3& center, const DirectX::SimpleMath::Vector3& extents, const DirectX::SimpleMath::Color& color);
 
-		void DrawLine(const Vector3& from, const Vector3& to, const Color& color);
-		void QueueLine(const Vector3& from, const Vector3& to, const Color& color);
-		void DrawPoint(const Vector3& location, float size);
-		void QueuePoint(const Vector3& location, float size);
+		void DrawLine(const DirectX::SimpleMath::Vector3& from, const DirectX::SimpleMath::Vector3& to, const DirectX::SimpleMath::Color& color);
+		void QueueLine(const DirectX::SimpleMath::Vector3& from, const DirectX::SimpleMath::Vector3& to, const DirectX::SimpleMath::Color& color);
+		void DrawPoint(const DirectX::SimpleMath::Vector3& location, float size);
+		void QueuePoint(const DirectX::SimpleMath::Vector3& location, float size);
 
 		void ProcessQueue();
 
