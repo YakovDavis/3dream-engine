@@ -9,7 +9,7 @@
 using namespace D3E;
 
 AiAgentComponent::AiAgentComponent()
-	: agent("DefaultName"), fsm(), actionMapping()
+	: agent("DefaultName"), fsm(), actionMapping(), currentGoal()
 {
 	CreateIdle();
 	CreateMoveTo();
@@ -19,7 +19,8 @@ AiAgentComponent::AiAgentComponent()
 }
 
 AiAgentComponent::AiAgentComponent(const AiAgentComponent& other)
-	: agent(other.agent), actionMapping(other.actionMapping), fsm()
+	: agent(other.agent), actionMapping(other.actionMapping), fsm(),
+	  currentGoal(other.currentGoal)
 {
 	CreateIdle();
 	CreateMoveTo();
@@ -32,26 +33,24 @@ void AiAgentComponent::CreateIdle()
 {
 	idle = [this]()
 	{
+		auto g = agent.GetGoalToPlan();
+
+		if (g.name == kEmptyGoalName)
+		{
+			return;
+		}
+
+		currentGoal = g;
+
 		auto plan = GoapPlanner::Plan(agent);
 
 		if (plan.empty())
 		{
-			/*Debug::LogWarning(
-				std::format("[AiAgentComponent] : Agent: {}, Plan "
-			                "for goal: {} was not found!",
-			                agent.GetName().c_str(),
-			                agent.GetGoalToPlan().name.c_str())
-					.c_str());*/
-
-			fsm.Pop();
-			fsm.Push(idle);
-
 			return;
 		}
 
 		agent.SetPlan(plan);
 
-		fsm.Pop();
 		fsm.Push(perform);
 	};
 }
@@ -59,7 +58,16 @@ void AiAgentComponent::CreateMoveTo()
 {
 	moveTo = [this]()
 	{
+		
+
 		auto& action = actionMapping.at(agent.PeekAction());
+
+		/*if (currentGoal.name != agent.GetGoalToPlan().name)
+		{
+			action.Reset();
+			agent.ClearPlan();
+			fsm.Pop();
+		}*/
 
 		if (action.Move())
 		{
@@ -85,7 +93,6 @@ void AiAgentComponent::CreatePerform()
 					.c_str());
 
 			fsm.Pop();
-			fsm.Push(idle);
 
 			return;
 		}

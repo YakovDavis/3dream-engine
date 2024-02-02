@@ -99,7 +99,7 @@ namespace D3E
 			GraphVertex currentState = startState;
 
 			Goal goal = a.GetGoalToPlan();
-			if (goal.name == kNullGoalName)
+			if (goal.name == kEmptyGoalName)
 			{
 				return {};
 			}

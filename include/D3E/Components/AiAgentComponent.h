@@ -15,6 +15,7 @@ namespace D3E
 		FSMState idle;
 		FSMState moveTo;
 		FSMState perform;
+		Goal currentGoal;
 
 		eastl::unordered_map<Action, FunctionalAction, ActionHash>
 			actionMapping;

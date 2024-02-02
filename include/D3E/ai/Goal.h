@@ -14,7 +14,7 @@ namespace D3E
 		State precondition;
 		State state;
 
-		Goal() : priority(-1), name(kNullGoalName), precondition(), state() {}
+		Goal() : priority(-1), name(kEmptyGoalName), precondition(), state() {}
 		Goal(const std::string& name, int priority)
 			: name(name.c_str()), priority(priority), precondition(), state()
 		{
