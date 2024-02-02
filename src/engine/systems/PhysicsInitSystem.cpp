@@ -318,7 +318,7 @@ void D3E::PhysicsInitSystem::OnCreateComponent(entt::registry& registry, entt::e
 	}
 
 	if (physicsComponent.colliderOffset_.x > MARGIN || physicsComponent.colliderOffset_.y > MARGIN || physicsComponent.colliderOffset_.z > MARGIN
-		|| physicsComponent.colliderRotation_.x > MARGIN || physicsComponent.colliderRotation_.y > MARGIN || physicsComponent.colliderRotation_.z > MARGIN || physicsComponent.colliderRotation_.w > MARGIN)
+		|| physicsComponent.colliderRotation_.x > MARGIN || physicsComponent.colliderRotation_.y > MARGIN || physicsComponent.colliderRotation_.z > MARGIN)
 	{
 		RotatedTranslatedShapeSettings shapeSettings(Vec3Arg(physicsComponent.colliderOffset_.x, physicsComponent.colliderOffset_.y, physicsComponent.colliderOffset_.z),
 			QuatArg(physicsComponent.colliderRotation_.x, physicsComponent.colliderRotation_.y, physicsComponent.colliderRotation_.z, physicsComponent.colliderRotation_.w), physicsComponent.collider_);

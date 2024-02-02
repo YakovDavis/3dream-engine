@@ -490,6 +490,7 @@ void D3E::ComponentCreationWindow::Draw()
 						physicsComponent.colliderRotation_.w = w;
 					}
 				}
+				physicsComponent.colliderRotation_.Normalize();
 				ImGui::TreePop();
 			}
 			++idx;

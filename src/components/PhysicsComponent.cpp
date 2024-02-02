@@ -79,7 +79,7 @@ namespace D3E
 		}
 		else
 		{
-			colliderOffset = { 0, 0, 0, 0 };
+			colliderRotation = { 0, 0, 0, 1 };
 		}
 		j.at("center_of_mass_offset").get_to(centerOfMassOffset);
 		j.at("motion_type").get_to(motionType);
