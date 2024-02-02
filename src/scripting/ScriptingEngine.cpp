@@ -145,6 +145,8 @@ void ScriptingEngine::InitScriptComponent(ScriptComponent& c)
 	c.onClicked_ = userType["on_clicked"];
 	c.onClicked_.set_error_handler(luaState_["error_handler"]);
 
+	sol::protected_function::set_default_handler(luaState_["error_handler"]);
+
 	c.self_["owner_id"] = c.ownerId_;
 }
 

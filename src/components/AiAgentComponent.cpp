@@ -36,12 +36,12 @@ void AiAgentComponent::CreateIdle()
 
 		if (plan.empty())
 		{
-			Debug::LogWarning(
+			/*Debug::LogWarning(
 				std::format("[AiAgentComponent] : Agent: {}, Plan "
 			                "for goal: {} was not found!",
 			                agent.GetName().c_str(),
 			                agent.GetGoalToPlan().name.c_str())
-					.c_str());
+					.c_str());*/
 
 			fsm.Pop();
 			fsm.Push(idle);
@@ -80,7 +80,7 @@ void AiAgentComponent::CreatePerform()
 		if (!agent.HasPlan())
 		{
 			Debug::LogWarning(
-				std::format("[AiAgentComponent]: Agent: {} done its plan.",
+				std::format("[AiAgentComponent]: Agent: {} finished its plan.",
 			                agent.GetName().c_str())
 					.c_str());
 
