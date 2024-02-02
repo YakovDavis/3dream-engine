@@ -128,7 +128,7 @@ namespace D3E
 
 		colliderParams_ = DirectX::SimpleMath::Vector4(colliderParams[0], colliderParams[1], colliderParams[2], colliderParams[3]);
 		colliderOffset_ = DirectX::SimpleMath::Vector3(colliderOffset[0], colliderOffset[1], colliderOffset[2]);
-		colliderRotation_ = DirectX::SimpleMath::Vector3(colliderRotation[0], colliderRotation[1], colliderRotation[2], colliderRotation[3]);
+		colliderRotation_ = DirectX::SimpleMath::Vector4(colliderRotation[0], colliderRotation[1], colliderRotation[2], colliderRotation[3]);
 		centerOfMassOffset_ = DirectX::SimpleMath::Vector3(centerOfMassOffset[0], centerOfMassOffset[1], centerOfMassOffset[2]);
 		velocity_ = DirectX::SimpleMath::Vector3(velocity[0], velocity[1], velocity[2]);
 		angularVelocity_ = DirectX::SimpleMath::Vector3(angularVelocity[0], angularVelocity[1], angularVelocity[2]);
