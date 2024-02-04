@@ -21,7 +21,7 @@ namespace D3E
 		bool LoadDefaultEnvironment();
 		void LoadStandardLibraries();
 		void InitGlobalObjects();
-
+		void SetErrorHandlerInternal(sol::function f);
 	public:
 		static ScriptingEngine& GetInstance();
 
@@ -36,5 +36,6 @@ namespace D3E
 		void StartScripts();
 		void FreeScripts();
 		void Clear();
+		static void SetErrorHandler(sol::function f);
 	};
 } // namespace D3E

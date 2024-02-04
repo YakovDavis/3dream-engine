@@ -1,10 +1,12 @@
 #include "D3E/systems/CreationSystems.h"
 
 #include "D3E/CommonCpp.h"
+#include "D3E/Components/AiAgentComponent.h"
 #include "D3E/Components/FPSControllerComponent.h"
 #include "D3E/Components/MouseComponent.h"
 #include "D3E/Components/ScriptComponent.h"
 #include "D3E/Components/TPSControllerComponent.h"
+#include "D3E/Components/navigation/NavigationAgentComponent.h"
 #include "D3E/Components/navigation/NavmeshComponent.h"
 #include "D3E/Components/render/CameraComponent.h"
 #include "D3E/Components/render/LightComponent.h"
@@ -387,7 +389,8 @@ void D3E::CreationSystems::CreateDefaultScriptComponent(
 	registry.emplace<ScriptComponent>(entity, component);
 }
 
-entt::entity D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
+entt::entity
+D3E::CreationSystems::CreateEditorFakePlayer(entt::registry& registry)
 {
 	const auto e = registry.create();
 
@@ -476,4 +479,18 @@ entt::entity D3E::CreationSystems::CreatePointLight(entt::registry& registry,
 	LightInitSystem::IsDirty = true;
 
 	return e;
+}
+
+void D3E::CreationSystems::CreateDefaultAIAgentComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	AiAgentComponent component = {};
+	registry.emplace<AiAgentComponent>(entity, component);
+}
+
+void D3E::CreationSystems::CreateDefaultNavigationAgentComponent(
+	entt::registry& registry, entt::entity& entity)
+{
+	NavigationAgentComponent component = {};
+	registry.emplace<NavigationAgentComponent>(entity, component);
 }

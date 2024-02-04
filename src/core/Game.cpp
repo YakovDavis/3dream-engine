@@ -12,6 +12,7 @@
 #include "D3E/engine/ConsoleManager.h"
 #include "D3E/scripting/ScriptingEngine.h"
 #include "D3E/systems/CreationSystems.h"
+#include "D3E/time/Time.h"
 #include "EASTL/chrono.h"
 #include "EngineState.h"
 #include "assetmng/CDialogEventHandler.h"
@@ -21,9 +22,11 @@
 #include "editor/EditorIdManager.h"
 #include "editor/EditorUtils.h"
 #include "engine/ComponentFactory.h"
+#include "engine/systems/AiManagementSystem.h"
 #include "engine/systems/CharacterInitSystem.h"
 #include "engine/systems/ChildTransformSynchronizationSystem.h"
 #include "engine/systems/FPSControllerSystem.h"
+#include "engine/systems/NavigationSystem.h"
 #include "engine/systems/PhysicsUpdateSystem.h"
 #include "engine/systems/ScriptInitSystem.h"
 #include "engine/systems/ScriptUpdateSystem.h"
@@ -32,6 +35,7 @@
 #include "imgui.h"
 #include "input/InputDevice.h"
 #include "json.hpp"
+#include "navigation/NavigationManager.h"
 #include "navigation/NavmeshBuilder.h"
 #include "physics/PhysicsInfo.h"
 #include "render/DisplayWin32.h"
@@ -124,7 +128,6 @@ void D3E::Game::Run()
 			}
 		}
 
-
 		if (isGameRunning_)
 		{
 			if (!isGamePaused_)
@@ -169,6 +172,8 @@ void D3E::Game::Run()
 void D3E::Game::Init()
 {
 	D3E::ECSUtils::Init(this);
+	D3E::Time::GetInstance().Init(this);
+	D3E::NavigationManager::GetInstance().Init(this);
 
 	assert(mhAppInst != nullptr);
 	Debug::ClearLog();
@@ -206,13 +211,16 @@ void D3E::Game::Init()
 	systems_.push_back(new ScriptInitSystem(registry_));
 	systems_.push_back(new ScriptUpdateSystem);
 	systems_.push_back(new InputSyncSystem);
+	systems_.push_back(new AiManagementSystem());
+	systems_.push_back(new NavigationSystem(this));
 	childTransformSyncSystem =
 		eastl::make_shared<ChildTransformSynchronizationSystem>(registry_);
 	systems_.push_back(childTransformSyncSystem.get());
-	physicsInitSystem_ = eastl::make_shared<PhysicsInitSystem>(registry_, this, physicsInfo_->getPhysicsSystem());
+	physicsInitSystem_ = eastl::make_shared<PhysicsInitSystem>(
+		registry_, this, physicsInfo_->getPhysicsSystem());
 	systems_.push_back(physicsInitSystem_.get());
-//	systems_.push_back(
-//		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
+	//	systems_.push_back(
+	//		new PhysicsUpdateSystem(physicsInfo_->getPhysicsSystem()));
 	systems_.push_back(new CharacterInitSystem(
 		registry_, this, physicsInfo_->getPhysicsSystem()));
 
@@ -267,7 +275,9 @@ void D3E::Game::EditorDraw()
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_, false);
 	gameRender_->DrawPostProcessEffects(registry_);
 	gameRender_->DrawPostProcessSystems(registry_, editorSystems_, true);
-	if (ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->getInt())
+	if (ConsoleManager::getInstance()
+	        ->findConsoleVariable("debugDrawOn")
+	        ->getInt())
 	{
 		gameRender_->DrawDebug();
 	}
@@ -306,7 +316,9 @@ void D3E::Game::Draw()
 	gameRender_->DrawOpaque(registry_, systems_);
 	gameRender_->DrawPostProcessSystems(registry_, renderPPsystems_, false);
 	gameRender_->DrawPostProcessEffects(registry_);
-	if (ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->getInt())
+	if (ConsoleManager::getInstance()
+	        ->findConsoleVariable("debugDrawOn")
+	        ->getInt())
 	{
 		gameRender_->DrawDebug();
 	}
@@ -697,7 +709,7 @@ D3E::Game::GetGizmoOffset(const D3E::String& uuid) const
 	return gizmoOffsets_.at(uuid);
 }
 
-void D3E::Game::BuildNavmesh(entt::entity e)
+bool D3E::Game::BuildNavmesh(entt::entity e)
 {
 	auto& nc = registry_.get<NavmeshComponent>(e);
 	auto& tc = registry_.get<TransformComponent>(e);
@@ -714,10 +726,13 @@ void D3E::Game::BuildNavmesh(entt::entity e)
 		eastl::make_unique<NavmeshBuilder>(&vertices, &indices);
 
 	auto r = nb->Build(nc);
+
 	if (!r)
 	{
 		Debug::LogError("[Game] : BuildNavmesh(): Navmesh was not built");
 	}
+
+	return r;
 }
 
 void D3E::Game::OnEditorPlayPressed()
@@ -730,17 +745,19 @@ void D3E::Game::OnEditorPlayPressed()
 
 		gameRender_->OnGameStart();
 
-		AssetManager::Get().LoadScripts("assets/");
-		ScriptingEngine::GetInstance().Init(this);
-		ScriptingEngine::GetInstance().InitScripts();
-		ScriptingEngine::GetInstance().StartScripts();
-
 		isGameRunning_ = true;
-		ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->setInt(0);
+		ConsoleManager::getInstance()
+			->findConsoleVariable("debugDrawOn")
+			->setInt(0);
 		for (auto& sys : systems_)
 		{
 			sys->Play(registry_, this);
 		}
+
+		AssetManager::Get().LoadScripts("assets/");
+		ScriptingEngine::GetInstance().Init(this);
+		ScriptingEngine::GetInstance().InitScripts();
+		ScriptingEngine::GetInstance().StartScripts();
 
 		EngineState::currentPlayer = FindFirstNonEditorPlayer();
 
@@ -767,7 +784,9 @@ void D3E::Game::OnEditorStopPressed()
 	{
 		isGameRunning_ = false;
 		isGamePaused_ = false;
-		ConsoleManager::getInstance()->findConsoleVariable("debugDrawOn")->setInt(1);
+		ConsoleManager::getInstance()
+			->findConsoleVariable("debugDrawOn")
+			->setInt(1);
 		for (auto& sys : systems_)
 		{
 			sys->Stop(registry_, this);

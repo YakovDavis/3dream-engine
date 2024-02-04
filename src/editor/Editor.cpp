@@ -12,6 +12,8 @@
 #include "D3E/Components/render/LightComponent.h"
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
+#include "D3E/Components/navigation/NavigationAgentComponent.h"
+#include "D3E/Components/AiAgentComponent.h"
 #include "D3E/Debug.h"
 #include "D3E/Game.h"
 #include "D3E/systems/CreationSystems.h"
@@ -448,7 +450,7 @@ void D3E::Editor::DrawInspector()
 
 	const eastl::hash_set<String>& objectUuids(game_->GetSelectedUuids());
 	static int createComponent = 0;
-	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent");
+	ImGui::Combo("##create_combo", &createComponent, "FPSControllerComponent\0PhysicsComponent\0PhysicsCharacterComponent\0CameraComponent\0LightComponent\0StaticMeshComponent\0SoundComponent\0SoundListenerComponent\0ScriptComponent\0NavigationComponent\0TPSControllerComponent\0AIAgent\0NavigationAgent");
 	switch (createComponent)
 	{
 		case 0:
@@ -463,6 +465,8 @@ void D3E::Editor::DrawInspector()
 		case 7:
 		case 8:
 		case 9:
+		case 11:
+		case 12:
 			creatingComponentWithDefault = true;
 			creatingComponentWithNonDefault = false;
 			break;
@@ -530,9 +534,21 @@ void D3E::Editor::DrawInspector()
 						case 9:
 							CreationSystems::CreateDefaultNavigationComponent(
 								game_->GetRegistry(), currentEntity);
+							break;
 						case 10:
 							CreationSystems::CreateDefaultTPSControllerComponent(
 								game_->GetRegistry(), currentEntity);
+							break;
+						case 11:
+							CreationSystems::
+								CreateDefaultAIAgentComponent(
+									game_->GetRegistry(), currentEntity);
+							break;
+						case 12:
+							CreationSystems::
+								CreateDefaultNavigationAgentComponent(
+									game_->GetRegistry(), currentEntity);
+							break;
 					}
 				}
 			}
@@ -1598,6 +1614,14 @@ void D3E::Editor::DrawInspector()
 						{
 							game_->BuildNavmesh(currentEntity);
 						}
+					}
+					else if (componentName == "NavigationAgentComponent")
+					{
+						INSPECTOR_DELETION(NavigationAgentComponent)
+					}
+					else if (componentName == "AiAgentComponent")
+					{
+						INSPECTOR_DELETION(AiAgentComponent)
 					}
 
 					ImGui::TreePop();

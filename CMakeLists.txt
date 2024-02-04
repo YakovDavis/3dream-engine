@@ -59,6 +59,20 @@ target_sources("${PROJECT_NAME}"
         include/D3E/Components/navigation/NavmeshConfig.h
         include/D3E/Components/navigation/NavmeshCore.h
         include/D3E/Components/TPSControllerComponent.h
+        include/D3E/Components/AiAgentComponent.h
+        include/D3E/ai/FSM.h
+        include/D3E/ai/Agent.h
+        include/D3E/ai/State.h
+        include/D3E/ai/Goal.h
+        include/D3E/ai/Action.h
+        include/D3E/structures/PriorityQueue.h
+        include/D3E/ai/graph/Edge.h
+        include/D3E/ai/GoapPlanner.h 
+        include/D3E/ai/graph/Vertex.h
+        include/D3E/ai/FunctionalAction.h
+        include/D3E/time/Time.h
+        include/D3E/Components/navigation/NavigationAgentComponent.h
+        include/D3E/CrowdConfig.h
         PRIVATE
         src/core/Game.cpp
         src/render/GameRender.cpp
@@ -81,8 +95,7 @@ target_sources("${PROJECT_NAME}"
         src/render/ShaderFactory.h
         src/render/NvrhiMessageCallback.h
         src/assetmng/TextureFactory.cpp
-        src/assetmng/TextureFactory.h
-        src/render/Vertex.h
+        src/assetmng/TextureFactory.h        
         src/core/magic_enum.hpp
         src/render/GeometryGenerator.cpp
         src/render/GeometryGenerator.h
@@ -268,8 +281,22 @@ target_sources("${PROJECT_NAME}"
         src/scripting/type_adapters/InputDeviceAdapter.cpp
         src/scripting/type_adapters/PhysicsActivationAdapter.h
         src/scripting/type_adapters/PhysicsActivationAdapter.cpp
-        src/components/TPSControllerComponent.cpp
-        )
+        src/components/TPSControllerComponent.cpp        
+        src/components/AiAgentComponent.cpp
+        src/ai/FSM.cpp
+        src/ai/Agent.cpp
+        src/ai/State.cpp
+        src/ai/FunctionalAction.cpp 
+        src/ai/Action.cpp 
+        src/scripting/type_adapters/AiAgentAdapter.h 
+        src/engine/systems/AiManagementSystem.h 
+        src/engine/systems/AiManagementSystem.cpp
+        src/time/Time.cpp
+        src/engine/systems/NavigationSystem.h
+        src/engine/systems/NavigationSystem.cpp
+        src/components/NavigationAgentComponent.cpp 
+        src/navigation/NavigationManager.h
+        src/navigation/NavigationManager.cpp)
 
 add_subdirectory(libs)
 

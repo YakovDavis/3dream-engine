@@ -4,10 +4,17 @@
 #include "D3E/Components/PhysicsCharacterComponent.h"
 #include "D3E/Components/PhysicsComponent.h"
 #include "D3E/Components/TransformComponent.h"
+#include "D3E/Components/render/LightComponent.h"
+#include "D3E/Debug.h"
+#include "D3E/ai/Action.h"
+#include "D3E/ai/Goal.h"
+#include "D3E/time/time.h"
 #include "Jolt/Physics/Body/Body.h"
 #include "SimpleMath.h"
+#include "navigation/NavigationManager.h"
 #include "render/RenderUtils.h"`
 #include "scripting/LuaECSAdapter.h"
+#include "scripting/type_adapters/AiAgentAdapter.h"
 #include "scripting/type_adapters/InfoAdapter.h"
 #include "scripting/type_adapters/InputDeviceAdapter.h"
 #include "scripting/type_adapters/PhysicsActivationAdapter.h"
@@ -29,7 +36,8 @@ namespace D3E
 			ComponentType::kSoundComponent, "Light",
 			ComponentType::kLightComponent, "Camera",
 			ComponentType::kCameraComponent, "StaticMesh",
-			ComponentType::kStaticMeshComponent);
+			ComponentType::kStaticMeshComponent, "AiAgent",
+			ComponentType::kAiAgentComponent);
 	}
 
 	static void BindMatrix(sol::state& state)
@@ -85,7 +93,8 @@ namespace D3E
 		                      Vector3(const Vector3&)>(),
 			sol::meta_function::addition,
 			sol::resolve<const Vector3&, const Vector3&>(::operator+),
-			sol::meta_function::subtraction, &Vector3::operator-,
+			sol::meta_function::subtraction,
+			sol::resolve<const Vector3&, const Vector3&>(::operator-),
 			sol::meta_function::equal_to, &Vector3::operator==,
 			sol::meta_function::multiplication,
 			sol::overload(
@@ -185,7 +194,7 @@ namespace D3E
 		auto transformComponentType =
 			state.new_usertype<TransformComponent>("TransformComponent");
 
-		transformComponentType["position"] = &D3E::TransformComponent::position;
+		transformComponentType["location"] = &D3E::TransformComponent::position;
 		transformComponentType["rotation"] = &D3E::TransformComponent::rotation;
 		transformComponentType["scale"] = &D3E::TransformComponent::scale;
 	}
@@ -290,6 +299,83 @@ namespace D3E
 		render["get_tonemapper_exposure"] = &RenderUtils::GetTonemapperExposure;
 	}
 
+	static void BindDebug(sol::state& state)
+	{
+		struct Logger
+		{
+		};
+
+		auto logger = state.new_usertype<Logger>("Log", sol::no_constructor);
+		logger["message"] = [](const std::string& msg)
+		{ Debug::LogMessage(msg.c_str()); };
+		logger["warning"] = [](const std::string& msg)
+		{ Debug::LogWarning(msg.c_str()); };
+		logger["error"] = [](const std::string& msg)
+		{ Debug::LogError(msg.c_str()); };
+		logger["assert"] = [](bool condition, const std::string& msg)
+		{ Debug::Assert(condition, msg.c_str()); };
+	}
+
+	static void BindLight(sol::state& state)
+	{
+		auto light =
+			state.new_usertype<LightComponent>("Light", sol::no_constructor);
+		light["intensity"] = &LightComponent::intensity;
+	}
+
+	static void BindAction(sol::state& state)
+	{
+		auto action = state.new_usertype<Action>(
+			"Action", sol::constructors<Action(const std::string&)>());
+		action["set_cost"] = &Action::SetCost;
+		action["add_precondition"] = &Action::AddPrecondition;
+		action["add_effect"] = &Action::AddEffect;
+	}
+
+	static void BindGoal(sol::state& state)
+	{
+		auto goal = state.new_usertype<Goal>(
+			"Goal", sol::constructors<Goal(const std::string&, int)>());
+		goal["add_precondition"] = &Goal::AddPrecondition;
+		goal["add_target"] = &Goal::AddTarget;
+	}
+
+	static void BindAiAgentAdapter(sol::state& state)
+	{
+		auto agent =
+			state.new_usertype<AiAgentAdapter>("Agent", sol::no_constructor);
+		agent["add_goal"] = &AiAgentAdapter::AddGoal;
+		agent["add_action"] = sol::overload(
+			sol::resolve<const Action&, sol::function>(
+				&AiAgentAdapter::AddAction),
+			sol::resolve<void(const Action&, sol::table, sol::function)>(
+				&AiAgentAdapter::AddAction),
+			sol::resolve<const Action&, sol::table, sol::function,
+		                 sol::function>(&AiAgentAdapter::AddAction));
+		agent["set_name"] = &AiAgentAdapter::SetName;
+		agent["set_state_fact"] = &AiAgentAdapter::SetStateFact;
+	}
+
+	static void BindTime(sol::state& state)
+	{
+		struct CustomTime
+		{
+		};
+		auto time = state.new_usertype<CustomTime>("Time", sol::no_constructor);
+		time["delta_time"] = &Time::DeltaTime;
+	}
+
+	static void BindNavigationManager(sol::state& state)
+	{
+		struct Dummy
+		{
+		};
+		auto time =
+			state.new_usertype<Dummy>("Navigation", sol::no_constructor);
+		time["move_to"] = &NavigationManager::MoveTo;
+		time["cancel_target"] = &NavigationManager::CancelTarget;
+	}
+
 	static void BindEngineTypes(sol::state& state)
 	{
 		BindComponentType(state);
@@ -306,5 +392,12 @@ namespace D3E
 		BindInputAdapter(state);
 		BindPhysicsAdapter(state);
 		BindRender(state);
+		BindDebug(state);
+		BindAction(state);
+		BindGoal(state);
+		BindAiAgentAdapter(state);
+		BindTime(state);
+		BindNavigationManager(state);
+		BindLight(state);
 	}
 } // namespace D3E

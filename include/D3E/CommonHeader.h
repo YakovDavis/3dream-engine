@@ -52,5 +52,6 @@ namespace D3E
 	const String kRenderDebugTextureUUID = "227b4fee-9094-4b34-87d7-d81b312c3819";
 
 	const std::string kDefaultScriptName = "NewScript.lua";
+	static const String kEmptyGoalName = "Empty Goal";
 } // namespace D3E
 #endif // COMMON_HEADER_H

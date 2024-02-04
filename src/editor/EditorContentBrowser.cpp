@@ -323,9 +323,13 @@ void D3E::EditorContentBrowser::Draw()
 							if (ImGui::IsMouseDoubleClicked(
 									ImGuiMouseButton_Left))
 							{
+								auto path = directoryEntry.path();
+								path.remove_filename();
+								path = path / scriptMetadata.filename;
+
 								std::cout << std::flush;
-								std::system(("code assets\\scripts\\" +
-								             scriptMetadata.filename)
+								std::system(
+									("code " + path.string())
 								                .c_str());
 							}
 						}

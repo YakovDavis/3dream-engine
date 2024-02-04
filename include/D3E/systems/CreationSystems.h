@@ -38,5 +38,10 @@ namespace D3E
 		static void CreateDefaultScriptComponent(entt::registry& registry, entt::entity& entity);
 		static void CreateDefaultNavigationComponent(entt::registry& registry, entt::entity& entity);
 		static void CreateDefaultTPSControllerComponent(entt::registry& registry, entt::entity& entity);
+		static void CreateDefaultAIAgentComponent(entt::registry& registry,
+		                                          entt::entity& entity);
+		static void
+		CreateDefaultNavigationAgentComponent(entt::registry& registry,
+		                                      entt::entity& entity);
 	};
 }

@@ -15,6 +15,8 @@
 #include "D3E/Components/render/StaticMeshComponent.h"
 #include "D3E/Components/sound/SoundComponent.h"
 #include "D3E/Components/sound/SoundListenerComponent.h"
+#include "D3E/Components/AiAgentComponent.h"
+#include "D3E/Components/navigation/NavigationAgentComponent.h"
 #include "D3E/Game.h"
 #include "core/EngineState.h"
 #include "json.hpp"
@@ -44,6 +46,8 @@ void D3E::ComponentFactory::Initialize(D3E::Game* game)
 	typeNames_.insert({entt::type_id<SoundComponent>().hash(), "SoundComponent"});
 	typeNames_.insert({entt::type_id<SoundListenerComponent>().hash(), "SoundListenerComponent"});
 	typeNames_.insert({entt::type_id<NavmeshComponent>().hash(), "NavmeshComponent"});
+	typeNames_.insert({entt::type_id<AiAgentComponent>().hash(), "AiAgentComponent"});
+	typeNames_.insert({entt::type_id<NavigationAgentComponent>().hash(), "NavigationAgentComponent"});
 }
 
 void D3E::ComponentFactory::DestroyResources()
@@ -141,6 +145,24 @@ entt::entity D3E::ComponentFactory::ResolveEntity(const json& j)
 			SoundListenerComponent c;
 			c.from_json(el);
 			game_->GetRegistry().emplace<SoundListenerComponent>(e, c);
+		}
+		else if (el.at("class") == "AiAgentComponent")
+		{
+			AiAgentComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<AiAgentComponent>(e, c);
+		} 
+		else if (el.at("class") == "NavigationAgentComponent")
+		{
+			NavigationAgentComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<NavigationAgentComponent>(e, c);
+		}
+		else if (el.at("class") == "NavmeshComponent")
+		{
+			NavmeshComponent c;
+			c.from_json(el);
+			game_->GetRegistry().emplace<NavmeshComponent>(e, c);
 		}
 	}
 	return e;
@@ -259,6 +281,24 @@ void D3E::ComponentFactory::SerializeEntity(const entt::entity& e, json& j,
 		{
 			json c;
 			game_->GetRegistry().get<SoundListenerComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
+		else if (el == "AiAgentComponent")
+		{
+			json c;
+			game_->GetRegistry().get<AiAgentComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
+		else if (el == "NavigationAgentComponent")
+		{
+			json c;
+			game_->GetRegistry().get<NavigationAgentComponent>(e).to_json(c);
+			j.at("components").emplace_back(c);
+		}
+		else if (el == "NavmeshComponent")
+		{
+			json c;
+			game_->GetRegistry().get<NavmeshComponent>(e).to_json(c);
 			j.at("components").emplace_back(c);
 		}
 	}
