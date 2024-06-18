@@ -6,7 +6,7 @@ add_subdirectory(assimp)
 
 # DirectXTK
 option(BUILD_XAUDIO_WIN10 OFF)
-add_subdirectory(DirectXTK12 ${CMAKE_BINARY_DIR}/bin/CMake/DirectXTK12)
+#add_subdirectory(DirectXTK12 ${CMAKE_BINARY_DIR}/bin/CMake/DirectXTK12)
 
 # nvrhi
 option(NVRHI_WITH_DX11 OFF)
